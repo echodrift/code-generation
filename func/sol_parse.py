@@ -77,8 +77,8 @@ def capture_comments(sc: str) -> Optional[List[str]]:
 
         i += 1
     
-    if (currentComment and currentComment.type == "LineComment"):
-        if (sc[i] == '\n'):
+    if (currentComment and currentComment["type"] == "LineComment"):
+        if (sc[i - 1] == '\n'):
             currentComment["range"]["end"] = len(sc) - 1
         else:
             currentComment["range"]["end"] = len(sc)
