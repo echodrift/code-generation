@@ -1,6 +1,6 @@
 import pandas as pd
 import os
-from setup import BASE_DIR
+from config import BASE_DIR
 
 
 def read_ccgra_dataset():
