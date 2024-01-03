@@ -1,10 +1,17 @@
 import json
+import re
 from collections import defaultdict
 from typing import Dict, List, Tuple, TypeVar
 
 from solidity_parser import parser
-import re
-from func.input_generator import IntegerGenerator, StringGenerator, BooleanGenerator, ByteGenerator, AddressGenerator
+
+from func.input_generator import (
+    AddressGenerator,
+    BooleanGenerator,
+    ByteGenerator,
+    IntegerGenerator,
+    StringGenerator,
+)
 
 TypeName = TypeVar("TypeName")
 Name = TypeVar("Name")
@@ -27,10 +34,14 @@ class ParamGenerator:
         sourceUnit = parser.parse(self.contract, loc=False)
         params = defaultdict(list)
         for child in sourceUnit["children"]:
-            if child["type"] == "ContractDefinition":
+            if (
+                child["type"] == "ContractDefinition"
+            ):  # Find all contract in a solidity file
                 if child["name"] == contract_name:
                     for c in child["subNodes"]:
-                        if c["type"] == "FunctionDefinition":
+                        if (
+                            c["type"] == "FunctionDefinition"
+                        ):  # Find all functions in the contract
                             if c["name"] == function_name:
                                 for param in c["parameters"]["parameters"]:
                                     variable_type = param["typeName"]["type"]
@@ -39,8 +50,12 @@ class ParamGenerator:
                                         name = param["name"]
                                         params[variable_type].append((typename, name))
                                     else:
+                                        # If variable_type is not ElementaryTypeName like
+                                        # userDefinedTypeName or mapping, it is necessary to have a
+                                        # different approach to catch params
                                         pass
                                 break
+                    break
         return params
 
     def generate_input(
@@ -51,7 +66,9 @@ class ParamGenerator:
         for var_type in params:
             if var_type == "ElementaryTypeName":
                 for param in params[var_type]:
-                    if re.fullmatch(r"(uint)\d*", param[0]) or re.fullmatch(r"(int)\d*", param[0]):
+                    if re.fullmatch(r"(uint)\d*", param[0]) or re.fullmatch(
+                        r"(int)\d*", param[0]
+                    ):
                         inputs.append((param[1], self.ig.integer_generate(param[0])))
                     elif param[0] == "bool":
                         inputs.append((param[1], self.bg.bool_generate()))
@@ -64,4 +81,4 @@ class ParamGenerator:
             else:
                 pass
         return inputs
-
+    
