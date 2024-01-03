@@ -1,4 +1,6 @@
+import json
 import os
+from typing import List
 
 import pandas as pd
 from datasets import load_dataset
@@ -7,32 +9,67 @@ from solidity_parser import parser
 from config import BASE_DIR
 from func.dataset import read_ccgra_dataset, read_smartdoc_dataset
 from func.params_generator import ParamGenerator
-from func.sol_parse import get_pairs
-import json
+from func.sol_parse import SolidityParser
 
 
-def make_dataset():
+def load_sol_file():
     dataset = load_dataset("andstor/smart_contracts")
-
-    train_data = pd.DataFrame(dataset["train"])
-    valid_data = pd.DataFrame(dataset["validation"])
-    test_data = pd.DataFrame(dataset["test"])
-    data = pd.concat([train_data, valid_data, test_data], axis=0)
-    test_data.to_csv(os.path.join(BASE_DIR, "out", "test_data.csv"), index=True)
-    # all_pairs = []
-    # for i in range(len(data)):
-    #     print(i)
-    #     sc = data.loc[i, "source_code"].replace("\r\n", "\n")
-    #     pairs = get_pairs(sc)
-    #     if pairs:
-    #         all_pairs.extend(get_pairs(sc))
-    #     result = pd.DataFrame(all_pairs, columns=["function", "specs"])
-    #     result.to_csv(os.path.join(BASE_DIR, "out", "pairs.csv"))
+    train_sol_file = pd.DataFrame(dataset["train"])[["contract_name", "source_code"]]
+    valid_sol_file = pd.DataFrame(dataset["validation"])[
+        ["contract_name", "source_code"]
+    ]
+    test_sol_file = pd.DataFrame(dataset["test"])[["contract_name", "source_code"]]
+    return train_sol_file, valid_sol_file, test_sol_file
 
 
-def test_parser(contract):
-    sourceUnit = parser.parse(contract, loc=True)
-    return sourceUnit
+def extract_contracts(sol_file: str):
+    sol_file = sol_file.replace("\r\n", "\n")
+    contracts = []
+    sourceUnit = parser.parse(sol_file, loc=True)
+    lines = sol_file.splitlines()
+    for child in sourceUnit["children"]:
+        if child["type"] == "ContractDefinition":
+            if child["kind"] in ["interface", "library", "abstract"]:
+                return False
+            else:
+                if child["baseContracts"]:
+                    break
+                else:
+                    start_line = child["loc"]["start"]["line"]
+                    start_col = child["loc"]["start"]["column"]
+                    end_line = child["loc"]["end"]["line"]
+                    end_col = child["loc"]["end"]["column"]
+                    start_idx = (
+                        sum([len(lines[i]) for i in range(start_line - 1)])
+                        + start_line
+                        - 1
+                        + start_col
+                    )
+                    end_idx = (
+                        sum([len(lines[i]) for i in range(end_line - 1)])
+                        + end_line
+                        - 1
+                        + end_col
+                        + 1
+                    )
+                    contracts.append(sol_file[start_idx:end_idx])
+    return contracts
+
+
+def make_dataset(sol_files):
+    contracts = []
+    with open("error_log.txt", "w") as f:
+        for i in range(len(sol_files)):
+            print(i)
+            try:
+                tmp = extract_contracts(sol_files.loc[i, "source_code"])
+                if tmp:
+                    contracts.extend(tmp)
+            except:
+                f.write(sol_files.loc[i, "contract_name"] + "\n")
+    
+    print(len(contracts))
+
 
 
 if __name__ == "__main__":
@@ -48,9 +85,13 @@ if __name__ == "__main__":
     # with open(output_file, "w") as f:
     #     f.write(test_data.loc[1, "source_code"])
 
-    with open(
-        "/home/lvdthieu/Documents/Projects/CodeGen/data/sol/DummyTel.sol", "r"
-    ) as f:
-        contract = f.read()
-    with open("test.json", "w") as f:
-        f.write(json.dumps(test_parser(contract)))
+    # with open(
+    #     "/home/lvdthieu/Documents/Projects/CodeGen/data/sol/DummyTel.sol", "r"
+    # ) as f:
+    #     contract = f.read()
+    # # with open("test.json", "w") as f:
+    # #     f.write(json.dumps(test_parser(contract)))
+    # with open("./out/output.sol", "w") as f:
+    #     f.write(str(get_contracts(contract)[0]))
+    train_sol_file, valid_sol_file, test_sol_file = load_sol_file()
+    make_dataset(test_sol_file)
