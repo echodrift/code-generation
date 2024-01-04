@@ -2,11 +2,11 @@ const parser = require("@solidity-parser/parser");
 const fs = require("fs");
 const csv = require("csv-parser");
 
-
 function parse(sol_files) {
-    contracts = []
-    for (let i = 0; i < sol_files.length; i++) {
+    csv_file = "contract_address,contract_code\n";
+    for (let i = 0; i < 10; i++) {
         try {
+            console.log(i)
             source = sol_files[i]["source_code"].replace('\r\n', '\n');
             const lines = source.split('\n');
             const ast = parser.parse(sol_files[i]["source_code"], {loc: true});
@@ -14,7 +14,6 @@ function parse(sol_files) {
                 if (ast["children"][i]["type"] == "ContractDefinition") {
                     const child = ast["children"][i]
                     if (child["kind"] == "contract") {
-                        console.log("Here");
                         const start_line = child["loc"]["start"]["line"];
                         const start_col = child["loc"]["start"]["column"];
                         const end_line = child["loc"]["end"]["line"];
@@ -29,18 +28,21 @@ function parse(sol_files) {
                             end_idx += lines[j].length;
                         }
                         end_idx = end_idx + end_line - 1 + end_col + 1;
-                        contracts.push(source.slice(start_idx, end_idx));
+                        csv_file += `${sol_files[i]["contract_address"]},${source.slice(start_idx, end_idx)}\n`
+                        fs.writeFileSync("./out/contracts.csv", csv_file)
                     }    
                 }
             }
-            console.log(contracts)
-            break
         } catch (e) {
-            if (e instanceof parser.ParserError) {
-                console.error(e.errors)
-            }
+            fs.appendFileSync("js_error_log.txt", 
+            `------------------------------------------------------------------------\n${i}\t${e.errors}\n`,
+            function (err) {
+                if (err) throw err;
+            });    
         }
     }
+    
+    
 }
 
 function main() {

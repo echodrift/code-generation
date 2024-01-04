@@ -71,27 +71,5 @@ def make_dataset(sol_files):
 
 
 if __name__ == "__main__":
-    # with open(
-    #     "/home/lvdthieu/Documents/Projects/CodeGen/hardhat/contracts/Lock.sol", "r"
-    # ) as f:
-    #     contract = f.read()
-    # pg = ParamGenerator(contract)
-    # print(pg.generate_input("Lock", "withdraw"))
-
-    # test_data = pd.read_csv(os.path.join(BASE_DIR, "out", "test_data.csv"))
-    # output_file = os.path.join(BASE_DIR, "out", "output2.sol")
-    # with open(output_file, "w") as f:
-    #     f.write(test_data.loc[1, "source_code"])
-
-    # with open(
-    #     "/home/lvdthieu/Documents/Projects/CodeGen/data/sol/DummyTel.sol", "r"
-    # ) as f:
-    #     contract = f.read()
-    # # with open("test.json", "w") as f:
-    # #     f.write(json.dumps(test_parser(contract)))
-    # with open("./out/output.sol", "w") as f:
-    #     f.write(str(get_contracts(contract)[0]))
-    test_sol_file = pd.read_csv("./data/solfile/test_sol_file.csv")
-    # make_dataset(test_sol_file)
-    with open("error.sol", "w") as f:
-        f.write(test_sol_file.loc[32, "source_code"])
+    contracts = pd.read_csv("./out/contracts.csv", on_bad_lines="skip")
+    print(contracts.loc[2, "contract_code"])
