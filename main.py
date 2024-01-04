@@ -14,11 +14,9 @@ from func.sol_parse import SolidityParser
 
 def load_sol_file():
     dataset = load_dataset("andstor/smart_contracts")
-    train_sol_file = pd.DataFrame(dataset["train"])[["contract_name", "source_code"]]
-    valid_sol_file = pd.DataFrame(dataset["validation"])[
-        ["contract_name", "source_code"]
-    ]
-    test_sol_file = pd.DataFrame(dataset["test"])[["contract_name", "source_code"]]
+    train_sol_file = pd.DataFrame(dataset["train"])[["contract_address", "source_code"]]
+    valid_sol_file = pd.DataFrame(dataset["validation"])[["contract_address", "source_code"]]
+    test_sol_file = pd.DataFrame(dataset["test"])[["contract_address", "source_code"]]
     return train_sol_file, valid_sol_file, test_sol_file
 
 
@@ -58,15 +56,15 @@ def extract_contracts(sol_file: str):
 
 def make_dataset(sol_files):
     contracts = []
-    with open("error_log.txt", "w") as f:
-        for i in range(len(sol_files)):
-            print(i)
-            try:
-                tmp = extract_contracts(sol_files.loc[i, "source_code"])
-                if tmp:
-                    contracts.extend(tmp)
-            except:
-                f.write(sol_files.loc[i, "contract_name"] + "\n")
+    for i in range(len(sol_files)):
+        print(i)
+        try:
+            tmp = extract_contracts(sol_files.loc[i, "source_code"])
+            if tmp:
+                contracts.extend(tmp)
+        except:
+            with open("error_log.txt", "a") as f:
+                f.write(str(i) + "\n")
     
     print(len(contracts))
 
@@ -93,5 +91,7 @@ if __name__ == "__main__":
     # #     f.write(json.dumps(test_parser(contract)))
     # with open("./out/output.sol", "w") as f:
     #     f.write(str(get_contracts(contract)[0]))
-    train_sol_file, valid_sol_file, test_sol_file = load_sol_file()
-    make_dataset(test_sol_file)
+    test_sol_file = pd.read_csv("./data/solfile/test_sol_file.csv")
+    # make_dataset(test_sol_file)
+    with open("error.sol", "w") as f:
+        f.write(test_sol_file.loc[32, "source_code"])
