@@ -1,121 +1,69 @@
-// SPDX-License-Identifier: MIT
-pragma solidity >0.5.0 <0.8.0;
+contract ThisExternalAssembly {
+    uint public numcalls;
+    uint public numcallsinternal;
+    uint public numfails;
+    uint public numsuccesses;
+    
+    address owner;
 
-/* Library Imports */
-import { Lib_Bytes32Utils } from "../../libraries/utils/Lib_Bytes32Utils.sol";
-import { Lib_OVMCodec } from "../../libraries/codec/Lib_OVMCodec.sol";
-import { Lib_ECDSAUtils } from "../../libraries/utils/Lib_ECDSAUtils.sol";
-import { Lib_SafeExecutionManagerWrapper } from "../../libraries/wrappers/Lib_SafeExecutionManagerWrapper.sol";
+    event logCall(uint indexed _numcalls, uint indexed _numcallsinternal);
+    
+    modifier onlyOwner { if (msg.sender != owner) throw; _ }
+    modifier onlyThis { if (msg.sender != address(this)) throw; _ }
 
-/**
- * @title OVM_ProxyEOA
- * @dev The Proxy EOA contract uses a delegate call to execute the logic in an implementation contract.
- * In combination with the logic implemented in the ECDSA Contract Account, this enables a form of upgradable 
- * 'account abstraction' on layer 2. 
- * 
- * Compiler used: solc
- * Runtime target: OVM
- */
-contract OVM_ProxyEOA {
-
-    /*************
-     * Constants *
-     *************/
-
-    bytes32 constant IMPLEMENTATION_KEY = 0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddeaddead;
-
-
-    /***************
-     * Constructor *
-     ***************/
-
-    /**
-     * @param _implementation Address of the initial implementation contract.
-     */
-    constructor(
-        address _implementation
-    )
-    {
-        _setImplementation(_implementation);
+    // constructor
+    function ThisExternalAssembly() {
+        owner = msg.sender;
     }
 
+    function failSend() external onlyThis returns (bool) {
+        // storage change + nested external call
+        numcallsinternal++;
+        owner.send(42);
 
-    /*********************
-     * Fallback Function *
-     *********************/
+        // placeholder for state checks
+        if (true) throw;
 
-    fallback()
-        external
-    {
-        (bool success, bytes memory returndata) = Lib_SafeExecutionManagerWrapper.safeDELEGATECALL(
-            gasleft(),
-            getImplementation(),
-            msg.data
-        );
+        // never happens in this case
+        return true;
+    }
+    
+    function doCall(uint _gas) onlyOwner {
+        numcalls++;
 
-        if (success) {
-            assembly {
-                return(add(returndata, 0x20), mload(returndata))
-            }
-        } else {
-            Lib_SafeExecutionManagerWrapper.safeREVERT(
-                string(returndata)
-            );
+        address addr = address(this);
+        bytes4 sig = bytes4(sha3("failSend()"));
+
+        bool ret;
+
+        // work around `solc` safeguards for throws in external calls
+        // https://ethereum.stackexchange.com/questions/6354/
+        assembly {
+            let x := mload(0x40) // read "empty memory" pointer
+            mstore(x,sig)
+
+            ret := call(
+                _gas, // gas amount
+                addr, // recipient account
+                0,    // value (no need to pass)
+                x,    // input start location
+                0x4,  // input size - just the sig
+                x,    // output start location
+                0x1)  // output size (bool - 1 byte)
+
+            //ret := mload(x) // no return value ever written :/
+            mstore(0x40,add(x,0x4)) // just in case, roll the tape
         }
+
+        if (ret) { numsuccesses++; }
+        else { numfails++; }
+
+        // mostly helps with function identification if disassembled
+        logCall(numcalls, numcallsinternal);
     }
 
-
-    /********************
-     * Public Functions *
-     ********************/
-
-    /**
-     * Changes the implementation address.
-     * @param _implementation New implementation address.
-     */
-    function upgrade(
-        address _implementation
-    )
-        external
-    {
-        Lib_SafeExecutionManagerWrapper.safeREQUIRE(
-            Lib_SafeExecutionManagerWrapper.safeADDRESS() == Lib_SafeExecutionManagerWrapper.safeCALLER(),
-            "EOAs can only upgrade their own EOA implementation"
-        );
-
-        _setImplementation(_implementation);
-    }
-
-    /**
-     * Gets the address of the current implementation.
-     * @return Current implementation address.
-     */
-    function getImplementation()
-        public
-        returns (
-            address
-        )
-    {
-        return Lib_Bytes32Utils.toAddress(
-            Lib_SafeExecutionManagerWrapper.safeSLOAD(
-                IMPLEMENTATION_KEY
-            )
-        );
-    }
-
-
-    /**********************
-     * Internal Functions *
-     **********************/
-
-    function _setImplementation(
-        address _implementation
-    )
-        internal
-    {
-        Lib_SafeExecutionManagerWrapper.safeSSTORE(
-            IMPLEMENTATION_KEY,
-            Lib_Bytes32Utils.fromAddress(_implementation)
-        );
-    }
+    // will clean-up :)
+    function selfDestruct() onlyOwner { selfdestruct(owner); }
+    
+    function() { throw; }
 }

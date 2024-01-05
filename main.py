@@ -71,5 +71,8 @@ def make_dataset(sol_files):
 
 
 if __name__ == "__main__":
-    contracts = pd.read_csv("./out/contracts.csv", on_bad_lines="skip")
-    print(contracts.loc[2, "contract_code"])
+    # contracts = pd.read_csv("./out/contracts.csv")
+    # print(contracts.head())
+    test_sol_file = pd.read_csv("./data/solfile/test_sol_file.csv")
+    with open("error.sol", "w") as f:
+        f.write(test_sol_file.loc[31, "source_code"])
