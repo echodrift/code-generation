@@ -78,4 +78,4 @@ if __name__ == "__main__":
     #print(contracts.info())
     test_sol_file = pd.read_csv("./data/solfile/test_sol_file.csv")
     with open("error.sol", "w") as f:
-        f.write(test_sol_file.loc[201, "source_code"])
+        f.write(test_sol_file.loc[1, "source_code"])

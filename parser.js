@@ -77,7 +77,7 @@ async function main() {
 }
 
 
-function test() {
+function test_parser() {
     const data = fs.readFileSync("error.sol", "utf-8");
     try {
         const ast = parser.parse(data);
@@ -91,10 +91,93 @@ function test() {
 }
 
 
-
 function find_func_has_require(contract) {
 
 }
 
 
-main()
+function find_comment(contract) {
+    let state = "ETC";
+    let i = 0;
+    let comments = [];
+    let currentComment = null;
+
+    while (i + 1 < contract.length) {
+        if (state == "ETC" && contract[i] == '/' && contract[i + 1] == '/') {
+            state = "LINE_COMMENT";
+            currentComment = {
+                "type": "LineComment",
+                "range": {"start": i}
+            };
+            i += 2;
+            continue;
+        }
+
+        if (state == "LINE_COMMENT" && contract[i] == '\n') {
+            state = "ETC";
+            currentComment["range"]["end"] = i;
+            comments.push(currentComment);
+            currentComment = null;
+            i += 1;
+            continue;
+        }
+
+        if (state == "ETC" && contract[i] == '/' && contract[i + 1] == '*') {
+            state = "BLOCK_COMMENT";
+            currentComment = {
+                "type": "BlockComment",
+                "range": {"start": i}
+            };
+            i += 2;
+            continue;
+        }
+
+        if (state == "BLOCK_COMMENT" && contract[i] == '*' && contract[i + 1] == '/') {
+            state = "ETC";
+            currentComment["range"]["end"] = i + 2;
+            comments.push(currentComment);
+            currentComment = null;
+            i += 2;
+            continue;
+        }
+        i += 1;
+    }
+
+    if (currentComment && currentComment["type"] == "LineComment") {
+        if (contract[i - 1] == '\n') {
+            currentComment["range"]["end"] = contract.length - 1;
+        } else {
+            currentComment["range"]["end"] = contract.length;
+        }
+        comments.push(currentComment)
+    }
+    
+
+    function extract_content(contract, comments) {
+        for (let i = 0; i < comments.length; i++) {
+            let start = comments[i]["range"]["start"] + 2;
+            let end = comments[i]["type"] == "LineComment" ? comments[i]["range"]["end"] : comments[i]["range"]["end"] - 2;
+            let raw = contract.slice(start, end);
+            comments[i]["content"] = raw.trim();
+        }
+        comments = comments.filter((comment) => comment["content"]);
+        return comments;
+    }
+
+    return extract_content(contract, comments);
+}
+
+
+function test_find_comment() {
+    contract = fs.readFileSync("error.sol", "utf-8");
+    comments = find_comment(contract);
+    for (let i = 0; i < comments.length; i++) {
+        console.log(`${comments[i]["content"]}\n---------------------------------------------------------`);
+    }
+}
+
+
+
+
+
+
