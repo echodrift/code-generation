@@ -3,9 +3,10 @@ const fs = require("fs");
 const csv = require("csv-parser");
 const { stringify } = require("csv-stringify")
 
-function parse(sol_files) {
+
+function extract_contract(sol_files) {
     contracts = []
-    for (let i = 0; i < sol_files.length; i++) {
+    for (let i = 0; i < 10; i++) {
         try {
             console.log(i)
             source = sol_files[i]["source_code"].replace('\r\n', '\n');
@@ -41,26 +42,40 @@ function parse(sol_files) {
             });    
         }
     }
-    const columns = ["contract_address", "contract_code"]
-    stringify(contracts, {header: true, columns: columns}, (err, output) => {
-        if (err) throw err;
-        fs.writeFileSync("./out/contracts.csv", output, (error) => {
-            if (err) throw err;
-            console.log("Saved");
-        })
-    });
-    
+    return contracts
 }
 
-function main() {
-    const test_sol_file = []
-    fs.createReadStream("./data/solfile/test_sol_file.csv")
-    .pipe(csv())
-    .on('data', (data) => test_sol_file.push(data))
-    .on('end', () => {
-        parse(test_sol_file)
-    })
+
+function read_csv(file_path) {
+    return new Promise((resolve, reject) => {
+        let result = []
+        fs.createReadStream(file_path)
+        .pipe(csv())
+        .on('data', (data) => result.push(data))
+        .on('end', () => {
+            resolve(result)
+        });
+    });
 }
+
+
+function write_csv(data, file_path, columns) {
+    stringify(data, {header: true, columns: columns}, (err, output) => {
+        if (err) throw err;
+        fs.writeFileSync(file_path, output, (error) => {
+            if (err) throw err;
+            console.log("Saved");
+        });
+    });
+}
+
+async function main() {
+    const contracts = await read_csv("./data/solfile/test_sol_file.csv").then((sol_files) => {
+        return extract_contract(sol_files);
+    });
+    write_csv(contracts, "./out/test.csv", columns=["address", "contract_code"]);
+}
+
 
 function test() {
     const data = fs.readFileSync("error.sol", "utf-8");
@@ -75,6 +90,11 @@ function test() {
     }   
 }
 
-// main()
 
-test()
+
+function find_func_has_require(contract) {
+
+}
+
+
+main()

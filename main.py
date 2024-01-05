@@ -69,10 +69,13 @@ def make_dataset(sol_files):
     print(len(contracts))
 
 
+def mask_function(contracts):
+    pass
+
 
 if __name__ == "__main__":
     # contracts = pd.read_csv("./out/contracts.csv")
-    # print(contracts.head())
+    #print(contracts.info())
     test_sol_file = pd.read_csv("./data/solfile/test_sol_file.csv")
     with open("error.sol", "w") as f:
-        f.write(test_sol_file.loc[31, "source_code"])
+        f.write(test_sol_file.loc[201, "source_code"])

@@ -1,69 +1,28 @@
-contract ThisExternalAssembly {
-    uint public numcalls;
-    uint public numcallsinternal;
-    uint public numfails;
-    uint public numsuccesses;
-    
-    address owner;
+@v1.2.0
 
-    event logCall(uint indexed _numcalls, uint indexed _numcallsinternal);
-    
-    modifier onlyOwner { if (msg.sender != owner) throw; _ }
-    modifier onlyThis { if (msg.sender != address(this)) throw; _ }
+// License-Identifier: MIT
+pragma solidity 0.6.12;
 
-    // constructor
-    function ThisExternalAssembly() {
-        owner = msg.sender;
-    }
+interface IERC20 {
+    function totalSupply() external view returns (uint256);
 
-    function failSend() external onlyThis returns (bool) {
-        // storage change + nested external call
-        numcallsinternal++;
-        owner.send(42);
+    function balanceOf(address account) external view returns (uint256);
 
-        // placeholder for state checks
-        if (true) throw;
+    function allowance(address owner, address spender) external view returns (uint256);
 
-        // never happens in this case
-        return true;
-    }
-    
-    function doCall(uint _gas) onlyOwner {
-        numcalls++;
+    function approve(address spender, uint256 amount) external returns (bool);
 
-        address addr = address(this);
-        bytes4 sig = bytes4(sha3("failSend()"));
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
 
-        bool ret;
-
-        // work around `solc` safeguards for throws in external calls
-        // https://ethereum.stackexchange.com/questions/6354/
-        assembly {
-            let x := mload(0x40) // read "empty memory" pointer
-            mstore(x,sig)
-
-            ret := call(
-                _gas, // gas amount
-                addr, // recipient account
-                0,    // value (no need to pass)
-                x,    // input start location
-                0x4,  // input size - just the sig
-                x,    // output start location
-                0x1)  // output size (bool - 1 byte)
-
-            //ret := mload(x) // no return value ever written :/
-            mstore(0x40,add(x,0x4)) // just in case, roll the tape
-        }
-
-        if (ret) { numsuccesses++; }
-        else { numfails++; }
-
-        // mostly helps with function identification if disassembled
-        logCall(numcalls, numcallsinternal);
-    }
-
-    // will clean-up :)
-    function selfDestruct() onlyOwner { selfdestruct(owner); }
-    
-    function() { throw; }
+    /// @notice EIP 2612
+    function permit(
+        address owner,
+        address spender,
+        uint256 value,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external;
 }
