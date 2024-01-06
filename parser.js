@@ -4,63 +4,33 @@ const csv = require("csv-parser");
 const { stringify } = require("csv-stringify")
 
 
-function extract_contract(sol_files) {
-    contracts = []
-    for (let i = 0; i < 10; i++) {
-        try {
-            console.log(i)
-            source = sol_files[i]["source_code"].replace('\r\n', '\n');
-            const lines = source.split('\n');
-            const ast = parser.parse(sol_files[i]["source_code"], {loc: true});
-            for (let i = 0; i < ast["children"].length; i++) {
-                if (ast["children"][i]["type"] == "ContractDefinition") {
-                    const child = ast["children"][i]
-                    if (child["kind"] == "contract") {
-                        const start_line = child["loc"]["start"]["line"];
-                        const start_col = child["loc"]["start"]["column"];
-                        const end_line = child["loc"]["end"]["line"];
-                        const end_col = child["loc"]["end"]["column"];
-                        let start_idx = 0;
-                        for (let j = 0; j < start_line - 1; j++) {
-                            start_idx += lines[j].length;
-                        }
-                        start_idx = start_idx + start_line - 1 + start_col;
-                        let end_idx = 0;
-                        for (let j = 0; j < end_line - 1; j++) {
-                            end_idx += lines[j].length;
-                        }
-                        end_idx = end_idx + end_line - 1 + end_col + 1;
-                        contracts.push([sol_files[i]["contract_address"], source.slice(start_idx, end_idx)])
-                    }    
-                }
-            }
-        } catch (e) {
-            fs.appendFileSync("js_error_log.txt", 
-            `------------------------------------------------------------------------\n${i}\t${e.errors}\n`,
-            function (err) {
-                if (err) throw err;
-            });    
+function test_parser() {
+    const data = fs.readFileSync("contract.sol", "utf-8");
+    try {
+        const ast = parser.parse(data, { loc: true });
+        console.log(ast);
+    } catch (e) {
+        console.log("Error")
+        if (e instanceof parser.ParserError) {
+            console.log(e.errors);
         }
     }
-    return contracts
 }
-
 
 function read_csv(file_path) {
     return new Promise((resolve, reject) => {
         let result = []
         fs.createReadStream(file_path)
-        .pipe(csv())
-        .on('data', (data) => result.push(data))
-        .on('end', () => {
-            resolve(result)
-        });
+            .pipe(csv())
+            .on('data', (data) => result.push(data))
+            .on('end', () => {
+                resolve(result)
+            });
     });
 }
 
-
 function write_csv(data, file_path, columns) {
-    stringify(data, {header: true, columns: columns}, (err, output) => {
+    stringify(data, { header: true, columns: columns }, (err, output) => {
         if (err) throw err;
         fs.writeFileSync(file_path, output, (error) => {
             if (err) throw err;
@@ -69,32 +39,55 @@ function write_csv(data, file_path, columns) {
     });
 }
 
-async function main() {
+function get_location(contract, element) {
+    const start_line = element["loc"]["start"]["line"];
+    const start_col = element["loc"]["start"]["column"];
+    const end_line = element["loc"]["end"]["line"];
+    const end_col = element["loc"]["end"]["column"];
+    const lines = contract.split('\n');
+    let start_idx = 0;
+    for (let j = 0; j < start_line - 1; j++) {
+        start_idx += lines[j].length;
+    }
+    start_idx = start_idx + start_line - 1 + start_col;
+    let end_idx = 0;
+    for (let j = 0; j < end_line - 1; j++) {
+        end_idx += lines[j].length;
+    }
+    end_idx = end_idx + end_line - 1 + end_col + 1;
+    return { start_idx, end_idx };
+}
+
+function extract_contract(sol_files) {
+    var contracts = []
+    for (let i = 0; i < 10; i++) {
+        try {
+            source = sol_files[i]["source_code"].replace('\r\n', '\n');
+            const ast = parser.parse(source, { loc: true });
+            for (let i = 0; i < ast["children"].length; i++) {
+                if (ast["children"][i]["type"] == "ContractDefinition" &&
+                    ast["children"][i]["kind"] == "contract") {
+                    const { start_idx, end_idx } = get_location(source, ast["children"][i]);
+                    contracts.push([sol_files[i]["contract_address"], source.slice(start_idx, end_idx)]);
+                }
+            }
+        } catch (e) {
+            fs.appendFileSync("js_error_log.txt",
+                `------------------------------------------------------------------------\n${i}\t${e.errors}\n`,
+                function (err) {
+                    if (err) throw err;
+                });
+        }
+    }
+    return contracts
+}
+
+async function test_extract_contract() {
     const contracts = await read_csv("./data/solfile/test_sol_file.csv").then((sol_files) => {
         return extract_contract(sol_files);
     });
-    write_csv(contracts, "./out/test.csv", columns=["address", "contract_code"]);
+    write_csv(contracts, "./out/test.csv", columns = ["address", "contract_code"]);
 }
-
-
-function test_parser() {
-    const data = fs.readFileSync("error.sol", "utf-8");
-    try {
-        const ast = parser.parse(data);
-        console.log(ast);
-    } catch (e) {
-        console.log("Error")
-        if (e instanceof parser.ParserError) {
-            console.log(e.errors);
-        }
-    }   
-}
-
-
-function find_func_has_require(contract) {
-
-}
-
 
 function find_comment(contract) {
     let state = "ETC";
@@ -107,7 +100,7 @@ function find_comment(contract) {
             state = "LINE_COMMENT";
             currentComment = {
                 "type": "LineComment",
-                "range": {"start": i}
+                "range": { "start": i }
             };
             i += 2;
             continue;
@@ -126,7 +119,7 @@ function find_comment(contract) {
             state = "BLOCK_COMMENT";
             currentComment = {
                 "type": "BlockComment",
-                "range": {"start": i}
+                "range": { "start": i }
             };
             i += 2;
             continue;
@@ -151,7 +144,7 @@ function find_comment(contract) {
         }
         comments.push(currentComment)
     }
-    
+
 
     function extract_content(contract, comments) {
         for (let i = 0; i < comments.length; i++) {
@@ -167,7 +160,6 @@ function find_comment(contract) {
     return extract_content(contract, comments);
 }
 
-
 function test_find_comment() {
     contract = fs.readFileSync("error.sol", "utf-8");
     comments = find_comment(contract);
@@ -176,8 +168,55 @@ function test_find_comment() {
     }
 }
 
+function find_function(contract) {
+    let functions = [];
+    const sourceUnit = parser.parse(contract, { loc: true });
+    for (let i = 0; i < sourceUnit["children"].length; i++) {
+        if (sourceUnit["children"][i]["type"] == "ContractDefinition" &&
+            sourceUnit["children"][i]["kind"] == "contract") {
+            let child = sourceUnit["children"][i];
+            for (let j = 0; j < child["subNodes"].length; j++) {
+                if (child["subNodes"][j]["type"] == "FunctionDefinition") {
+                    const { start_idx, end_idx } = get_location(contract, child["subNodes"][j]);
+                    const content = contract.slice(start_idx, end_idx);
+                    functions.push({
+                        "range": { "start": start_idx, "end": end_idx },
+                        "content": content
+                    });
+                }
+            }
+        }
+    }
+    return functions
+}
+
+function test_find_function() {
+    const contract = fs.readFileSync("contract.sol", "utf-8");
+    const functions = find_function(contract);
+    for (let i = 0; i < functions.length; i++) {
+        console.log(functions[i]["content"]);
+        console.log("-----------------------------------");
+    }
+}
+
+function find_function_has_comment(contract) {
+    const functions = find_function(contract);
+    const comments = find_comment(contract);
+    if (functions && comments) {
+        
+        for (let i = 0; i < functions.length; i++) {
+            let tmp = functions[i]["range"]["start"] - 1;
+            
+        }
+    } else {
+        return null;
+    }
+}
+
+function test_find_function_has_comment() {
+    const contract = fs.readFileSync("contract.sol", "utf-8");
+    find_function_has_comment(contract)
+}
 
 
-
-
-
+test_find_function_has_comment()
