@@ -74,10 +74,11 @@ def mask_function(contracts):
 
 
 if __name__ == "__main__":
-    contracts = pd.read_csv("./out/contracts.csv")
-    print(contracts.head())
-    # test_sol_file = pd.read_csv("./data/solfile/test_sol_file.csv")
-    # with open("error.sol", "w") as f:
-    #     f.write(test_sol_file.loc[1, "source_code"])
-    with open("contract.sol", "w") as f:
-        f.write(contracts.loc[0, "contract_code"]);
+    # contracts = pd.read_csv("./out/contracts.csv")
+    # print(contracts.head())
+    # with open("contract.sol", "w") as f:
+    #     f.write(contracts.loc[0, "contract_code"]);
+    test_sol_file = pd.read_csv("./data/solfile/test_sol_file.csv")
+    with open("error.sol", "w") as f:
+        f.write(test_sol_file[test_sol_file["contract_address"]=="0xebd880564d73566b7479801ed6c17d1c395decb4"].loc[7, "source_code"])
+  
