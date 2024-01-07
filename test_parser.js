@@ -15,11 +15,11 @@ function test_parser(file) {
     }
 }
 
-async function test_extract_contract() {
-    const contracts = await read_csv("./data/solfile/test_sol_file.csv").then((sol_files) => {
+async function test_extract_contract(input_file, output_file) {
+    const contracts = await read_csv(input_file).then((sol_files) => {
         return extract_contract(sol_files);
     });
-    write_csv(contracts, "./out/test.csv", ["address", "contract_name", "contract_code"]);
+    write_csv(contracts, output_file, ["address", "contract_name", "contract_code"]);
 }
 
 function test_find_comment(file) {
@@ -30,41 +30,72 @@ function test_find_comment(file) {
     }
 }
 
-async function test_find_function() {
-    const sol_files = await read_csv("./data/solfile/test_sol_file.csv").then((sol_files) => {
+async function test_find_function(sol_file, contract_file) {
+    const sol_files = await read_csv(sol_file).then((sol_files) => {
         return sol_files;
     }); 
-    const contracts = await read_csv("./out/test.csv").then((contracts) => {
+    const contracts = await read_csv(contract_file).then((contracts) => {
         return contracts;
     });
     const contract = contracts[0];
-    const sol_file = sol_files.find(element => {
+    const source = sol_files.find(element => {
         return element["contract_address"] == contract["address"];
     })["source_code"];
-    
-    const functions = find_function(sol_file, contract["contract_name"]);
-    for (let i = 0; i < functions.length; i++) {
-        console.log(functions[i]["content"]);
-        console.log("-----------------------------------");
+    const functions = find_function(source, contract["contract_name"]);
+    if (functions) {
+        for (let i = 0; i < functions.length; i++) {
+            console.log(functions[i]["body"]["content"]);
+            console.log("-----------------------------------");
+        }
     }
 }
 
-async function test_find_function_has_comment() {
-    const sol_files = await read_csv("./data/solfile/test_sol_file.csv").then((sol_files) => {
+async function test_find_function_has_comment(sol_file, contract_file) {
+    const sol_files = await read_csv(sol_file).then((sol_files) => {
         return sol_files;
     }); 
-    const contracts = await read_csv("./out/test.csv").then((contracts) => {
+    const contracts = await read_csv(contract_file).then((contracts) => {
         return contracts;
     });
-    const contract = contracts[21];
-    const sol_file = sol_files.find(element => {
-        return element["contract_address"] == contract["address"];
-    })["source_code"];
-    find_function_has_comment(sol_file, contract["contract_name"]);
+    let data = [];
+    for (let i = 0; i < contracts.length; i++) {
+        try {
+            console.log(i);
+            let row = [contracts[i]["address"], contracts[i]["contract_name"]]
+            let source = sol_files.find(element => {
+                return element["contract_address"] == contracts[i]["address"];
+            })["source_code"];
+            const result = find_function_has_comment(source, contracts[i]["contract_name"]);
+            if (result.length > 0) {
+                for (let j = 0; j < result.length; j++) {
+                    let row = [contracts[i]["address"], contracts[i]["contract_name"], ...result[j]];
+                    data.push(row)
+                }    
+            } else {
+                fs.appendFileSync("contract_no_function_has_requirement.txt",
+                `------------------------------------------------------------------------\nContract ${i}\n`,
+                function (err) {
+                    if (err) throw err;
+                }
+                );
+            }
+        } catch (e) {
+            fs.appendFileSync("contract_error.txt",
+            `------------------------------------------------------------------------\nContract ${i}\n`,
+            function (err) {
+                if (err) throw err;
+            }
+            );
+        }   
+    }
+    const chunks = Math.floor(data.length / 500);
+    for (let i = 0; i < chunks; i++) {
+        write_csv(data.slice(i * 500, (i + 1) * 500), `./out/data${i}.csv`, ["File address", "Contract name", "Function name", "Contract masked", "Function body", "Function requirement"]);
+    }
+    write_csv(data.slice(chunks * 500), `./out/data${chunks}.csv`, ["File address", "Contract name", "Function name", "Contract masked", "Function body", "Function requirement"]);    
 }
 
-test_find_function_has_comment();
-
-
+// test_extract_contract("./data/solfile/valid_sol_file.csv", "./out/contracts.csv");
+test_find_function_has_comment("./data/solfile/valid_sol_file.csv", "./out/contracts.csv");
 
 

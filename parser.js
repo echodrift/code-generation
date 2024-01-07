@@ -21,7 +21,7 @@ function get_location(sol_file, element) {
     }
     end_idx = end_idx + end_line - 1 + end_col + 1;
 
-    return { start_idx, end_idx };
+    return [start_idx, end_idx];
 }
 
 function back_search(sol_file, comment_list, start_point, result) {
@@ -62,17 +62,21 @@ export function write_csv(data, file_path, columns) {
 
 export function extract_contract(sol_files) {
     var contracts = []
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < sol_files.length; i++) {
+        console.log(i);
+        console.log(contracts.length)
         try {
             const source = sol_files[i]["source_code"].replace('\r\n', '\n');
             const ast = parser.parse(source, { loc: true });
             for (let j = 0; j < ast["children"].length; j++) {
                 if (ast["children"][j]["type"] == "ContractDefinition" &&
                     ast["children"][j]["kind"] == "contract") {
-                    const { start_idx, end_idx } = get_location(source, ast["children"][j]);
-                    contracts.push([sol_files[i]["contract_address"],
-                    ast["children"][j]["name"],
-                    source.slice(start_idx, end_idx)]);
+                    const [start_idx, end_idx] = get_location(source, ast["children"][j]);
+                    contracts.push([
+                        sol_files[i]["contract_address"],
+                        ast["children"][j]["name"],
+                        source.slice(start_idx, end_idx)
+                    ]);
                 }
             }
         } catch (e) {
@@ -169,12 +173,19 @@ export function find_function(sol_file, contract_name) {
             let child = sourceUnit["children"][i];
             for (let j = 0; j < child["subNodes"].length; j++) {
                 if (child["subNodes"][j]["type"] == "FunctionDefinition") {
-                    const { start_idx, end_idx } = get_location(sol_file, child["subNodes"][j]);
-                    const content = sol_file.slice(start_idx, end_idx);
-                    functions.push({
-                        "range": { "start": start_idx, "end": end_idx },
-                        "content": content
-                    });
+                    if (child["subNodes"][j]["body"]) {
+                        let [contract_start, contract_end] = get_location(sol_file, child);
+                        let [func_start, func_end] = get_location(sol_file, child["subNodes"][j]);
+                        let [body_start, body_end] = get_location(sol_file, child["subNodes"][j]["body"]);
+                        const body = sol_file.slice(body_start + 1, body_end - 1);
+                        const contract_masked = sol_file.slice(contract_start, body_start + 1) + "<FILL FUNCTION BODY>" + sol_file.slice(body_end, contract_end);
+                        functions.push({
+                            "name": child["subNodes"][j]["name"],
+                            "range": { "start": func_start, "end": func_end },
+                            "body": body,
+                            "contract_masked": contract_masked
+                        });
+                    }
                 }
             }
         }
@@ -183,21 +194,20 @@ export function find_function(sol_file, contract_name) {
 }
 
 export function find_function_has_comment(sol_file, contract_name) {
+    let result = []
     sol_file = sol_file.replace('\r\n', '\n');
     const functions = find_function(sol_file, contract_name);
     const comments = find_comment(sol_file);
-    if (functions && comments) {
+    if (functions.length > 0 && comments.length > 0) {
         for (let i = 0; i < functions.length; i++) {
             let tmp = functions[i]["range"]["start"] - 1;
             let function_comments = [];
             back_search(sol_file, comments, tmp, function_comments);
-            if (function_comments) {
-                for (let j = 0; j < function_comments.length; j++) {
-                    console.log(function_comments[j]);
-                }
+            if (function_comments.length > 0) {
+                const function_requirement = function_comments.reverse().join('\n');
+                result.push([functions[i]["name"], functions[i]["contract_masked"], functions[i]["body"], function_requirement]);
             }
         }
-    } else {
-        return null;
-    }
+    } 
+    return result;
 }
