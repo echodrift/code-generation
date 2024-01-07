@@ -178,7 +178,7 @@ export function find_function(sol_file, contract_name) {
                         let [func_start, func_end] = get_location(sol_file, child["subNodes"][j]);
                         let [body_start, body_end] = get_location(sol_file, child["subNodes"][j]["body"]);
                         const body = sol_file.slice(body_start + 1, body_end - 1);
-                        const contract_masked = sol_file.slice(contract_start, body_start + 1) + "<FILL FUNCTION BODY>" + sol_file.slice(body_end, contract_end);
+                        const contract_masked = sol_file.slice(contract_start, body_start + 1) + "<FILL_FUNCTION_BODY>" + sol_file.slice(body_end, contract_end);
                         functions.push({
                             "name": child["subNodes"][j]["name"],
                             "range": { "start": func_start, "end": func_end },

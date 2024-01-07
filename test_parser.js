@@ -88,11 +88,11 @@ async function test_find_function_has_comment(sol_file, contract_file) {
             );
         }   
     }
-    const chunks = Math.floor(data.length / 500);
+    const chunks = Math.floor(data.length / 400);
     for (let i = 0; i < chunks; i++) {
-        write_csv(data.slice(i * 500, (i + 1) * 500), `./out/data${i}.csv`, ["File address", "Contract name", "Function name", "Contract masked", "Function body", "Function requirement"]);
+        write_csv(data.slice(i * 400, (i + 1) * 400), `./out/data${i}.csv`, ["File address", "Contract name", "Function name", "Contract masked", "Function body", "Function requirement"]);
     }
-    write_csv(data.slice(chunks * 500), `./out/data${chunks}.csv`, ["File address", "Contract name", "Function name", "Contract masked", "Function body", "Function requirement"]);    
+    write_csv(data.slice(chunks * 400), `./out/data${chunks}.csv`, ["File address", "Contract name", "Function name", "Contract masked", "Function body", "Function requirement"]);    
 }
 
 // test_extract_contract("./data/solfile/valid_sol_file.csv", "./out/contracts.csv");

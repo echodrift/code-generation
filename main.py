@@ -79,7 +79,15 @@ if __name__ == "__main__":
     
     # with open("contract.sol", "w") as f:
     #     f.write(contracts.loc[0, "contract_code"]);
-    valid_sol_file = pd.read_csv("./data/solfile/valid_sol_file.csv")
-    with open("error.sol", "w") as f:
-        f.write(valid_sol_file[valid_sol_file["contract_address"]=="0x84dabbb8999f508ce1cbb7057d260c74c6c9815c"].iloc[0, 2])
-    # print(valid_sol_file[valid_sol_file["contract_address"]=="0x84dabbb8999f508ce1cbb7057d260c74c6c9815c"])
+    # valid_sol_file = pd.read_csv("./data/solfile/valid_sol_file.csv")
+    # with open("error.sol", "w") as f:
+    #     f.write(valid_sol_file[valid_sol_file["contract_address"]=="0x84dabbb8999f508ce1cbb7057d260c74c6c9815c"].iloc[0, 2])
+    # # print(valid_sol_file[valid_sol_file["contract_address"]=="0x84dabbb8999f508ce1cbb7057d260c74c6c9815c"])
+    
+    data = []
+    for i in range(135):
+        if i == 26:
+            data.append(pd.read_csv(f"./out/data{i}.csv",sep=',', usecols=["File address", "Contract name", "Function name", "Contract masked", "Function body", "Function requirement"]))
+    
+    # data = pd.concat(data, axis=0)
+    # data.to_parquet("./out/all_data.parquet", engine="fastparquet")
