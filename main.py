@@ -74,20 +74,9 @@ def mask_function(contracts):
 
 
 if __name__ == "__main__":
-    # contracts = pd.read_csv("./out/contracts.csv")
-    # print(contracts.head())
-    
-    # with open("contract.sol", "w") as f:
-    #     f.write(contracts.loc[0, "contract_code"]);
-    # valid_sol_file = pd.read_csv("./data/solfile/valid_sol_file.csv")
-    # with open("error.sol", "w") as f:
-    #     f.write(valid_sol_file[valid_sol_file["contract_address"]=="0x84dabbb8999f508ce1cbb7057d260c74c6c9815c"].iloc[0, 2])
-    # # print(valid_sol_file[valid_sol_file["contract_address"]=="0x84dabbb8999f508ce1cbb7057d260c74c6c9815c"])
-    
     data = []
-    for i in range(135):
-        if i == 26:
-            data.append(pd.read_csv(f"./out/data{i}.csv",sep=',', usecols=["File address", "Contract name", "Function name", "Contract masked", "Function body", "Function requirement"]))
+    for i in range(150):
+        data.append(pd.read_csv(f"./out/data{i}.csv"))
     
-    # data = pd.concat(data, axis=0)
-    # data.to_parquet("./out/all_data.parquet", engine="fastparquet")
+    all_data = pd.concat(data, axis=0).reset_index()
+    all_data.to_parquet("all_data_train.parquet", engine="fastparquet")

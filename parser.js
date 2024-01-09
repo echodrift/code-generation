@@ -1,7 +1,8 @@
 import parser from "@solidity-parser/parser";
 import fs from "fs";
 import csv from "csv-parser";
-import { stringify } from "csv-stringify";
+import { stringify } from "csv-stringify/sync";
+import fsPromises from "fs/promises";
 
 
 function get_location(sol_file, element) {
@@ -50,45 +51,41 @@ export function read_csv(file_path) {
     });
 }
 
-export function write_csv(data, file_path, columns) {
-    stringify(data, { header: true, columns: columns }, (err, output) => {
-        if (err) throw err;
-        fs.writeFileSync(file_path, output, (error) => {
-            if (err) throw err;
-            console.log("Saved");
-        });
-    });
+export async function write_csv(data, file_path, columns) {
+    console.log("Here");
+    const output = stringify(data, { header: true, columns: columns });
+    console.log(output.length)
+    await fsPromises.writeFile(file_path, output);
 }
 
-export function extract_contract(sol_files) {
-    var contracts = []
-    for (let i = 0; i < sol_files.length; i++) {
-        console.log(i);
-        console.log(contracts.length)
-        try {
-            const source = sol_files[i]["source_code"].replace('\r\n', '\n');
-            const ast = parser.parse(source, { loc: true });
-            for (let j = 0; j < ast["children"].length; j++) {
-                if (ast["children"][j]["type"] == "ContractDefinition" &&
-                    ast["children"][j]["kind"] == "contract") {
-                    const [start_idx, end_idx] = get_location(source, ast["children"][j]);
-                    contracts.push([
-                        sol_files[i]["contract_address"],
-                        ast["children"][j]["name"],
-                        source.slice(start_idx, end_idx)
-                    ]);
-                }
-            }
-        } catch (e) {
-            fs.appendFileSync("js_error_log.txt",
-                `------------------------------------------------------------------------\n${i}\t${e.errors}\n`,
-                function (err) {
-                    if (err) throw err;
-                });
-        }
-    }
-    return contracts
-}
+// export function extract_contract(sol_files) {
+//     var contracts = []
+//     for (let i = 0; i < sol_files.length; i++) {
+//         console.log(i);
+//         console.log(contracts.length)
+//         try {
+//             const source = sol_files[i]["source_code"].replace('\r\n', '\n');
+//             const ast = parser.parse(source, { loc: true });
+//             for (let j = 0; j < ast["children"].length; j++) {
+//                 if (ast["children"][j]["type"] == "ContractDefinition" &&
+//                     ast["children"][j]["kind"] == "contract") {
+//                     const [start_idx, end_idx] = get_location(source, ast["children"][j]);
+//                     contracts.push([
+//                         sol_files[i]["contract_address"],
+//                         ast["children"][j]["name"]
+//                     ]);
+//                 }
+//             }
+//         } catch (e) {
+//             fs.appendFileSync("js_error_log.txt",
+//                 `------------------------------------------------------------------------\n${i}\t${e.errors}\n`,
+//                 function (err) {
+//                     if (err) throw err;
+//                 });
+//         }
+//     }
+//     return contracts
+// }
 
 export function find_comment(sol_file) {
     sol_file = sol_file.replace('\r\n', '\n');
@@ -162,14 +159,13 @@ export function find_comment(sol_file) {
     return extract_content(sol_file, comments);
 }
 
-export function find_function(sol_file, contract_name) {
+export function find_function(sol_file) {
     sol_file = sol_file.replace('\r\n', '\n');
     let functions = [];
     const sourceUnit = parser.parse(sol_file, { loc: true });
     for (let i = 0; i < sourceUnit["children"].length; i++) {
         if (sourceUnit["children"][i]["type"] == "ContractDefinition" &&
-            sourceUnit["children"][i]["kind"] == "contract" &&
-            sourceUnit["children"][i]["name"] == contract_name) {
+            sourceUnit["children"][i]["kind"] == "contract") { // && sourceUnit["children"][i]["name"] == contract_name
             let child = sourceUnit["children"][i];
             for (let j = 0; j < child["subNodes"].length; j++) {
                 if (child["subNodes"][j]["type"] == "FunctionDefinition") {
@@ -178,9 +174,10 @@ export function find_function(sol_file, contract_name) {
                         let [func_start, func_end] = get_location(sol_file, child["subNodes"][j]);
                         let [body_start, body_end] = get_location(sol_file, child["subNodes"][j]["body"]);
                         const body = sol_file.slice(body_start + 1, body_end - 1);
-                        const contract_masked = sol_file.slice(contract_start, body_start + 1) + "<FILL_FUNCTION_BODY>" + sol_file.slice(body_end, contract_end);
+                        const contract_masked = sol_file.slice(contract_start, body_start + 1) + "<FILL_FUNCTION_BODY>" + sol_file.slice(body_end - 1, contract_end);
                         functions.push({
-                            "name": child["subNodes"][j]["name"],
+                            "contract_name": child["name"],
+                            "function_name": child["subNodes"][j]["name"],
                             "range": { "start": func_start, "end": func_end },
                             "body": body,
                             "contract_masked": contract_masked
@@ -193,10 +190,10 @@ export function find_function(sol_file, contract_name) {
     return functions
 }
 
-export function find_function_has_comment(sol_file, contract_name) {
+export function find_function_has_comment(sol_file) {
     let result = []
     sol_file = sol_file.replace('\r\n', '\n');
-    const functions = find_function(sol_file, contract_name);
+    const functions = find_function(sol_file);
     const comments = find_comment(sol_file);
     if (functions.length > 0 && comments.length > 0) {
         for (let i = 0; i < functions.length; i++) {
@@ -205,7 +202,7 @@ export function find_function_has_comment(sol_file, contract_name) {
             back_search(sol_file, comments, tmp, function_comments);
             if (function_comments.length > 0) {
                 const function_requirement = function_comments.reverse().join('\n');
-                result.push([functions[i]["name"], functions[i]["contract_masked"], functions[i]["body"], function_requirement]);
+                result.push([functions[i]["contract_name"], functions[i]["function_name"], functions[i]["contract_masked"], functions[i]["body"], function_requirement]);
             }
         }
     } 
