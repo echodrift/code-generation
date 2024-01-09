@@ -77,7 +77,7 @@ async function test_find_function_has_comment(sol_file) {
                 );
             }
         }
-        await write_csv(data, `./out/data${i}.csv`, ["file_address", "contract_name", "contract_index", "function_name", "contract_masked", "function_body", "function_requirement"]);
+        await write_csv(data, `./out/data${i}.csv`, ["file_address", "contract_name", "function_name", "contract_masked", "function_body", "function_requirement"]);
     }
    
     let data = []
@@ -107,9 +107,9 @@ async function test_find_function_has_comment(sol_file) {
             );
         }
     }
-    write_csv(data, `./out/data${chunks}.csv`, ["file_address", "contract_name", "contract_index", "function_name", "contract_masked", "function_body", "function_requirement"]);
+    write_csv(data, `./out/data${chunks}.csv`, ["file_address", "contract_name", "function_name", "contract_masked", "function_body", "function_requirement"]);
 }
 
 
-test_find_function_has_comment("./data/solfile/train_sol_file.csv", "./out/contracts.csv");
+test_find_function_has_comment("./data/solfile/valid_sol_file.csv");
 

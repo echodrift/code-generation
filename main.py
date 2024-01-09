@@ -73,10 +73,29 @@ def mask_function(contracts):
     pass
 
 
+def fix_data():
+    data = pd.read_parquet("./out/all_data_train.parquet", engine="fastparquet")
+    data = data.rename(columns={"contract_index": "function_name", "function_name": "contract_masked", 
+                              "contract_masked": "function_body", "function_body": "function_requirement",
+                              "function_requirement": "delete"})
+    data = data.drop(columns=["delete"], axis=1)
+
+    data.to_parquet("./out/all_data_train.parquet", engine="fastparquet")
+
+
 if __name__ == "__main__":
-    data = []
-    for i in range(150):
-        data.append(pd.read_csv(f"./out/data{i}.csv"))
+    # data = []
+    # for i in range(150):
+    #     data.append(pd.read_csv(f"./out/data{i}.csv"))
     
-    all_data = pd.concat(data, axis=0).reset_index()
-    all_data.to_parquet("all_data_train.parquet", engine="fastparquet")
+    # all_data = pd.concat(data, axis=0).reset_index()
+    # all_data.to_parquet("all_data_train.parquet", engine="fastparquet")
+
+    # data = pd.read_parquet("./out/all_data_train.parquet", engine="fastparquet")
+    # print(data.info())
+
+    data = pd.read_csv("./data/solfile/valid_sol_file.csv")
+    
+    print(data[data["contract_address"] == "0x37fcf9870ea0a5b2dea3f84b8b041ab49d7410b4"])
+    with open("demo.sol", "w") as f:
+        f.write(data[data["contract_address"] == "0x37fcf9870ea0a5b2dea3f84b8b041ab49d7410b4"].loc[876, "source_code"])
