@@ -111,5 +111,5 @@ async function test_find_function_has_comment(sol_file) {
 }
 
 
-test_find_function_has_comment("./data/solfile/valid_sol_file.csv");
+test_find_function_has_comment("./data/solfile/test_sol_file.csv");
 
