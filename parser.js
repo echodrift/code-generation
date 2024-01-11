@@ -202,9 +202,10 @@ export function find_function_has_comment(sol_file) {
             back_search(sol_file, comments, tmp, function_comments);
             if (function_comments.length > 0) {
                 const function_requirement = function_comments.reverse().join('\n');
-                result.push([functions[i]["contract_name"], functions[i]["function_name"], functions[i]["contract_masked"], functions[i]["body"], function_requirement]);
+                result.push([functions[i]["contract_name"], functions[i]["function_name"],
+                functions[i]["contract_masked"], functions[i]["body"], function_requirement]);
             }
         }
-    } 
+    }
     return result;
 }

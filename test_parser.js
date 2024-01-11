@@ -15,13 +15,6 @@ function test_parser(file) {
     }
 }
 
-// async function test_extract_contract(input_file, output_file) {
-//     const contracts = await read_csv(input_file).then((sol_files) => {
-//         return extract_contract(sol_files);
-//     });
-//     write_csv(contracts, output_file, ["address", "contract_name"]);
-// }
-
 function test_find_comment(file) {
     const sol_file = fs.readFileSync(file, "utf-8");
     const comments = find_comment(sol_file);
