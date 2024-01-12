@@ -58,35 +58,6 @@ export async function write_csv(data, file_path, columns) {
     await fsPromises.writeFile(file_path, output);
 }
 
-// export function extract_contract(sol_files) {
-//     var contracts = []
-//     for (let i = 0; i < sol_files.length; i++) {
-//         console.log(i);
-//         console.log(contracts.length)
-//         try {
-//             const source = sol_files[i]["source_code"].replace('\r\n', '\n');
-//             const ast = parser.parse(source, { loc: true });
-//             for (let j = 0; j < ast["children"].length; j++) {
-//                 if (ast["children"][j]["type"] == "ContractDefinition" &&
-//                     ast["children"][j]["kind"] == "contract") {
-//                     const [start_idx, end_idx] = get_location(source, ast["children"][j]);
-//                     contracts.push([
-//                         sol_files[i]["contract_address"],
-//                         ast["children"][j]["name"]
-//                     ]);
-//                 }
-//             }
-//         } catch (e) {
-//             fs.appendFileSync("js_error_log.txt",
-//                 `------------------------------------------------------------------------\n${i}\t${e.errors}\n`,
-//                 function (err) {
-//                     if (err) throw err;
-//                 });
-//         }
-//     }
-//     return contracts
-// }
-
 export function find_comment(sol_file) {
     sol_file = sol_file.replace('\r\n', '\n');
     let state = "ETC";
