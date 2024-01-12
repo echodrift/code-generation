@@ -4,7 +4,6 @@ from typing import List
 
 import pandas as pd
 from datasets import load_dataset
-from solidity_parser import parser
 
 from config import BASE_DIR
 from func.dataset import read_ccgra_dataset, read_smartdoc_dataset
@@ -51,5 +50,5 @@ def make_solidity_file_data():
 
 
 if __name__ == "__main__":
-    # make_solidity_file_data()
-    pass
+    make_solidity_file_data()
+    

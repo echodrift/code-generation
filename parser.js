@@ -62,7 +62,7 @@ async function test_find_function_has_comment(sol_file, output_file) {
         func_requirement: parquetjs.ParquetFieldBuilder.createStringField()
     })
     var writer = await parquetjs.ParquetWriter.openFile(schema, output_file)
-    for (let i = 0; i < 500; i++) {
+    for (let i = 0; i < sol_files.length; i++) {
         try {
             console.log(i);
             const result = find_function_has_comment(sol_files[i]["source_code"]);
