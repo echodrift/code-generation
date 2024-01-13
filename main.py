@@ -25,30 +25,57 @@ def make_solidity_file_data():
     valid_data = pd.DataFrame(valid_data)
     # print(valid_data.info())
 
-    train_data = train_data[["contract_name", "contract_address", "source_code"]]
-    test_data = test_data[["contract_name", "contract_address", "source_code"]]
-    valid_data = valid_data[["contract_name", "contract_address", "source_code"]]
+    train_data = train_data[
+        [
+            "contract_name",
+            "contract_address",
+            "source_code",
+            "abi",
+            "compiler_version",
+            "library",
+            "language",
+        ]
+    ]
+    test_data = test_data[
+        [
+            "contract_name",
+            "contract_address",
+            "source_code",
+            "abi",
+            "compiler_version",
+            "library",
+            "language",
+        ]
+    ]
+    valid_data = valid_data[
+        [
+            "contract_name",
+            "contract_address",
+            "source_code",
+            "abi",
+            "compiler_version",
+            "library",
+            "language",
+        ]
+    ]
 
     train_data = pd.concat([train_data, valid_data], axis=0).reset_index(drop=True)
     train_data = train_data.rename(
         columns={
             "contract_name": "file_name",
             "contract_address": "file_address",
-            "source_code": "source_code",
         }
     )
     test_data = test_data.rename(
         columns={
             "contract_name": "file_name",
             "contract_address": "file_address",
-            "source_code": "source_code",
         }
     )
 
-    train_data.to_parquet("./data/solfile/train_data.parquet", engine="fastparquet")
-    test_data.to_parquet("./data/solfile/test_data.parquet", engine="fastparquet")
+    train_data.to_parquet("./data/solfile/train_file.parquet", engine="fastparquet")
+    test_data.to_parquet("./data/solfile/test_file.parquet", engine="fastparquet")
 
 
 if __name__ == "__main__":
     make_solidity_file_data()
-    

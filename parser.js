@@ -70,7 +70,7 @@ async function test_find_function_has_comment(sol_file, output_file) {
                 for (let j = 0; j < result.length; j++) {
                     await writer.appendRow({
                         "file_name": sol_files[i]["file_name"],
-                        "file_address": sol_files[i]["address"],
+                        "file_address": sol_files[i]["file_address"],
                         "contract_name": result[j][0],
                         "func_name": result[j][1],
                         "masked_contract": result[j][2],

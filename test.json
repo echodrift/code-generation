@@ -4,17 +4,12 @@
         {
             "type": "PragmaDirective",
             "name": "solidity",
-            "value": "^0.8.9",
-            "loc": {
-                "start": {
-                    "line": 2,
-                    "column": 0
-                },
-                "end": {
-                    "line": 2,
-                    "column": 22
-                }
-            }
+            "value": ">=0.4.22<0.8.0"
+        },
+        {
+            "type": "PragmaDirective",
+            "name": "abicoder",
+            "value": "v2"
         },
         {
             "type": "StructDefinition",
@@ -24,71 +19,21 @@
                     "type": "VariableDeclaration",
                     "typeName": {
                         "type": "ElementaryTypeName",
-                        "name": "uint",
-                        "loc": {
-                            "start": {
-                                "line": 5,
-                                "column": 4
-                            },
-                            "end": {
-                                "line": 5,
-                                "column": 4
-                            }
-                        }
+                        "name": "uint"
                     },
                     "name": "testInt",
-                    "storageLocation": null,
-                    "loc": {
-                        "start": {
-                            "line": 5,
-                            "column": 4
-                        },
-                        "end": {
-                            "line": 5,
-                            "column": 9
-                        }
-                    }
+                    "storageLocation": null
                 },
                 {
                     "type": "VariableDeclaration",
                     "typeName": {
                         "type": "ElementaryTypeName",
-                        "name": "string",
-                        "loc": {
-                            "start": {
-                                "line": 6,
-                                "column": 4
-                            },
-                            "end": {
-                                "line": 6,
-                                "column": 4
-                            }
-                        }
+                        "name": "string"
                     },
                     "name": "testString",
-                    "storageLocation": null,
-                    "loc": {
-                        "start": {
-                            "line": 6,
-                            "column": 4
-                        },
-                        "end": {
-                            "line": 6,
-                            "column": 11
-                        }
-                    }
+                    "storageLocation": null
                 }
-            ],
-            "loc": {
-                "start": {
-                    "line": 4,
-                    "column": 0
-                },
-                "end": {
-                    "line": 7,
-                    "column": 0
-                }
-            }
+            ]
         },
         {
             "type": "ContractDefinition",
@@ -102,74 +47,24 @@
                             "type": "VariableDeclaration",
                             "typeName": {
                                 "type": "ElementaryTypeName",
-                                "name": "uint",
-                                "loc": {
-                                    "start": {
-                                        "line": 10,
-                                        "column": 4
-                                    },
-                                    "end": {
-                                        "line": 10,
-                                        "column": 4
-                                    }
-                                }
+                                "name": "uint"
                             },
                             "name": "x",
                             "expression": {
                                 "type": "NumberLiteral",
                                 "number": "0",
-                                "subdenomination": null,
-                                "loc": {
-                                    "start": {
-                                        "line": 10,
-                                        "column": 13
-                                    },
-                                    "end": {
-                                        "line": 10,
-                                        "column": 13
-                                    }
-                                }
+                                "subdenomination": null
                             },
                             "visibility": "default",
                             "isStateVar": true,
                             "isDeclaredConst": false,
-                            "isIndexed": false,
-                            "loc": {
-                                "start": {
-                                    "line": 10,
-                                    "column": 4
-                                },
-                                "end": {
-                                    "line": 10,
-                                    "column": 14
-                                }
-                            }
+                            "isIndexed": false
                         }
                     ],
                     "initialValue": {
                         "type": "NumberLiteral",
                         "number": "0",
-                        "subdenomination": null,
-                        "loc": {
-                            "start": {
-                                "line": 10,
-                                "column": 13
-                            },
-                            "end": {
-                                "line": 10,
-                                "column": 13
-                            }
-                        }
-                    },
-                    "loc": {
-                        "start": {
-                            "line": 10,
-                            "column": 4
-                        },
-                        "end": {
-                            "line": 10,
-                            "column": 14
-                        }
+                        "subdenomination": null
                     }
                 },
                 {
@@ -179,72 +74,22 @@
                             "type": "VariableDeclaration",
                             "typeName": {
                                 "type": "ElementaryTypeName",
-                                "name": "uint",
-                                "loc": {
-                                    "start": {
-                                        "line": 11,
-                                        "column": 4
-                                    },
-                                    "end": {
-                                        "line": 11,
-                                        "column": 4
-                                    }
-                                }
+                                "name": "uint"
                             },
                             "name": "num",
                             "expression": {
                                 "type": "Identifier",
-                                "name": "x",
-                                "loc": {
-                                    "start": {
-                                        "line": 11,
-                                        "column": 15
-                                    },
-                                    "end": {
-                                        "line": 11,
-                                        "column": 15
-                                    }
-                                }
+                                "name": "x"
                             },
                             "visibility": "default",
                             "isStateVar": true,
                             "isDeclaredConst": false,
-                            "isIndexed": false,
-                            "loc": {
-                                "start": {
-                                    "line": 11,
-                                    "column": 4
-                                },
-                                "end": {
-                                    "line": 11,
-                                    "column": 16
-                                }
-                            }
+                            "isIndexed": false
                         }
                     ],
                     "initialValue": {
                         "type": "Identifier",
-                        "name": "x",
-                        "loc": {
-                            "start": {
-                                "line": 11,
-                                "column": 15
-                            },
-                            "end": {
-                                "line": 11,
-                                "column": 15
-                            }
-                        }
-                    },
-                    "loc": {
-                        "start": {
-                            "line": 11,
-                            "column": 4
-                        },
-                        "end": {
-                            "line": 11,
-                            "column": 16
-                        }
+                        "name": "x"
                     }
                 },
                 {
@@ -254,47 +99,17 @@
                             "type": "VariableDeclaration",
                             "typeName": {
                                 "type": "UserDefinedTypeName",
-                                "namePath": "testType",
-                                "loc": {
-                                    "start": {
-                                        "line": 12,
-                                        "column": 4
-                                    },
-                                    "end": {
-                                        "line": 12,
-                                        "column": 4
-                                    }
-                                }
+                                "namePath": "testType"
                             },
                             "name": "test",
                             "expression": null,
                             "visibility": "default",
                             "isStateVar": true,
                             "isDeclaredConst": false,
-                            "isIndexed": false,
-                            "loc": {
-                                "start": {
-                                    "line": 12,
-                                    "column": 4
-                                },
-                                "end": {
-                                    "line": 12,
-                                    "column": 17
-                                }
-                            }
+                            "isIndexed": false
                         }
                     ],
-                    "initialValue": null,
-                    "loc": {
-                        "start": {
-                            "line": 12,
-                            "column": 4
-                        },
-                        "end": {
-                            "line": 12,
-                            "column": 17
-                        }
-                    }
+                    "initialValue": null
                 },
                 {
                     "type": "StateVariableDeclaration",
@@ -305,41 +120,11 @@
                                 "type": "Mapping",
                                 "keyType": {
                                     "type": "ElementaryTypeName",
-                                    "name": "uint",
-                                    "loc": {
-                                        "start": {
-                                            "line": 13,
-                                            "column": 13
-                                        },
-                                        "end": {
-                                            "line": 13,
-                                            "column": 13
-                                        }
-                                    }
+                                    "name": "uint"
                                 },
                                 "valueType": {
                                     "type": "ElementaryTypeName",
-                                    "name": "string",
-                                    "loc": {
-                                        "start": {
-                                            "line": 13,
-                                            "column": 21
-                                        },
-                                        "end": {
-                                            "line": 13,
-                                            "column": 21
-                                        }
-                                    }
-                                },
-                                "loc": {
-                                    "start": {
-                                        "line": 13,
-                                        "column": 4
-                                    },
-                                    "end": {
-                                        "line": 13,
-                                        "column": 27
-                                    }
+                                    "name": "string"
                                 }
                             },
                             "name": "map",
@@ -347,30 +132,10 @@
                             "visibility": "default",
                             "isStateVar": true,
                             "isDeclaredConst": false,
-                            "isIndexed": false,
-                            "loc": {
-                                "start": {
-                                    "line": 13,
-                                    "column": 4
-                                },
-                                "end": {
-                                    "line": 13,
-                                    "column": 32
-                                }
-                            }
+                            "isIndexed": false
                         }
                     ],
-                    "initialValue": null,
-                    "loc": {
-                        "start": {
-                            "line": 13,
-                            "column": 4
-                        },
-                        "end": {
-                            "line": 13,
-                            "column": 32
-                        }
-                    }
+                    "initialValue": null
                 },
                 {
                     "type": "FunctionDefinition",
@@ -382,75 +147,25 @@
                                 "type": "Parameter",
                                 "typeName": {
                                     "type": "UserDefinedTypeName",
-                                    "namePath": "testType",
-                                    "loc": {
-                                        "start": {
-                                            "line": 16,
-                                            "column": 23
-                                        },
-                                        "end": {
-                                            "line": 16,
-                                            "column": 23
-                                        }
-                                    }
+                                    "namePath": "testType"
                                 },
                                 "name": "x_",
                                 "storageLocation": "memory",
                                 "isStateVar": false,
-                                "isIndexed": false,
-                                "loc": {
-                                    "start": {
-                                        "line": 16,
-                                        "column": 23
-                                    },
-                                    "end": {
-                                        "line": 16,
-                                        "column": 39
-                                    }
-                                }
+                                "isIndexed": false
                             },
                             {
                                 "type": "Parameter",
                                 "typeName": {
                                     "type": "ElementaryTypeName",
-                                    "name": "uint",
-                                    "loc": {
-                                        "start": {
-                                            "line": 16,
-                                            "column": 43
-                                        },
-                                        "end": {
-                                            "line": 16,
-                                            "column": 43
-                                        }
-                                    }
+                                    "name": "uint"
                                 },
                                 "name": "y",
                                 "storageLocation": null,
                                 "isStateVar": false,
-                                "isIndexed": false,
-                                "loc": {
-                                    "start": {
-                                        "line": 16,
-                                        "column": 43
-                                    },
-                                    "end": {
-                                        "line": 16,
-                                        "column": 48
-                                    }
-                                }
+                                "isIndexed": false
                             }
-                        ],
-                        "loc": {
-                            "start": {
-                                "line": 16,
-                                "column": 22
-                            },
-                            "end": {
-                                "line": 16,
-                                "column": 49
-                            }
-                        }
+                        ]
                     },
                     "returnParameters": [],
                     "body": {
@@ -465,64 +180,14 @@
                                         "type": "MemberAccess",
                                         "expression": {
                                             "type": "Identifier",
-                                            "name": "x_",
-                                            "loc": {
-                                                "start": {
-                                                    "line": 17,
-                                                    "column": 8
-                                                },
-                                                "end": {
-                                                    "line": 17,
-                                                    "column": 8
-                                                }
-                                            }
+                                            "name": "x_"
                                         },
-                                        "memberName": "testInt",
-                                        "loc": {
-                                            "start": {
-                                                "line": 17,
-                                                "column": 8
-                                            },
-                                            "end": {
-                                                "line": 17,
-                                                "column": 11
-                                            }
-                                        }
+                                        "memberName": "testInt"
                                     },
                                     "right": {
                                         "type": "NumberLiteral",
                                         "number": "1",
-                                        "subdenomination": null,
-                                        "loc": {
-                                            "start": {
-                                                "line": 17,
-                                                "column": 21
-                                            },
-                                            "end": {
-                                                "line": 17,
-                                                "column": 21
-                                            }
-                                        }
-                                    },
-                                    "loc": {
-                                        "start": {
-                                            "line": 17,
-                                            "column": 8
-                                        },
-                                        "end": {
-                                            "line": 17,
-                                            "column": 21
-                                        }
-                                    }
-                                },
-                                "loc": {
-                                    "start": {
-                                        "line": 17,
-                                        "column": 8
-                                    },
-                                    "end": {
-                                        "line": 17,
-                                        "column": 22
+                                        "subdenomination": null
                                     }
                                 }
                             },
@@ -533,106 +198,26 @@
                                     "operator": "=",
                                     "left": {
                                         "type": "Identifier",
-                                        "name": "y",
-                                        "loc": {
-                                            "start": {
-                                                "line": 18,
-                                                "column": 8
-                                            },
-                                            "end": {
-                                                "line": 18,
-                                                "column": 8
-                                            }
-                                        }
+                                        "name": "y"
                                     },
                                     "right": {
                                         "type": "NumberLiteral",
                                         "number": "0",
-                                        "subdenomination": null,
-                                        "loc": {
-                                            "start": {
-                                                "line": 18,
-                                                "column": 12
-                                            },
-                                            "end": {
-                                                "line": 18,
-                                                "column": 12
-                                            }
-                                        }
-                                    },
-                                    "loc": {
-                                        "start": {
-                                            "line": 18,
-                                            "column": 8
-                                        },
-                                        "end": {
-                                            "line": 18,
-                                            "column": 12
-                                        }
-                                    }
-                                },
-                                "loc": {
-                                    "start": {
-                                        "line": 18,
-                                        "column": 8
-                                    },
-                                    "end": {
-                                        "line": 18,
-                                        "column": 13
+                                        "subdenomination": null
                                     }
                                 }
                             }
-                        ],
-                        "loc": {
-                            "start": {
-                                "line": 16,
-                                "column": 63
-                            },
-                            "end": {
-                                "line": 19,
-                                "column": 4
-                            }
-                        }
+                        ]
                     },
                     "visibility": "public",
                     "modifiers": [],
                     "isConstructor": false,
                     "isFallback": false,
                     "isReceive": false,
-                    "stateMutability": "pure",
-                    "loc": {
-                        "start": {
-                            "line": 16,
-                            "column": 4
-                        },
-                        "end": {
-                            "line": 19,
-                            "column": 4
-                        }
-                    }
+                    "stateMutability": "pure"
                 }
             ],
-            "kind": "contract",
-            "loc": {
-                "start": {
-                    "line": 9,
-                    "column": 0
-                },
-                "end": {
-                    "line": 20,
-                    "column": 0
-                }
-            }
+            "kind": "contract"
         }
-    ],
-    "loc": {
-        "start": {
-            "line": 2,
-            "column": 0
-        },
-        "end": {
-            "line": 20,
-            "column": 0
-        }
-    }
+    ]
 }
