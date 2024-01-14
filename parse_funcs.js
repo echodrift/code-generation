@@ -1,7 +1,4 @@
 import parser from "@solidity-parser/parser";
-import fs from "fs";
-import fsPromises from "fs/promises";
-
 
 function get_location(sol_file, element) {
     const start_line = element["loc"]["start"]["line"];
@@ -37,24 +34,24 @@ function back_search(sol_file, comment_list, start_point, result) {
     }
 }
 
-export function read_csv(file_path) {
-    return new Promise((resolve, reject) => {
-        let result = []
-        fs.createReadStream(file_path)
-            .pipe(csv())
-            .on('data', (data) => result.push(data))
-            .on('end', () => {
-                resolve(result)
-            });
-    });
-}
+// export function read_csv(file_path) {
+//     return new Promise((resolve, reject) => {
+//         let result = []
+//         fs.createReadStream(file_path)
+//             .pipe(csv())
+//             .on('data', (data) => result.push(data))
+//             .on('end', () => {
+//                 resolve(result)
+//             });
+//     });
+// }
 
-export async function write_csv(data, file_path, columns) {
-    console.log("Here");
-    const output = stringify(data, { header: true, columns: columns });
-    console.log(output.length)
-    await fsPromises.writeFile(file_path, output);
-}
+// export async function write_csv(data, file_path, columns) {
+//     console.log("Here");
+//     const output = stringify(data, { header: true, columns: columns });
+//     console.log(output.length)
+//     await fsPromises.writeFile(file_path, output);
+// }
 
 export function find_comment(sol_file) {
     sol_file = sol_file.replace('\r\n', '\n');

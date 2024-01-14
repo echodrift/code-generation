@@ -12,20 +12,20 @@ from func.sol_parse import SolidityParser
 
 
 def make_solidity_file_data():
-    train_data = load_dataset("andstor/smart_contracts", split="train")
-    test_data = load_dataset("andstor/smart_contracts", split="test")
-    valid_data = load_dataset("andstor/smart_contracts", split="validation")
+    train_file = load_dataset("andstor/smart_contracts", split="train")
+    test_file = load_dataset("andstor/smart_contracts", split="test")
+    valid_file = load_dataset("andstor/smart_contracts", split="validation")
 
-    train_data = pd.DataFrame(train_data)
-    # print(train_data.info())
+    train_file = pd.DataFrame(train_file)
+    # print(train_file.info())
 
-    test_data = pd.DataFrame(test_data)
-    # print(test_data.info())
+    test_file = pd.DataFrame(test_file)
+    # print(test_file.info())
 
-    valid_data = pd.DataFrame(valid_data)
-    # print(valid_data.info())
+    valid_file = pd.DataFrame(valid_file)
+    # print(valid_file.info())
 
-    train_data = train_data[
+    train_file = train_file[
         [
             "contract_name",
             "contract_address",
@@ -36,7 +36,7 @@ def make_solidity_file_data():
             "language",
         ]
     ]
-    test_data = test_data[
+    test_file = test_file[
         [
             "contract_name",
             "contract_address",
@@ -47,7 +47,7 @@ def make_solidity_file_data():
             "language",
         ]
     ]
-    valid_data = valid_data[
+    valid_file = valid_file[
         [
             "contract_name",
             "contract_address",
@@ -59,42 +59,28 @@ def make_solidity_file_data():
         ]
     ]
 
-    train_data = pd.concat([train_data, valid_data], axis=0).reset_index(drop=True)
-    train_data = train_data.rename(
+    train_file = pd.concat([train_file, valid_file], axis=0).reset_index(drop=True)
+    train_file = train_file.rename(
         columns={
             "contract_name": "file_name",
             "contract_address": "file_address",
         }
     )
-    test_data = test_data.rename(
+    test_file = test_file.rename(
         columns={
             "contract_name": "file_name",
             "contract_address": "file_address",
         }
     )
-
-    train_data.to_parquet("./data/solfile/train_file.parquet", engine="fastparquet")
-    test_data.to_parquet("./data/solfile/test_file.parquet", engine="fastparquet")
-
-
-def make_original_data():
-    train_data = load_dataset("andstor/smart_contracts", split="train")
-    test_data = load_dataset("andstor/smart_contracts", split="test")
-    valid_data = load_dataset("andstor/smart_contracts", split="validation")
-
-    train_data = pd.DataFrame(train_data)
-    # print(train_data.info())
-
-    test_data = pd.DataFrame(test_data)
-    # print(test_data.info())
-
-    valid_data = pd.DataFrame(valid_data)
-    # print(valid_data.info())
-    train_data = pd.concat([train_data, valid_data], axis=0).reset_index(drop=True)
-
-    train_data.to_parquet("./data/solfile/ori_train_file.parquet", engine="fastparquet")
-    test_data.to_parquet("./data/solfile/ori_test_file.parquet", engine="fastparquet")
-
+    train_file = train_file[train_file["language"] == "Solidity"]
+    test_file = test_file[test_file["language"] == "Solidity"]
+    train_file.reset_index(drop=True, inplace=True)
+    test_file.reset_index(drop=True, inplace=True)
+    train_file = train_file.drop(columns=["language"])
+    test_file = test_file.drop(columns=["language"])
+    train_file.to_parquet("./data/solfile/train_file.parquet", engine="fastparquet")
+    test_file.to_parquet("./data/solfile/test_file.parquet", engine="fastparquet")
+    
 
 if __name__ == "__main__":
-    make_original_data()
+    make_solidity_file_data()
