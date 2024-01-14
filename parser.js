@@ -92,4 +92,4 @@ async function test_find_function_has_comment(sol_file, output_file) {
 }
 
 
-test_find_function_has_comment("./data/solfile/test_file.parquet", "./data/data/test_data.parquet");
+test_find_function_has_comment("./data/solfile/train_file.parquet", "./data/data/train_data.parquet");
