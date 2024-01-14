@@ -77,5 +77,24 @@ def make_solidity_file_data():
     test_data.to_parquet("./data/solfile/test_file.parquet", engine="fastparquet")
 
 
+def make_original_data():
+    train_data = load_dataset("andstor/smart_contracts", split="train")
+    test_data = load_dataset("andstor/smart_contracts", split="test")
+    valid_data = load_dataset("andstor/smart_contracts", split="validation")
+
+    train_data = pd.DataFrame(train_data)
+    # print(train_data.info())
+
+    test_data = pd.DataFrame(test_data)
+    # print(test_data.info())
+
+    valid_data = pd.DataFrame(valid_data)
+    # print(valid_data.info())
+    train_data = pd.concat([train_data, valid_data], axis=0).reset_index(drop=True)
+
+    train_data.to_parquet("./data/solfile/ori_train_file.parquet", engine="fastparquet")
+    test_data.to_parquet("./data/solfile/ori_test_file.parquet", engine="fastparquet")
+
+
 if __name__ == "__main__":
-    make_solidity_file_data()
+    make_original_data()
