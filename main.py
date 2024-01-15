@@ -81,6 +81,15 @@ def make_solidity_file_data():
     train_file.to_parquet("./data/solfile/train_file.parquet", engine="fastparquet")
     test_file.to_parquet("./data/solfile/test_file.parquet", engine="fastparquet")
     
+def download_data():
+    train_data = load_dataset("lvdthieu/codegen1", split="train")
+    test_data = load_dataset("lvdthieu/codegen1", split="test")
+    print(train_data.info())
+    print("-" * 200)
+    print(test_data.info())
+    train_data.to_parquet("./data/data/train_data.parquet")
+    test_data.to_parquet("./data/data/test_data.parquet")
 
 if __name__ == "__main__":
-    make_solidity_file_data()
+    # make_solidity_file_data()
+    download_data()
