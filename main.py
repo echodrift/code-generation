@@ -84,12 +84,20 @@ def make_solidity_file_data():
 def download_data():
     train_data = load_dataset("lvdthieu/codegen1", split="train")
     test_data = load_dataset("lvdthieu/codegen1", split="test")
+    train_data = pd.DataFrame(train_data)
+    test_data = pd.DataFrame(test_data)
     print(train_data.info())
     print("-" * 200)
     print(test_data.info())
     train_data.to_parquet("./data/data/train_data.parquet")
     test_data.to_parquet("./data/data/test_data.parquet")
 
+def download_file():
+    train_file = load_dataset("lvdthieu/sol_file", split="train")
+    test_file = load_dataset("lvdthieu/sol_file", split="test")
+    train_file.to_parquet("./data/solfile/train_file.parquet")
+    test_file.to_parquet("./data/solfile/test_file.parquet")
+    
 if __name__ == "__main__":
     # make_solidity_file_data()
-    download_data()
+    download_file()

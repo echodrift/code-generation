@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity >=0.4.22 <0.8.0;
-pragma abicoder v2;
+pragma solidity ^0.8.9;
 
 struct testType {
     uint testInt;
@@ -18,5 +17,8 @@ contract Test {
     function something(testType memory x_, uint y) public pure {
         x_.testInt = 1;
         y = 0;
+    }
+    function() {
+        uint y = 0;
     }
 }

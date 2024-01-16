@@ -1,6 +1,6 @@
 import parser from "@solidity-parser/parser";
 
-function get_location(sol_file, element) {
+export function get_location(sol_file, element) {
     const start_line = element["loc"]["start"]["line"];
     const start_col = element["loc"]["start"]["column"];
     const end_line = element["loc"]["end"]["line"];
@@ -33,25 +33,6 @@ function back_search(sol_file, comment_list, start_point, result) {
         }
     }
 }
-
-// export function read_csv(file_path) {
-//     return new Promise((resolve, reject) => {
-//         let result = []
-//         fs.createReadStream(file_path)
-//             .pipe(csv())
-//             .on('data', (data) => result.push(data))
-//             .on('end', () => {
-//                 resolve(result)
-//             });
-//     });
-// }
-
-// export async function write_csv(data, file_path, columns) {
-//     console.log("Here");
-//     const output = stringify(data, { header: true, columns: columns });
-//     console.log(output.length)
-//     await fsPromises.writeFile(file_path, output);
-// }
 
 export function find_comment(sol_file) {
     sol_file = sol_file.replace('\r\n', '\n');
@@ -135,7 +116,7 @@ export function find_function(sol_file) {
             let child = sourceUnit["children"][i];
             for (let j = 0; j < child["subNodes"].length; j++) {
                 if (child["subNodes"][j]["type"] == "FunctionDefinition") {
-                    if (child["subNodes"][j]["body"]) {
+                    if (child["subNodes"][j]["body"] && child["subNodes"][j]) {
                         let [contract_start, contract_end] = get_location(sol_file, child);
                         let [func_start, func_end] = get_location(sol_file, child["subNodes"][j]);
                         let [body_start, body_end] = get_location(sol_file, child["subNodes"][j]["body"]);
