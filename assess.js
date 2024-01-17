@@ -119,7 +119,6 @@ async function make_test_suite(test_file, test_suite) {
                 "source_code_with_deepseek_output": filled_source
             })
         }
-        
     }
     writer.close()
 }

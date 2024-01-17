@@ -96,16 +96,21 @@ def download_data():
 def download_file():
     train_file = load_dataset("lvdthieu/sol_file", split="train")
     test_file = load_dataset("lvdthieu/sol_file", split="test")
-    train_file.to_parquet("./data/solfile/train_file.parquet")
-    test_file.to_parquet("./data/solfile/test_file.parquet")
+    train_file = pd.DataFrame(train_file)
+    test_file = pd.DataFrame(test_file)
+    train_file.to_parquet("./data/solfile/train_file.parquet", engine="fastparquet")
+    test_file.to_parquet("./data/solfile/test_file.parquet", engine="fastparquet")
+    
+def download_test():
+    train = load_dataset("lvdthieu/test-codegen-baseline-v2", split="train")
+    test = load_dataset("lvdthieu/test-codegen-baseline-v2", split="test")
+    train = pd.DataFrame(train)
+    test = pd.DataFrame(test)
+    train.to_parquet("./data/test/train.parquet", engine="fastparquet")
+    test.to_parquet("./data/test/test.parquet", engine="fastparquet")
     
 def compilable(test_source):
     test = pd.read_parquet(test_source, engine="fastparquet")    
-    source_code = None
-    contract_name = None
-    function_name = None
-    fill_content = None
-    filled_source = None
     cnt = 0
     for i in range(len(test)):
         print(i)
@@ -129,5 +134,5 @@ def compilable(test_source):
             print("Error")
             
 if __name__ == "__main__":
-    # make_solidity_file_data()
     download_file()
+    download_test()
