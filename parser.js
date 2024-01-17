@@ -93,11 +93,3 @@ async function test_find_function_has_comment(sol_file, output_file) {
 
 
 // test_find_function_has_comment("./data/solfile/train_file.parquet", "./data/data/train_data.parquet");
-
-const ast = test_parser("test.sol")
-for (let i = 0; i < ast["children"].length; i++) {
-    if (ast["children"][i]["type"] == "ContractDefinition") {
-        console.log(ast["children"][i])
-        break
-    }
-}
