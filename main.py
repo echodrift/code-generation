@@ -4,6 +4,7 @@ from typing import List
 
 import pandas as pd
 from datasets import load_dataset
+from subprocess import run 
 
 from config import BASE_DIR
 from func.dataset import read_ccgra_dataset, read_smartdoc_dataset
@@ -98,6 +99,35 @@ def download_file():
     train_file.to_parquet("./data/solfile/train_file.parquet")
     test_file.to_parquet("./data/solfile/test_file.parquet")
     
+def compilable(test_source):
+    test = pd.read_parquet(test_source, engine="fastparquet")    
+    source_code = None
+    contract_name = None
+    function_name = None
+    fill_content = None
+    filled_source = None
+    cnt = 0
+    for i in range(len(test)):
+        print(i)
+        source_code = test[i]["source_code"]
+        contract_name = test[i]["contract_name"]
+        function_name = test[i]["func_name"]
+        if not function_name:
+            function_name = ""
+        fill_content = test[i]["func_body"]
+        filled_source = fill_contract(source_code, contract_name, function_name, fill_content)
+        try:
+            with open("./hardhat/contracts/sample.sol", "w") as f:
+                f.write(filled_source)
+            cmd = """
+            cd hardhat
+            npx hardhat compile
+            """
+            data = run(cmd, capture_output=True, shell=True, text=True)
+            cnt += 1
+        except:
+            print("Error")
+            
 if __name__ == "__main__":
     # make_solidity_file_data()
     download_file()

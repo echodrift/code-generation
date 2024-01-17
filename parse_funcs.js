@@ -113,7 +113,7 @@ export function find_function(sol_file) {
     for (let i = 0; i < sourceUnit["children"].length; i++) {
         if (sourceUnit["children"][i]["type"] == "ContractDefinition" &&
             sourceUnit["children"][i]["kind"] == "contract") { 
-            let child = sourceUnit["children"][i];
+            let child = sourceUnit["children"][i]
             for (let j = 0; j < child["subNodes"].length; j++) {
                 if (child["subNodes"][j]["type"] == "FunctionDefinition") {
                     if (child["subNodes"][j]["body"] && child["subNodes"][j]) {
