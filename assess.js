@@ -35,37 +35,21 @@ async function parsable(test_file) {
     while (record = await cursor.next()) {
         test_cases.push(record)
     }
-    let error_case = []
-    let source_code = null
-    let contract_name = null
-    let function_name = null
-    let fill_content = null
-    let filled_source = null
     let cnt = 0
-
+    let source = null
+    console.log(test_cases[0])
     for (let i = 0; i < test_cases.length; i++){
         console.log(i)
-        source_code = test_cases[i]["source_code"]
-        contract_name = test_cases[i]["contract_name"]
-        function_name = test_cases[i]["func_name"]
-        if (!function_name) {
-            function_name = ""
+        source = test_cases[i]["source_code_with_deepseek_output"]
+        try {
+            let sourceUnit = parser.parse(source)
+            cnt += 1
+        } catch (e) {
+            console.log("Error")
+            if (e instanceof parser.ParserError) {
+                console.log(e.errors);
+            }    
         }
-        fill_content = test_cases[i]["func_body"]
-        filled_source = fill_contract(source_code, contract_name, function_name, fill_content)
-        if (filled_source) {
-            
-            try {
-                let sourceUnit = parser.parse(filled_source)
-                cnt += 1
-            } catch (e) {
-                console.log("Error")
-                if (e instanceof parser.ParserError) {
-                    console.log(e.errors);
-                }    
-            }
-        }
-        
     }
     return cnt
 }
@@ -123,4 +107,5 @@ async function make_test_suite(test_file, test_suite) {
     writer.close()
 }
 
-make_test_suite("./data/test/test.parquet", "./data/test/test-v2.parquet")
+// make_test_suite("./data/test/test.parquet", "./data/test/test-v2.parquet")
+console.log(await parsable("./data/test/test-v2.parquet"))

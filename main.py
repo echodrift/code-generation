@@ -114,25 +114,22 @@ def compilable(test_source):
     cnt = 0
     for i in range(len(test)):
         print(i)
-        source_code = test[i]["source_code"]
-        contract_name = test[i]["contract_name"]
-        function_name = test[i]["func_name"]
-        if not function_name:
-            function_name = ""
-        fill_content = test[i]["func_body"]
-        filled_source = fill_contract(source_code, contract_name, function_name, fill_content)
+        source = test.loc[i, "source_code_with_deepseek_output"]
         try:
             with open("./hardhat/contracts/sample.sol", "w") as f:
-                f.write(filled_source)
+                f.write(source)
             cmd = """
             cd hardhat
             npx hardhat compile
             """
             data = run(cmd, capture_output=True, shell=True, text=True)
-            cnt += 1
+            if 'Compiled 1 Solidity file successfully' in data.stdout:
+                cnt += 1
         except:
             print("Error")
+    return cnt
             
 if __name__ == "__main__":
-    download_file()
-    download_test()
+    # download_file()
+    # download_test()
+    print(compilable("./data/test/test-v2.parquet"))
