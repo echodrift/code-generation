@@ -4,7 +4,17 @@ from typing import List
 
 import pandas as pd
 from datasets import load_dataset
-from subprocess import run
+from subprocess import run, check_output
+import re
+
+ERROR = [
+    "ParserError",
+    "DocstringParsingError",
+    "SyntaxError",
+    "DeclarationError",
+    "TypeError",
+    "UnimplementedFeatureError",
+]
 
 
 def make_solidity_file_data():
@@ -93,38 +103,62 @@ def download_file():
 def download_test():
     train = load_dataset("zhaospei/refine-v2", data_files="train.jsonl")
     test = load_dataset("zhaospei/refine-v2", data_files="test.jsonl")
-    print(train)
-    print(test)
-    # train = pd.read_json(train, lines=True)
-    # test = pd.read_json(test, lines=True)
-    # print(train.info())
-    # print(test.info())
-    # train.to_parquet("./data/test/train.parquet", engine="fastparquet")
-    # test.to_parquet("./data/test/test.parquet", engine="fastparquet")
+    train = pd.DataFrame(train)
+    test = pd.DataFrame(test)
+    train.to_parquet("./data/test/train.parquet", engine="fastparquet")
+    test.to_parquet("./data/test/test.parquet", engine="fastparquet")
 
 
 def compilable(test_source):
     test = pd.read_parquet(test_source, engine="fastparquet").reset_index(drop=True)
-    for i in range(len(test)):
-        source = test.loc[i, "source_code_with_deepseek_output"]
+    error_files = []
+    pattern = r"contracts/(\w+\.sol)"
+
+    for i in range(100):
+        source = test.loc[i, "source_code"]
         with open(f"./hardhat/contracts/sample_{i}.sol", "w") as f:
             f.write(source)
-
     cmd = """
-    cd hardhat
-    npx hardhat compile
-    """
-    data = run(cmd, capture_output=True, shell=True, text=True)
-    output = data.stdout
-    error = data.stderr
-    with open("output.txt", "w") as f:
-        f.write(output)
-    with open("error.txt", "w") as f:
-        f.write(error)
+        cd hardhat
+        npx hardhat compile
+        """
+    cnt = 0
+    while True:
+        cnt += 1
+        print("Loop:", cnt)
+        data = run(cmd, shell=True, capture_output=True, text=True)
+        output = data.stdout
+        if output != "\n":
+            break
+        error = data.stderr
+        errors = error.split("\n\n")
+        print("Number of errors:", len(errors))
+        with open("error.txt", "a") as f:
+            for err in errors:
+                for err_type in ERROR:
+                    if err_type in err:
+                        f.write(
+                            f"{err}\n___________________________________________________________________________\n"
+                        )
+                        match = re.search(pattern, err)
+                        if match:
+                            file_name = match.group(1)
+                            print(f"{file_name}")
+                            idx = int(file_name.split(".")[0].split("_")[1])
+                            error_files.append([idx, err])
+                            run(
+                                f"""cd hardhat/contracts
+                                rm {file_name}""",
+                                shell=True,
+                            )
+                            print("Remove:", file_name)
+    error_files = pd.DataFrame(error_files, columns=["source_idx", "Error"])
+    error_files.to_csv("error_files.csv")
+    # print(repr(error))
 
 
 if __name__ == "__main__":
     # download_file()
     # download_data()
     # download_test()
-    compilable("./data/test/test-v3.parquet")
+    compilable("./data/sol-file-v2/test_file.parquet")
