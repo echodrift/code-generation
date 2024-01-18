@@ -61,28 +61,55 @@ async function test_find_function_has_comment(sol_file, output_file) {
         func_requirement: parquetjs.ParquetFieldBuilder.createStringField()
     })
     var writer = await parquetjs.ParquetWriter.openFile(schema, output_file)
-
-    await Promise.all(sol_files.map(async (sol_file, idx) => {
-        console.log("Sol file idx:", idx)
+    
+    // sol_files.forEach((sol_file, idx) => {
+    //     console.log("Sol file idx:", idx)
+    //     try {
+    //         const result = find_function_has_comment(sol_file["source_code"])
+    //         if (result.length == 0) return;
+    //         result.forEach(async (record, id) => {
+    //             // console.log(`Append row ${id} of sol file ${idx} start`)
+    //             await writer.appendRow({
+    //                 "source_idx": idx.toString(),
+    //                 "contract_name": record[0],
+    //                 "func_name": record[1],
+    //                 "masked_contract": record[2],
+    //                 "func_body": record[3],
+    //                 "func_requirement": record[4]
+    //             })
+    //             // console.log(`Append row ${id} of sol file ${idx} end`)
+    //         })      
+    //     } catch (e) {
+    //         console.log(e)
+    //     }
+    // })
+    writer.setRowGroupSize(1048576)
+    // const len = sol_files.length;
+    // const num_chunk = Math.floor( len / 200)
+    // for (let i = 0; i <= 5; i++) {
+    //     const chunk = sol_files.slice(i * 200, Math.min((i + 1) * 200, len))
+    //     console.log("start at chunk", i)
+    await Promise.allSettled(sol_files.map(async (sol_file, idx) => {
         try {
+            console.log("Sol file", idx)
             const result = find_function_has_comment(sol_file["source_code"])
             if (result.length == 0) return;
-            
-            await Promise.all(Array(result.length).fill(0).map(async (_, i) => {
+            await Promise.allSettled(result.map(async (record) => {
                 await writer.appendRow({
-                    "source_idx": idx.toString(),
-                    "contract_name": result[i][0],
-                    "func_name": result[i][1],
-                    "masked_contract": result[i][2],
-                    "func_body": result[i][3],
-                    "func_requirement": result[i][4]
+                    "source_idx": `${idx}`,
+                    "contract_name": record[0],
+                    "func_name": record[1],
+                    "masked_contract": record[2],
+                    "func_body": record[3],
+                    "func_requirement": record[4]
                 })
             }))
         } catch (e) {
             console.log(e)
         }
-    }))
+    })) 
     writer.close()
+    console.log("Close writer")
 }
 
 

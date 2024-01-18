@@ -1,12 +1,74 @@
-Error HH406: Invalid import https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.0/contracts/token/ERC721/ERC721.sol from contracts/sample4378.sol. Hardhat doesn't support imports via https.
-HardhatError: HH406: Invalid import https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.0/contracts/token/ERC721/ERC721.sol from contracts/sample4378.sol. Hardhat doesn't support imports via https.
-    at Resolver.resolveImport (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/internal/solidity/resolver.ts:133:13)
-    at /home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/internal/solidity/dependencyGraph.ts:188:28
-    at async Promise.all (index 0)
-    at DependencyGraph._addDependenciesFrom (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/internal/solidity/dependencyGraph.ts:186:5)
-    at async Promise.all (index 3755)
-    at Function.createFromResolvedFiles (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/internal/solidity/dependencyGraph.ts:15:5)
+Error HH606: The project cannot be compiled, see reasons below.
+
+The Solidity version pragma statement in these files doesn't match any of the configured compilers in your config. Change the pragma or configure additional compiler versions in your hardhat config.
+
+  * contracts/sample_1417.sol (^0.5.00)
+  * contracts/sample_1467.sol (^0.5.00)
+  * contracts/sample_1753.sol (^0.5.00)
+  * contracts/sample_2107.sol (0.4 .25)
+  * contracts/sample_2559.sol (0.5.11 >=0.6.0 <0.8.0)
+  * contracts/sample_2650.sol (^0.4.26.0)
+  * contracts/sample_2753.sol (^0.5.00)
+  * contracts/sample_2767.sol (0.5 .11)
+  * contracts/sample_3210.sol (0.5.00)
+  * contracts/sample_3640.sol ("0.5.4")
+  * contracts/sample_3641.sol ("0.5.4")
+  * contracts/sample_3642.sol ("0.5.4")
+  * contracts/sample_3643.sol ("0.5.4")
+  * contracts/sample_4188.sol (^0.5.00)
+  * contracts/sample_4996.sol ("0.5.10")
+  * contracts/sample_6514.sol (^ 0.4 .24)
+  * contracts/sample_6515.sol (^ 0.4 .24)
+  * contracts/sample_6516.sol (^ 0.4 .24)
+  * contracts/sample_6676.sol (^0.8.7 }    /**     * @dev Distrubtes the balance to all shareholders as defined in the constructor and     * then the remainder, if any, goes to the contract owner     */    function cashOut() external onlyOwner nonReentrant {        require(address(this).balance > 0, "Negative Ghost Rider, the balance is...ummm...empty"))
+  * contracts/sample_7906.sol (^ 0.4 .26)
+  * contracts/sample_7961.sol (0.4 .25)
+  * contracts/sample_8022.sol (^0.5.13 >=0.6.0 <0.8.0)
+  * contracts/sample_8050.sol (0.4 .19)
+
+To learn more, run the command again with --verbose
+
+Read about compiler configuration at https://hardhat.org/config
+
+HardhatError: HH606: The project cannot be compiled, see reasons below.
+
+The Solidity version pragma statement in these files doesn't match any of the configured compilers in your config. Change the pragma or configure additional compiler versions in your hardhat config.
+
+  * contracts/sample_1417.sol (^0.5.00)
+  * contracts/sample_1467.sol (^0.5.00)
+  * contracts/sample_1753.sol (^0.5.00)
+  * contracts/sample_2107.sol (0.4 .25)
+  * contracts/sample_2559.sol (0.5.11 >=0.6.0 <0.8.0)
+  * contracts/sample_2650.sol (^0.4.26.0)
+  * contracts/sample_2753.sol (^0.5.00)
+  * contracts/sample_2767.sol (0.5 .11)
+  * contracts/sample_3210.sol (0.5.00)
+  * contracts/sample_3640.sol ("0.5.4")
+  * contracts/sample_3641.sol ("0.5.4")
+  * contracts/sample_3642.sol ("0.5.4")
+  * contracts/sample_3643.sol ("0.5.4")
+  * contracts/sample_4188.sol (^0.5.00)
+  * contracts/sample_4996.sol ("0.5.10")
+  * contracts/sample_6514.sol (^ 0.4 .24)
+  * contracts/sample_6515.sol (^ 0.4 .24)
+  * contracts/sample_6516.sol (^ 0.4 .24)
+  * contracts/sample_6676.sol (^0.8.7 }    /**     * @dev Distrubtes the balance to all shareholders as defined in the constructor and     * then the remainder, if any, goes to the contract owner     */    function cashOut() external onlyOwner nonReentrant {        require(address(this).balance > 0, "Negative Ghost Rider, the balance is...ummm...empty"))
+  * contracts/sample_7906.sol (^ 0.4 .26)
+  * contracts/sample_7961.sol (0.4 .25)
+  * contracts/sample_8022.sol (^0.5.13 >=0.6.0 <0.8.0)
+  * contracts/sample_8050.sol (0.4 .19)
+
+To learn more, run the command again with --verbose
+
+Read about compiler configuration at https://hardhat.org/config
+
+    at SimpleTaskDefinition.action (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/builtin-tasks/compile.ts:1066:15)
     at Environment._runTaskDefinition (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/internal/core/runtime-environment.ts:358:14)
     at Environment.run (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/internal/core/runtime-environment.ts:191:14)
-    at SimpleTaskDefinition.action (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/builtin-tasks/compile.ts:1371:58)
+    at SimpleTaskDefinition.action (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/builtin-tasks/compile.ts:1388:7)
+    at Environment._runTaskDefinition (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/internal/core/runtime-environment.ts:358:14)
+    at Environment.run (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/internal/core/runtime-environment.ts:191:14)
+    at SimpleTaskDefinition.action (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/builtin-tasks/compile.ts:1486:7)
+    at Environment._runTaskDefinition (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/internal/core/runtime-environment.ts:358:14)
+    at OverriddenTaskDefinition._action (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/@typechain/hardhat/src/index.ts:23:5)
     at Environment._runTaskDefinition (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/internal/core/runtime-environment.ts:358:14)

@@ -104,7 +104,7 @@ def download_test():
 
 
 def compilable(test_source):
-    test = pd.read_parquet(test_source, engine="fastparquet")
+    test = pd.read_parquet(test_source, engine="fastparquet").reset_index(drop=True)
     for i in range(len(test)):
         source = test.loc[i, "source_code_with_deepseek_output"]
         with open(f"./hardhat/contracts/sample_{i}.sol", "w") as f:
@@ -127,4 +127,4 @@ if __name__ == "__main__":
     # download_file()
     # download_data()
     # download_test()
-    compilable("./data/test/test-v2.parquet")
+    compilable("./data/test/test-v3.parquet")
