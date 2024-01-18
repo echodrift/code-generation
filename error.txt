@@ -1,0 +1,12 @@
+Error HH406: Invalid import https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.0/contracts/token/ERC721/ERC721.sol from contracts/sample4378.sol. Hardhat doesn't support imports via https.
+HardhatError: HH406: Invalid import https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.4.0/contracts/token/ERC721/ERC721.sol from contracts/sample4378.sol. Hardhat doesn't support imports via https.
+    at Resolver.resolveImport (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/internal/solidity/resolver.ts:133:13)
+    at /home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/internal/solidity/dependencyGraph.ts:188:28
+    at async Promise.all (index 0)
+    at DependencyGraph._addDependenciesFrom (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/internal/solidity/dependencyGraph.ts:186:5)
+    at async Promise.all (index 3755)
+    at Function.createFromResolvedFiles (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/internal/solidity/dependencyGraph.ts:15:5)
+    at Environment._runTaskDefinition (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/internal/core/runtime-environment.ts:358:14)
+    at Environment.run (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/internal/core/runtime-environment.ts:191:14)
+    at SimpleTaskDefinition.action (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/builtin-tasks/compile.ts:1371:58)
+    at Environment._runTaskDefinition (/home/hieuvd/lvdthieu/CodeGen/hardhat/node_modules/hardhat/src/internal/core/runtime-environment.ts:358:14)

@@ -55,8 +55,6 @@ async function parsable(test_file) {
 }
 
 
-
-
 async function make_test_suite(test_file, test_suite) {
     let test_cases = []
     let reader = await parquetjs.ParquetReader.openFile(test_file)

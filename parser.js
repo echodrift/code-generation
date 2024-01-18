@@ -53,8 +53,7 @@ async function test_find_function_has_comment(sol_file, output_file) {
     }
 
     var schema = new parquetjs.ParquetSchema({
-        file_name: parquetjs.ParquetFieldBuilder.createStringField(),
-        file_address: parquetjs.ParquetFieldBuilder.createStringField(),
+        source_idx: parquetjs.ParquetFieldBuilder.createStringField(),
         contract_name: parquetjs.ParquetFieldBuilder.createStringField(),
         func_name: parquetjs.ParquetFieldBuilder.createStringField(),
         masked_contract: parquetjs.ParquetFieldBuilder.createStringField(),
@@ -62,34 +61,29 @@ async function test_find_function_has_comment(sol_file, output_file) {
         func_requirement: parquetjs.ParquetFieldBuilder.createStringField()
     })
     var writer = await parquetjs.ParquetWriter.openFile(schema, output_file)
-    for (let i = 0; i < sol_files.length; i++) {
+
+    await Promise.all(sol_files.map(async (sol_file, idx) => {
+        console.log("Sol file idx:", idx)
         try {
-            console.log(i);
-            const result = find_function_has_comment(sol_files[i]["source_code"]);
-            if (result.length > 0) {
-                for (let j = 0; j < result.length; j++) {
-                    await writer.appendRow({
-                        "file_name": sol_files[i]["file_name"],
-                        "file_address": sol_files[i]["file_address"],
-                        "contract_name": result[j][0],
-                        "func_name": result[j][1],
-                        "masked_contract": result[j][2],
-                        "func_body": result[j][3],
-                        "func_requirement": result[j][4]
-                    })
-                }
-            }
+            const result = find_function_has_comment(sol_file["source_code"])
+            if (result.length == 0) return;
+            
+            await Promise.all(Array(result.length).fill(0).map(async (_, i) => {
+                await writer.appendRow({
+                    "source_idx": idx.toString(),
+                    "contract_name": result[i][0],
+                    "func_name": result[i][1],
+                    "masked_contract": result[i][2],
+                    "func_body": result[i][3],
+                    "func_requirement": result[i][4]
+                })
+            }))
         } catch (e) {
-            fs.appendFileSync("contract_error.txt",
-                `------------------------------------------------------------------------\nContract ${i}\n`,
-                function (err) {
-                    if (err) throw err;
-                }
-            );
+            console.log(e)
         }
-    }
+    }))
     writer.close()
 }
 
 
-// test_find_function_has_comment("./data/solfile/train_file.parquet", "./data/data/train_data.parquet");
+test_find_function_has_comment("./data/solfile/test_file.parquet", "./data/data/test_data.parquet");
