@@ -1,0 +1,1 @@
+conda activate codegen; python compile.py -p /home/hieuvd/lvdthieu/CodeGen/compilable/../data/compile/batch10.parquet -hh hardhat10 -o /home/hieuvd/lvdthieu/CodeGen/out/result10.parquet;

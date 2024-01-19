@@ -204,4 +204,5 @@ if __name__ == "__main__":
     # download_file()
     # download_data()
     # download_test()
+    
     compilable("./data/sol-file-v2/test_file.parquet")
