@@ -1,4 +1,4 @@
-import { find_comment, find_function, find_function_has_comment } from "../parse_funcs.js";
+import { find_comment, find_function, find_function_has_comment } from "./parse_funcs.js";
 import fs from "fs";
 import parser from "@solidity-parser/parser";
 import parquetjs from "@dsnp/parquetjs"
@@ -54,8 +54,6 @@ async function test_find_function_has_comment(sol_file, output_file) {
 
     var schema = new parquetjs.ParquetSchema({
         source_idx: parquetjs.ParquetFieldBuilder.createStringField(),
-        file_name: parquetjs.ParquetFieldBuilder.createStringField(),
-        file_address: parquetjs.ParquetFieldBuilder.createStringField(),
         contract_name: parquetjs.ParquetFieldBuilder.createStringField(),
         func_name: parquetjs.ParquetFieldBuilder.createStringField(),
         masked_contract: parquetjs.ParquetFieldBuilder.createStringField(),
@@ -99,8 +97,6 @@ async function test_find_function_has_comment(sol_file, output_file) {
             await Promise.allSettled(result.map(async (record) => {
                 await writer.appendRow({
                     "source_idx": `${idx}`,
-                    "file_name": sol_file["file_name"],
-                    "file_address": sol_file["file_address"],
                     "contract_name": record[0],
                     "func_name": record[1],
                     "masked_contract": record[2],
@@ -116,5 +112,6 @@ async function test_find_function_has_comment(sol_file, output_file) {
     console.log("Close writer")
 }
 
-
-test_find_function_has_comment("./data/solfile/train_file.parquet", "./data/data/train_data.parquet");
+async function main() {
+    await test_find_function_has_comment("../data/solfile-v3/test_file.parquet", "../data/data/test_data.parquet")
+}

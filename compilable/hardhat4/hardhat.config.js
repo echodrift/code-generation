@@ -65,8 +65,8 @@ module.exports = {
     ]
   },
   paths: {
-    artifacts: "../artifacts",
-    cache: "../cache"
+    // artifacts: "../artifacts",
+    // cache: "../cache"
   }
 };
 

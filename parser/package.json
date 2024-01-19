@@ -21,6 +21,6 @@
   "dependencies": {
     "@dsnp/parquetjs": "^1.4.0",
     "@solidity-parser/parser": "^0.17.0",
-    "hardhat": "^2.19.4"
+    "tqdm": "^2.0.3"
   }
 }

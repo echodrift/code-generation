@@ -137,9 +137,7 @@ from tqdm import tqdm
 def compile(test_source, hardhat):
     compilable = []
     test_compile = pd.read_parquet(test_source, engine="fastparquet")
-    # print(len(test_compile.index))
     for i in tqdm(test_compile.index):
-        # print(i)
         source = test_compile.loc[i, "source_code"]
         with open(os.path.join(base, hardhat, "contracts", "sample.sol"), "w") as f:
             f.write(source)
