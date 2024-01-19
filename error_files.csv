@@ -1,60 +1,60 @@
 ,source_idx,Error
-0,13,"ParserError: Expected ';' but got '}'
-  --> contracts/sample_13.sol:11:60:
-   |
-11 |     modifier onlyOwner { if (msg.sender != owner) throw; _ }
-   |                                                            ^"
-1,75,"
-ParserError: Expected '{' but got 'constant'
- --> contracts/sample_75.sol:3:28:
-  |
-3 |     function totalSupply() constant returns (uint256 supply) {}
-  |                            ^^^^^^^^"
-2,79,"
+0,79,"
 ParserError: Expected a state variable declaration. If you intended this as a fallback function or a function to handle plain ether transactions, use the ""fallback"" keyword or the ""receive"" keyword instead.
    --> contracts/sample_79.sol:146:32:
     |
 146 |   function () external payable {
     |                                ^"
-3,80,"
-ParserError: Expected a state variable declaration. If you intended this as a fallback function or a function to handle plain ether transactions, use the ""fallback"" keyword or the ""receive"" keyword instead.
-  --> contracts/sample_80.sol:46:30:
-   |
-46 |     function() public payable{}
-   |                              ^"
-4,92,"
+1,92,"
 ParserError: Expected pragma, import directive or contract/interface/library/struct/enum/constant/function definition.
  --> contracts/sample_92.sol:1:1:
   |
 1 | @v4.5.0
   | ^"
-5,47,"contracts/sample_47.sol:5:26: DeclarationError: Identifier not found or not unique.
-contract SpaceReavers is ERC721,Ownable {
-                         ^----^"
+2,20,"contracts/sample_20.sol:18:11: DeclarationError: Identifier not found or not unique.
+    using SafeMath for uint256;
+          ^------^"
+3,75,"
+ParserError: Expected '{' but got 'constant'
+ --> contracts/sample_75.sol:3:28:
+  |
+3 |     function totalSupply() constant returns (uint256 supply) {}
+  |                            ^^^^^^^^"
+4,13,"ParserError: Expected ';' but got '}'
+  --> contracts/sample_13.sol:11:60:
+   |
+11 |     modifier onlyOwner { if (msg.sender != owner) throw; _ }
+   |                                                            ^"
+5,77,"contracts/sample_77.sol:20:11: DeclarationError: Identifier not found or not unique.
+    using Address for address;
+          ^-----^"
 6,20,"contracts/sample_20.sol:17:19: DeclarationError: Identifier not found or not unique.
 contract ERC20 is IERC20 {
                   ^----^"
-7,20,"contracts/sample_20.sol:18:11: DeclarationError: Identifier not found or not unique.
-    using SafeMath for uint256;
-          ^------^"
-8,77,"contracts/sample_77.sol:20:11: DeclarationError: Identifier not found or not unique.
-    using Address for address;
-          ^-----^"
+7,47,"contracts/sample_47.sol:5:26: DeclarationError: Identifier not found or not unique.
+contract SpaceReavers is ERC721,Ownable {
+                         ^----^"
+8,80,"
+ParserError: Expected a state variable declaration. If you intended this as a fallback function or a function to handle plain ether transactions, use the ""fallback"" keyword or the ""receive"" keyword instead.
+  --> contracts/sample_80.sol:46:30:
+   |
+46 |     function() public payable{}
+   |                              ^"
 9,39,"contracts/sample_39.sol:6:29: DeclarationError: Identifier not found or not unique.
 contract DfWalletFactory is Ownable, CloneFactory {
                             ^-----^"
 10,39,"contracts/sample_39.sol:6:38: DeclarationError: Identifier not found or not unique.
 contract DfWalletFactory is Ownable, CloneFactory {
                                      ^----------^"
-11,39,"contracts/sample_39.sol:16:64: DeclarationError: Undeclared identifier.
-    function setLibraryAddress(address _libraryAddress) public onlyOwner {
-                                                               ^-------^"
-12,2,"
+11,2,"
 DeclarationError: Identifier not found or not unique.
  --> contracts/sample_2.sol:1:22:
   |
 1 | contract Strategy is BaseStrategyInitializable {
   |                      ^^^^^^^^^^^^^^^^^^^^^^^^^"
+12,39,"contracts/sample_39.sol:16:64: DeclarationError: Undeclared identifier.
+    function setLibraryAddress(address _libraryAddress) public onlyOwner {
+                                                               ^-------^"
 13,60,"contracts/sample_60.sol:20:11: DeclarationError: Identifier not found or not unique.
     using Address for address;
           ^-----^"
@@ -64,93 +64,93 @@ DeclarationError: Identifier not found or not unique.
    |
 14 | abstract contract Ownable is Context {
    |                              ^^^^^^^"
-15,61,"contracts/sample_61.sol:37:5: DeclarationError: Identifier not found or not unique.
-    Avatar public avatar;
-    ^----^"
-16,61,"contracts/sample_61.sol:38:5: DeclarationError: Identifier not found or not unique.
-    DAOToken public nativeToken;
-    ^------^"
-17,61,"contracts/sample_61.sol:39:5: DeclarationError: Identifier not found or not unique.
-    Reputation public nativeReputation;
-    ^--------^"
-18,61,"contracts/sample_61.sol:62:9: DeclarationError: Identifier not found or not unique.
-        GlobalConstraintInterface.CallPhase _when);
-        ^---------------------------------^"
-19,61,"contracts/sample_61.sol:66:18: DeclarationError: Identifier not found or not unique.
-    constructor( Avatar _avatar) public {
-                 ^----^"
-20,61,"contracts/sample_61.sol:351:56: DeclarationError: Identifier not found or not unique.
-    function upgradeController(address _newController, Avatar _avatar)
-                                                       ^----^"
-21,61,"contracts/sample_61.sol:383:67: DeclarationError: Identifier not found or not unique.
-    function genericCall(address _contract, bytes calldata _data, Avatar _avatar, uint256 _value)
-                                                                  ^----^"
-22,61,"contracts/sample_61.sol:399:67: DeclarationError: Identifier not found or not unique.
-    function sendEther(uint256 _amountInWei, address payable _to, Avatar _avatar)
-                                                                  ^----^"
-23,61,"contracts/sample_61.sol:416:36: DeclarationError: Identifier not found or not unique.
-    function externalTokenTransfer(IERC20 _externalToken, address _to, uint256 _value, Avatar _avatar)
-                                   ^----^"
-24,61,"contracts/sample_61.sol:437:5: DeclarationError: Identifier not found or not unique.
-    IERC20 _externalToken,
-    ^----^"
-25,61,"contracts/sample_61.sol:459:36: DeclarationError: Identifier not found or not unique.
-    function externalTokenApproval(IERC20 _externalToken, address _spender, uint256 _value, Avatar _avatar)
-                                   ^----^"
-26,61,"contracts/sample_61.sol:475:50: DeclarationError: Identifier not found or not unique.
-    function metaData(string calldata _metaData, Avatar _avatar)
-                                                 ^----^"
-27,29,"
+15,29,"
 DeclarationError: Identifier not found or not unique.
   --> contracts/sample_29.sol:10:19:
    |
 10 | contract WAGYU is Context, IERC20, IERC20Metadata, Ownable {
    |                   ^^^^^^^"
-28,62,"contracts/sample_62.sol:7:36: DeclarationError: Identifier not found or not unique.
-contract VotingMachineCallbacks is VotingMachineCallbacksInterface {
-                                   ^-----------------------------^"
-29,62,"contracts/sample_62.sol:11:9: DeclarationError: Identifier not found or not unique.
-        Avatar avatar; // the proposal's avatar
-        ^----^"
-30,62,"contracts/sample_62.sol:55:9: DeclarationError: Identifier not found or not unique.
+16,61,"contracts/sample_61.sol:351:56: DeclarationError: Identifier not found or not unique.
+    function upgradeController(address _newController, Avatar _avatar)
+                                                       ^----^"
+17,61,"contracts/sample_61.sol:383:67: DeclarationError: Identifier not found or not unique.
+    function genericCall(address _contract, bytes calldata _data, Avatar _avatar, uint256 _value)
+                                                                  ^----^"
+18,61,"contracts/sample_61.sol:399:67: DeclarationError: Identifier not found or not unique.
+    function sendEther(uint256 _amountInWei, address payable _to, Avatar _avatar)
+                                                                  ^----^"
+19,61,"contracts/sample_61.sol:437:5: DeclarationError: Identifier not found or not unique.
+    IERC20 _externalToken,
+    ^----^"
+20,61,"contracts/sample_61.sol:416:36: DeclarationError: Identifier not found or not unique.
+    function externalTokenTransfer(IERC20 _externalToken, address _to, uint256 _value, Avatar _avatar)
+                                   ^----^"
+21,61,"contracts/sample_61.sol:62:9: DeclarationError: Identifier not found or not unique.
+        GlobalConstraintInterface.CallPhase _when);
+        ^---------------------------------^"
+22,61,"contracts/sample_61.sol:38:5: DeclarationError: Identifier not found or not unique.
+    DAOToken public nativeToken;
+    ^------^"
+23,61,"contracts/sample_61.sol:475:50: DeclarationError: Identifier not found or not unique.
+    function metaData(string calldata _metaData, Avatar _avatar)
+                                                 ^----^"
+24,61,"contracts/sample_61.sol:39:5: DeclarationError: Identifier not found or not unique.
+    Reputation public nativeReputation;
+    ^--------^"
+25,61,"contracts/sample_61.sol:37:5: DeclarationError: Identifier not found or not unique.
+    Avatar public avatar;
+    ^----^"
+26,61,"contracts/sample_61.sol:459:36: DeclarationError: Identifier not found or not unique.
+    function externalTokenApproval(IERC20 _externalToken, address _spender, uint256 _value, Avatar _avatar)
+                                   ^----^"
+27,61,"contracts/sample_61.sol:66:18: DeclarationError: Identifier not found or not unique.
+    constructor( Avatar _avatar) public {
+                 ^----^"
+28,62,"contracts/sample_62.sol:55:9: DeclarationError: Identifier not found or not unique.
         IERC20 _stakingToken,
         ^----^"
-31,62,"contracts/sample_62.sol:70:36: DeclarationError: Identifier not found or not unique.
-    function balanceOfStakingToken(IERC20 _stakingToken, bytes32 _proposalId) external view returns(uint256) {
-                                   ^----^"
-32,53,"
+29,53,"
 DeclarationError: Identifier not found or not unique.
   --> contracts/sample_53.sol:77:11:
    |
 77 |     using SafeMath for uint256;
    |           ^^^^^^^^"
-33,63,"contracts/sample_63.sol:25:9: DeclarationError: Identifier not found or not unique.
+30,62,"contracts/sample_62.sol:7:36: DeclarationError: Identifier not found or not unique.
+contract VotingMachineCallbacks is VotingMachineCallbacksInterface {
+                                   ^-----------------------------^"
+31,62,"contracts/sample_62.sol:11:9: DeclarationError: Identifier not found or not unique.
+        Avatar avatar; // the proposal's avatar
+        ^----^"
+32,62,"contracts/sample_62.sol:70:36: DeclarationError: Identifier not found or not unique.
+    function balanceOfStakingToken(IERC20 _stakingToken, bytes32 _proposalId) external view returns(uint256) {
+                                   ^----^"
+33,63,"contracts/sample_63.sol:40:9: DeclarationError: Identifier not found or not unique.
         Avatar _avatar)
         ^----^"
-34,63,"contracts/sample_63.sol:40:9: DeclarationError: Identifier not found or not unique.
-        Avatar _avatar)
-        ^----^"
-35,55,"
+34,55,"
 DeclarationError: Identifier not found or not unique.
  --> contracts/sample_55.sol:2:23:
   |
 2 | contract SojuToken is ERC20(""SojuToken"", ""Soju""), Ownable {
   |                       ^^^^^"
-36,84,"contracts/sample_84.sol:30:19: DeclarationError: Identifier not found or not unique.
-contract ERC20 is Context, IERC20 {
-                  ^-----^"
-37,84,"contracts/sample_84.sol:30:28: DeclarationError: Identifier not found or not unique.
-contract ERC20 is Context, IERC20 {
-                           ^----^"
-38,84,"contracts/sample_84.sol:31:11: DeclarationError: Identifier not found or not unique.
-    using SafeMath for uint256;
-          ^------^"
-39,71,"
+35,63,"contracts/sample_63.sol:25:9: DeclarationError: Identifier not found or not unique.
+        Avatar _avatar)
+        ^----^"
+36,71,"
 DeclarationError: Identifier not found or not unique.
  --> contracts/sample_71.sol:3:21:
   |
 3 | contract ISnowed is Ownable {
   |                     ^^^^^^^"
+37,84,"contracts/sample_84.sol:30:19: DeclarationError: Identifier not found or not unique.
+contract ERC20 is Context, IERC20 {
+                  ^-----^"
+38,84,"contracts/sample_84.sol:30:28: DeclarationError: Identifier not found or not unique.
+contract ERC20 is Context, IERC20 {
+                           ^----^"
+39,84,"contracts/sample_84.sol:31:11: DeclarationError: Identifier not found or not unique.
+    using SafeMath for uint256;
+          ^------^"
 40,54,"
 TypeError: Explicit type conversion not allowed from ""address"" to ""uint256"".
    --> contracts/sample_54.sol:145:41:
@@ -159,16 +159,16 @@ TypeError: Explicit type conversion not allowed from ""address"" to ""uint256"".
     |                                         ^^^^^^^^^^^^^^"
 41,54,"
 TypeError: Explicit type conversion not allowed from ""address"" to ""uint256"".
-   --> contracts/sample_54.sol:155:44:
-    |
-155 |         return _remove(set._inner, bytes32(uint256(value)));
-    |                                            ^^^^^^^^^^^^^^"
-42,54,"
-TypeError: Explicit type conversion not allowed from ""address"" to ""uint256"".
    --> contracts/sample_54.sol:162:46:
     |
 162 |         return _contains(set._inner, bytes32(uint256(value)));
     |                                              ^^^^^^^^^^^^^^"
+42,54,"
+TypeError: Explicit type conversion not allowed from ""address"" to ""uint256"".
+   --> contracts/sample_54.sol:155:44:
+    |
+155 |         return _remove(set._inner, bytes32(uint256(value)));
+    |                                            ^^^^^^^^^^^^^^"
 43,54,"
 TypeError: Explicit type conversion not allowed from ""uint256"" to ""address"".
    --> contracts/sample_54.sol:183:16:

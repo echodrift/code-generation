@@ -114,10 +114,48 @@ def compilable(test_source):
     error_files = []
     pattern = r"contracts/(\w+\.sol)"
 
-    for i in range(100):
+    for i in range(len(test)):
         source = test.loc[i, "source_code"]
         with open(f"./hardhat/contracts/sample_{i}.sol", "w") as f:
             f.write(source)
+    wrong_file = [
+        10417,
+        10552,
+        11668,
+        11729,
+        11884,
+        1857,
+        2106,
+        3165,
+        3352,
+        4069,
+        4259,
+        4617,
+        5572,
+        5739,
+        619,
+        6485,
+        6554,
+        6566,
+        6707,
+        7646,
+        8374,
+        8457,
+        8701,
+        9136,
+        9796,
+        9818,
+        10471,
+    ]
+    
+    for file in wrong_file:
+        error_files.append([file, "Wrong format of pragma soldity version"])
+        run(
+            f"""cd hardhat/contracts
+            rm sample_{file}.sol""",
+            shell=True,
+        )
+
     cmd = """
         cd hardhat
         npx hardhat compile
@@ -130,30 +168,35 @@ def compilable(test_source):
         output = data.stdout
         if output != "\n":
             break
-        error = data.stderr
-        errors = error.split("\n\n")
-        print("Number of errors:", len(errors))
-        with open("error.txt", "a") as f:
-            for err in errors:
-                for err_type in ERROR:
-                    if err_type in err:
-                        f.write(
-                            f"{err}\n___________________________________________________________________________\n"
-                        )
-                        match = re.search(pattern, err)
-                        if match:
-                            file_name = match.group(1)
-                            print(f"{file_name}")
-                            idx = int(file_name.split(".")[0].split("_")[1])
-                            error_files.append([idx, err])
-                            run(
-                                f"""cd hardhat/contracts
-                                rm {file_name}""",
-                                shell=True,
-                            )
-                            print("Remove:", file_name)
+        err = data.stderr
+        print(
+            err,
+            "\n------------------------------------------------------------------------------\n",
+        )
+        err_comps = err.split("\n\n")
+        print("Number of errors:", len(err_comps))
+        loop_err_files = set()
+        for err_comp in err_comps:
+            for err_type in ERROR:
+                if err_type in err_comp:
+                    match = re.search(pattern, err_comp)
+                    if match:
+                        err_file = match.group(1)
+                        print(f"{err_file}")
+                        loop_err_files.add((err_file, err_comp))
+
+        for err_file, err_comp in loop_err_files:
+            idx = int(err_file.split(".")[0].split("_")[1])
+            error_files.append([idx, err_comp])
+            run(
+                f"""cd hardhat/contracts
+                rm {err_file}""",
+                shell=True,
+            )
+            print("Remove:", err_file)
     error_files = pd.DataFrame(error_files, columns=["source_idx", "Error"])
     error_files.to_csv("error_files.csv")
+    print(output)
     # print(repr(error))
 
 
