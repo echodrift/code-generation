@@ -134,9 +134,12 @@ import os
 base = os.path.dirname(os.path.abspath(__file__))
 
 from tqdm import tqdm
-def compile(test_source, hardhat):
+
+
+def compile(input, hardhat, output):
+    print(input, hardhat, output)
     compilable = []
-    test_compile = pd.read_parquet(test_source, engine="fastparquet")
+    test_compile = pd.read_parquet(input, engine="fastparquet")
     for i in tqdm(test_compile.index):
         source = test_compile.loc[i, "source_code"]
         with open(os.path.join(base, hardhat, "contracts", "sample.sol"), "w") as f:
@@ -149,17 +152,16 @@ def compile(test_source, hardhat):
         if "Compiled 1 Solidity file successfully" in data.stdout:
             compilable.append([i, test_compile.loc[i, "source_code"]])
 
-    return compilable
+    compilable = pd.DataFrame(compilable, columns=["index", "source_code"]).set_index(
+        "index"
+    )
+    compilable.to_parquet(output, engine="fastparquet")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--path", dest="path")
+    parser.add_argument("-i", "--input", dest="input")
     parser.add_argument("-hh", "--hardhat", dest="hardhat")
     parser.add_argument("-o", "--output", dest="output")
     args = parser.parse_args()
-    compilable = compile(args.path, args.hardhat)
-    compilable = pd.DataFrame(compilable, columns=["index", "source_code"]).set_index(
-        "index"
-    )
-    compilable.to_parquet(args.output, engine="fastparquet")
+    compile(args.input, args.hardhat, args.output)

@@ -1,7 +1,9 @@
-import { find_comment, find_function, find_function_has_comment } from "./parse_funcs.js";
+import { find_comment, find_function, find_function_has_comment } from "./parse_funcs.js"
 import fs from "fs";
-import parser from "@solidity-parser/parser";
+import parser from "@solidity-parser/parser"
 import parquetjs from "@dsnp/parquetjs"
+import tqdm from "tqdm"
+import { ArgumentParser } from "argparse"
 
 function test_parser(file) {
     const data = fs.readFileSync(file, "utf-8");
@@ -83,35 +85,59 @@ async function test_find_function_has_comment(sol_file, output_file) {
     //         console.log(e)
     //     }
     // })
-    writer.setRowGroupSize(1048576)
-    // const len = sol_files.length;
-    // const num_chunk = Math.floor( len / 200)
-    // for (let i = 0; i <= 5; i++) {
-    //     const chunk = sol_files.slice(i * 200, Math.min((i + 1) * 200, len))
-    //     console.log("start at chunk", i)
-    await Promise.allSettled(sol_files.map(async (sol_file, idx) => {
+
+    // writer.setRowGroupSize(8192)
+    // sol_files = sol_files.slice(0, 1000)
+    // await Promise.allSettled(sol_files.map(async (sol_file, idx) => {
+    //     try {
+    //         console.log("Sol file", idx)
+    //         const result = find_function_has_comment(sol_file["source_code"])
+    //         if (result.length == 0) return;
+    //         await Promise.allSettled(result.map(async (record) => {
+    //             await writer.appendRow({
+    //                 "source_idx": `${idx}`,
+    //                 "contract_name": record[0],
+    //                 "func_name": record[1],
+    //                 "masked_contract": record[2],
+    //                 "func_body": record[3],
+    //                 "func_requirement": record[4]
+    //             })
+    //         }))
+    //     } catch (e) {
+    //         console.log(e)
+    //     }
+    // })) 
+    for (const sol_file of tqdm(sol_files)) {
         try {
-            console.log("Sol file", idx)
             const result = find_function_has_comment(sol_file["source_code"])
-            if (result.length == 0) return;
-            await Promise.allSettled(result.map(async (record) => {
+            if (result.length == 0) continue
+            for (const record of result) {
                 await writer.appendRow({
-                    "source_idx": `${idx}`,
+                    "source_idx": `${sol_file["source_idx"]}`,
                     "contract_name": record[0],
                     "func_name": record[1],
                     "masked_contract": record[2],
                     "func_body": record[3],
                     "func_requirement": record[4]
                 })
-            }))
+            }
         } catch (e) {
-            console.log(e)
         }
-    })) 
+    }
     writer.close()
     console.log("Close writer")
 }
 
+
+// test_find_function_has_comment("../data/solfile-v3/test_file.parquet", "../data/data/test_data.parquet")
+
 async function main() {
-    await test_find_function_has_comment("../data/solfile-v3/test_file.parquet", "../data/data/test_data.parquet")
+    const parser = new ArgumentParser()
+    parser.add_argument('-i', '--input')
+    parser.add_argument('-o', '--output')
+    const args = parser.parse_args()
+    await test_find_function_has_comment(args.input, args.output)
 }
+
+main()
+

@@ -64,9 +64,5 @@ module.exports = {
       {version: "0.5.11"},
     ]
   },
-  paths: {
-    // artifacts: "../artifacts",
-    // cache: "../cache"
-  }
 };
 
