@@ -26,9 +26,9 @@ function test_find_comment(file) {
     }
 }
 
-async function test_find_function(sol_file) {
+async function test_find_function(files_source) {
     let sol_files = []
-    let reader = await parquetjs.ParquetReader.openFile(sol_file)
+    let reader = await parquetjs.ParquetReader.openFile(files_source)
     let cursor = reader.getCursor()
     let record = null
     while (record = await cursor.next()) {
@@ -45,9 +45,9 @@ async function test_find_function(sol_file) {
     }
 }
 
-async function test_find_function_has_comment(sol_file, output_file) {
+async function test_find_function_has_comment(files_source, output_file) {
     let sol_files = []
-    let reader = await parquetjs.ParquetReader.openFile(sol_file)
+    let reader = await parquetjs.ParquetReader.openFile(files_source)
     let cursor = reader.getCursor()
     let record = null
     while (record = await cursor.next()) {
@@ -128,8 +128,6 @@ async function test_find_function_has_comment(sol_file, output_file) {
     console.log("Close writer")
 }
 
-
-// test_find_function_has_comment("../data/solfile-v3/test_file.parquet", "../data/data/test_data.parquet")
 
 async function main() {
     const parser = new ArgumentParser()

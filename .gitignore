@@ -1,5 +1,4 @@
-data
-out
-
 __pycache__
-func/__pycache__
+tools/__pycache__
+random_generator/__pycache__
+

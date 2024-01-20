@@ -4,7 +4,8 @@ concurency=$2
 output=$3
 
 ############################################################################################################
-# python sharding.py --input $input --concurency $concurency --output $DIR/data
+
+# python $DIR/../tools/sharding.py --input $input --concurency $concurency --output $DIR/data
 # echo Sharding done
 # i=1
 # while [ $i -le $concurency ]; do
@@ -14,5 +15,5 @@ output=$3
 
 ############################################################################################################
 
-python merging.py --input $DIR/out --concurency $concurency --output $output 
+python $DIR/../tools/merging.py --input $DIR/out --concurency $concurency --output $output 
 echo Merging done
