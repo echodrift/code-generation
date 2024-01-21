@@ -64,49 +64,7 @@ async function test_find_function_has_comment(files_source, output_file) {
     })
     var writer = await parquetjs.ParquetWriter.openFile(schema, output_file)
     
-    // sol_files.forEach((sol_file, idx) => {
-    //     console.log("Sol file idx:", idx)
-    //     try {
-    //         const result = find_function_has_comment(sol_file["source_code"])
-    //         if (result.length == 0) return;
-    //         result.forEach(async (record, id) => {
-    //             // console.log(`Append row ${id} of sol file ${idx} start`)
-    //             await writer.appendRow({
-    //                 "source_idx": idx.toString(),
-    //                 "contract_name": record[0],
-    //                 "func_name": record[1],
-    //                 "masked_contract": record[2],
-    //                 "func_body": record[3],
-    //                 "func_requirement": record[4]
-    //             })
-    //             // console.log(`Append row ${id} of sol file ${idx} end`)
-    //         })      
-    //     } catch (e) {
-    //         console.log(e)
-    //     }
-    // })
 
-    // writer.setRowGroupSize(8192)
-    // sol_files = sol_files.slice(0, 1000)
-    // await Promise.allSettled(sol_files.map(async (sol_file, idx) => {
-    //     try {
-    //         console.log("Sol file", idx)
-    //         const result = find_function_has_comment(sol_file["source_code"])
-    //         if (result.length == 0) return;
-    //         await Promise.allSettled(result.map(async (record) => {
-    //             await writer.appendRow({
-    //                 "source_idx": `${idx}`,
-    //                 "contract_name": record[0],
-    //                 "func_name": record[1],
-    //                 "masked_contract": record[2],
-    //                 "func_body": record[3],
-    //                 "func_requirement": record[4]
-    //             })
-    //         }))
-    //     } catch (e) {
-    //         console.log(e)
-    //     }
-    // })) 
     for (const sol_file of tqdm(sol_files)) {
         try {
             const result = find_function_has_comment(sol_file["source_code"])

@@ -11,7 +11,7 @@ compiler = os.path.join(base, "compilers")
 def compile(input, hardhat, output, throw_error=False, error_path=""):
     compilable = []
     if throw_error:
-        uncompilable = []
+        uncompilable = {}
     test_compile = pd.read_parquet(input, engine="fastparquet")
     for i in tqdm(test_compile.index):
         source = test_compile.loc[i, "source_code"]
@@ -23,21 +23,17 @@ def compile(input, hardhat, output, throw_error=False, error_path=""):
         """
         data = run(cmd, shell=True, capture_output=True, text=True)
         if "Compiled 1 Solidity file successfully" in data.stdout:
-            compilable.append([i, test_compile.loc[i, "source_code"]])
+            compilable.append(i)
         else:
             if throw_error:
-                uncompilable.append(
-                    [i, test_compile.loc[i, "source_code"], data.stderr]
-                )
+                uncompilable[i] = data.stderr
 
-    compilable = pd.DataFrame(compilable, columns=["index", "source_code"]).set_index(
-        "index"
-    )
+    compilable = test_compile[test_compile.index.isin(compilable)]
     compilable.to_parquet(output, engine="fastparquet")
+
     if throw_error:
-        uncompilable = pd.DataFrame(
-            uncompilable, columns=["index", "source_code", "error"]
-        ).set_index("index")
+        error = test_compile[test_compile.index.isin(uncompilable)]
+        error["error"] = error.index.apply(lambda i: uncompilable[i])
         uncompilable.to_parquet(error_path, engine="fastparquet")
 
 
@@ -49,7 +45,7 @@ if __name__ == "__main__":
     parser.add_argument("-e", "--error", dest="error")
     parser.add_argument("-p", "--path", dest="path")
     args = parser.parse_args()
-    if args.error:
+    if args.error == "yes":
         compile(
             input=args.input,
             hardhat=args.hardhat,

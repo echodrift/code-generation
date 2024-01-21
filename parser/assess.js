@@ -1,28 +1,58 @@
 import parquetjs from "@dsnp/parquetjs"
 import parser from "@solidity-parser/parser"
 import { get_location } from "./parse_funcs.js"
+import stringSimilarity from "string-similarity"
+import { ArgumentParser } from "argparse"
+import tqdm from "tqdm"
 
-function fill_contract(source_code, contract_name, function_name, fill_content) {
+
+function fill_contract(source_code, contract_name, func_name, func_body, baseline_output, finetune_output) {
     const source = source_code.replace("\r\n", "\n")
     try {
         const sourceUnit = parser.parse(source, {loc: true})
-        for (let i = 0; i < sourceUnit["children"].length; i++) {
-            if (sourceUnit["children"][i]["type"] == "ContractDefinition" &&
-                sourceUnit["children"][i]["kind"] == "contract" &&
-                sourceUnit["children"][i]["name"] == contract_name) {
-                let child = sourceUnit["children"][i]
-                for (let j = 0; j < child["subNodes"].length; j++) {
-                    if (child["subNodes"][j]["type"] == "FunctionDefinition" &&
-                        child["subNodes"][j]["name"] == function_name) {
-                        let [body_start, body_end] = get_location(source, child["subNodes"][j]["body"])
-                        const filled_source = source.slice(0, body_start + 1) + fill_content + source.slice(body_end - 1)
-                        return filled_source
+        for (let child of sourceUnit["children"]) {
+            if (child["type"] == "ContractDefinition" && 
+                child["kind"] == "contract" && 
+                child["name"] == contract_name) {
+                    
+                let candidates = []
+                for (let subNode of child["subNodes"]) {
+                    if (subNode["type"] == "FunctionDefinition" &&
+                        subNode["name"] == func_name) {
+                            candidates.push(subNode)
+                        }
+                }
+                if (candidates.length == 0) {
+                    return null
+                } else if (candidates.length == 1) {
+                    let [body_start, body_end] = get_location(source, candidates[0]["body"])
+                    const filled_source_body = source.slice(0, body_start + 1) + func_body + source.slice(body_end - 1)
+                    const filled_source_baseline = source.slice(0, body_start + 1) + baseline_output + source.slice(body_end - 1)
+                    const filled_source_finetune = source.slice(0, body_start + 1) + finetune_output + source.slice(body_end - 1)
+                    return [filled_source_body, filled_source_baseline, filled_source_finetune]
+                } else {
+                    let best_candidate = null
+                    let best_similar_rate = 0
+                    for (let candidate of candidates) {
+                        let [body_start, body_end] = get_location(source, candidate["body"])
+                        let ground_truth = source.slice(body_start + 1 , body_end - 1)
+                        const similar_rate = stringSimilarity.compareTwoStrings(ground_truth.toLowerCase(), func_body.toLowerCase())
+                        if (best_similar_rate < similar_rate) {
+                            best_similar_rate = similar_rate
+                            best_candidate = candidate
+                        }
                     }
+                    let [body_start, body_end] = get_location(source, best_candidate["body"])
+                    const filled_source_body = source.slice(0, body_start + 1) + func_body + source.slice(body_end - 1)
+                    const filled_source_baseline = source.slice(0, body_start + 1) + baseline_output + source.slice(body_end - 1)
+                    const filled_source_finetune = source.slice(0, body_start + 1) + finetune_output + source.slice(body_end - 1)
+                    return [filled_source_body, filled_source_baseline, filled_source_finetune]
                 }
             }
-        }
-    } catch {
-
+            break
+        }    
+    } catch (e) {
+        return null
     }
 }
 
@@ -55,55 +85,59 @@ async function parsable(test_file) {
 }
 
 
-async function make_test_suite(test_file, test_suite) {
+async function make_test_suite(source, dest) {
     let test_cases = []
-    let reader = await parquetjs.ParquetReader.openFile(test_file)
+    let reader = await parquetjs.ParquetReader.openFile(source)
     let cursor = reader.getCursor()
     let record = null
     while (record = await cursor.next()) {
         test_cases.push(record)
     }
-    let source_code = null
-    let contract_name = null
-    let function_name = null
-    let fill_content = null
-    let filled_source = null
-    let file_name = null
-    let file_address = null
     var schema = new parquetjs.ParquetSchema({
-        file_name: parquetjs.ParquetFieldBuilder.createStringField(),
-        file_address: parquetjs.ParquetFieldBuilder.createStringField(),
         contract_name: parquetjs.ParquetFieldBuilder.createStringField(),
         func_name: parquetjs.ParquetFieldBuilder.createStringField(),
-        source_code: parquetjs.ParquetFieldBuilder.createStringField(),
-        source_code_with_deepseek_output: parquetjs.ParquetFieldBuilder.createStringField()
+        original_source_code: parquetjs.ParquetFieldBuilder.createStringField(),
+        filled_source_body: parquetjs.ParquetFieldBuilder.createStringField(),
+        filled_source_baseline: parquetjs.ParquetFieldBuilder.createStringField(),
+        filled_source_finetune: parquetjs.ParquetFieldBuilder.createStringField()
     })
-    var writer = await parquetjs.ParquetWriter.openFile(schema, test_suite)
-    for (let i = 0; i < test_cases.length; i++){
-        console.log(i)
-        source_code = test_cases[i]["source_code"]
-        contract_name = test_cases[i]["contract_name"]
-        function_name = test_cases[i]["func_name"]
-        file_name = test_cases[i]["file_name"]
-        file_address = test_cases[i]["file_address"]
-        if (!function_name) {
-            function_name = ""
+    var writer = await parquetjs.ParquetWriter.openFile(schema, dest)
+    let func_name = null
+    for (let test_case of tqdm(test_cases)){
+        func_name = test_case["func_name"]
+        if (! func_name) {
+            func_name = ""
         }
-        fill_content = test_cases[i]["deepseek_output"]
-        filled_source = fill_contract(source_code, contract_name, function_name, fill_content)
-        if (filled_source) {
-            await writer.appendRow({
-                "file_name": file_name,
-                "file_address": file_address,
-                "contract_name": contract_name,
-                "func_name": function_name,
-                "source_code": source_code,
-                "source_code_with_deepseek_output": filled_source
-            })
-        }
+        const result = fill_contract(test_case["source_code"], 
+                                    test_case["contract_name"], 
+                                    func_name, 
+                                    test_case["func_body"],
+                                    test_case["deepseek_output"], 
+                                    test_case["finetune_output"])
+        if (! result) continue
+
+        const [filled_source_body, 
+            filled_source_baseline, 
+            filled_source_finetune] = result
+        await writer.appendRow({
+            "contract_name": test_case["contract_name"],
+            "func_name": func_name,
+            "original_source_code": test_case["source_code"],
+            "filled_source_body": filled_source_body,
+            "filled_source_baseline": filled_source_baseline,
+            "filled_source_finetune": filled_source_finetune
+        })
     }
     writer.close()
 }
 
-// make_test_suite("./data/test/test.parquet", "./data/test/test-v2.parquet")
-console.log(await parsable("./data/test/test-v2.parquet"))
+async function main() {
+    const parser = new ArgumentParser()
+    parser.add_argument('-i', '--input')
+    parser.add_argument('-o', '--output')
+    const args = parser.parse_args()
+    await make_test_suite(args.input, args.output)
+}
+
+main()
+
