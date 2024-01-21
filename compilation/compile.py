@@ -19,7 +19,7 @@ def compile(input, hardhat, output, throw_error=False, error_path=""):
             f.write(source)
         cmd = f"""
         cd {os.path.join(compiler, hardhat)}
-        npx hardhat compile
+        npx hardhat compile --force
         """
         data = run(cmd, shell=True, capture_output=True, text=True)
         if "Compiled 1 Solidity file successfully" in data.stdout:
