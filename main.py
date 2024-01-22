@@ -1,4 +1,3 @@
-
 ERROR = [
     "ParserError",
     "DocstringParsingError",
