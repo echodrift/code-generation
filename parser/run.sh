@@ -1,7 +1,8 @@
 DIR="$( cd "$( dirname "$0" )" && pwd )"
-input=$1
-concurency=$2
-output=$3
+func=$1
+input=$2
+concurency=$3
+output=$4
 
 ############################################################################################################
 
@@ -9,7 +10,7 @@ output=$3
 # echo Sharding done
 # i=1
 # while [ $i -le $concurency ]; do
-#     screen -dmS parser$i bash -c "node parser -i $DIR/data/batch$i.parquet -o $DIR/out/result$i.parquet"
+#     screen -dmS parser$i bash -c "node $func -i $DIR/data/batch$i.parquet -o $DIR/out/result$i.parquet"
 #     i=$(( i + 1))
 # done
 

@@ -8,13 +8,13 @@ import tqdm from "tqdm"
 
 function fill_contract(source_code, contract_name, func_name, func_body, baseline_output, finetune_output) {
     const source = source_code.replace("\r\n", "\n")
+
     try {
         const sourceUnit = parser.parse(source, {loc: true})
         for (let child of sourceUnit["children"]) {
             if (child["type"] == "ContractDefinition" && 
-                child["kind"] == "contract" && 
+                child["kind"] == "contract" &&
                 child["name"] == contract_name) {
-                    
                 let candidates = []
                 for (let subNode of child["subNodes"]) {
                     if (subNode["type"] == "FunctionDefinition" &&
@@ -48,8 +48,8 @@ function fill_contract(source_code, contract_name, func_name, func_body, baselin
                     const filled_source_finetune = source.slice(0, body_start + 1) + finetune_output + source.slice(body_end - 1)
                     return [filled_source_body, filled_source_baseline, filled_source_finetune]
                 }
+                break
             }
-            break
         }    
     } catch (e) {
         return null
@@ -99,12 +99,14 @@ async function make_test_suite(source, dest) {
         original_source_code: parquetjs.ParquetFieldBuilder.createStringField(),
         filled_source_body: parquetjs.ParquetFieldBuilder.createStringField(),
         filled_source_baseline: parquetjs.ParquetFieldBuilder.createStringField(),
-        filled_source_finetune: parquetjs.ParquetFieldBuilder.createStringField()
+        filled_source_finetune: parquetjs.ParquetFieldBuilder.createStringField(),
+        func_body: parquetjs.ParquetFieldBuilder.createStringField(),
+        func_req: parquetjs.ParquetFieldBuilder.createStringField()
     })
+    
     var writer = await parquetjs.ParquetWriter.openFile(schema, dest)
-    let func_name = null
     for (let test_case of tqdm(test_cases)){
-        func_name = test_case["func_name"]
+        let func_name = test_case["func_name"]
         if (! func_name) {
             func_name = ""
         }
@@ -114,20 +116,24 @@ async function make_test_suite(source, dest) {
                                     test_case["func_body"],
                                     test_case["deepseek_output"], 
                                     test_case["finetune_output"])
-        if (! result) continue
+        if (!result) continue
 
         const [filled_source_body, 
             filled_source_baseline, 
             filled_source_finetune] = result
+
         await writer.appendRow({
             "contract_name": test_case["contract_name"],
             "func_name": func_name,
             "original_source_code": test_case["source_code"],
             "filled_source_body": filled_source_body,
             "filled_source_baseline": filled_source_baseline,
-            "filled_source_finetune": filled_source_finetune
+            "filled_source_finetune": filled_source_finetune,
+            "func_body": test_case["func_body"],
+            "func_req": test_case["func_requirement"]
         })
     }
+    
     writer.close()
 }
 

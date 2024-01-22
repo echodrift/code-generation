@@ -1,0 +1,27 @@
+Warning: SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing "SPDX-License-Identifier: <SPDX-License>" to each source file. Use "SPDX-License-Identifier: UNLICENSED" for non-open-source code. Please see https://spdx.org for more information.
+--> contracts/sample.sol
+
+
+Warning: Source file does not specify required compiler version! Consider adding "pragma solidity ^0.8.13;"
+--> contracts/sample.sol
+
+
+DeclarationError: Identifier not found or not unique.
+ --> contracts/sample.sol:1:22:
+  |
+1 | contract Strategy is BaseStrategyInitializable {
+  |                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+Error HH600: Compilation failed
+HardhatError: HH600: Compilation failed
+    at SimpleTaskDefinition.action (/home/hieuvd/lvdthieu/CodeGen/compilation/compilers/hardhat1/node_modules/hardhat/src/builtin-tasks/compile.ts:499:15)
+    at Environment._runTaskDefinition (/home/hieuvd/lvdthieu/CodeGen/compilation/compilers/hardhat1/node_modules/hardhat/src/internal/core/runtime-environment.ts:358:14)
+    at OverriddenTaskDefinition._action (/home/hieuvd/lvdthieu/CodeGen/compilation/compilers/hardhat1/node_modules/@typechain/hardhat/src/index.ts:28:30)
+    at Environment._runTaskDefinition (/home/hieuvd/lvdthieu/CodeGen/compilation/compilers/hardhat1/node_modules/hardhat/src/internal/core/runtime-environment.ts:358:14)
+    at Environment.run (/home/hieuvd/lvdthieu/CodeGen/compilation/compilers/hardhat1/node_modules/hardhat/src/internal/core/runtime-environment.ts:191:14)
+    at SimpleTaskDefinition.action (/home/hieuvd/lvdthieu/CodeGen/compilation/compilers/hardhat1/node_modules/hardhat/src/builtin-tasks/compile.ts:1406:63)
+    at Environment._runTaskDefinition (/home/hieuvd/lvdthieu/CodeGen/compilation/compilers/hardhat1/node_modules/hardhat/src/internal/core/runtime-environment.ts:358:14)
+    at Environment.run (/home/hieuvd/lvdthieu/CodeGen/compilation/compilers/hardhat1/node_modules/hardhat/src/internal/core/runtime-environment.ts:191:14)
+    at SimpleTaskDefinition.action (/home/hieuvd/lvdthieu/CodeGen/compilation/compilers/hardhat1/node_modules/hardhat/src/builtin-tasks/compile.ts:1486:7)
+    at Environment._runTaskDefinition (/home/hieuvd/lvdthieu/CodeGen/compilation/compilers/hardhat1/node_modules/hardhat/src/internal/core/runtime-environment.ts:358:14)

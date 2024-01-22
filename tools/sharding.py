@@ -6,16 +6,16 @@ base = os.path.dirname(os.path.abspath(__file__))
 
 
 def sharding(input: str, concurency: int, output: str):
-    files_source = pd.read_parquet(input, engine="fastparquet")["source_code"].tolist()
+    files_source = pd.read_parquet(input, engine="fastparquet").reset_index(drop=True)
     length = len(files_source)
     if length % concurency == 0:
         chunk = length // concurency
     else:
         chunk = length // concurency + 1
 
-    files_source = pd.DataFrame(
-        list(enumerate(files_source)), columns=["index", "source_code"]
-    ).set_index("index")
+    # files_source = pd.DataFrame(
+    #     list(enumerate(files_source)), columns=["index", "source_code"]
+    # ).set_index("index")
 
     files_source["source_idx"] = files_source.index
 
