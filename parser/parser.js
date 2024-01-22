@@ -26,24 +26,26 @@ function test_find_comment(file) {
     }
 }
 
-async function test_find_function(files_source) {
-    let sol_files = []
-    let reader = await parquetjs.ParquetReader.openFile(files_source)
-    let cursor = reader.getCursor()
-    let record = null
-    while (record = await cursor.next()) {
-        sol_files.push(record)
-    }
-    const source = sol_files[0]["source_code"];
-    
+async function test_find_function() { //files_source
+    // let sol_files = []
+    // let reader = await parquetjs.ParquetReader.openFile(files_source)
+    // let cursor = reader.getCursor()
+    // let record = null
+    // while (record = await cursor.next()) {
+    //     sol_files.push(record)
+    // }
+    // const source = sol_files[0]["source_code"];
+    const source = fs.readFileSync("/home/hieuvd/lvdthieu/CodeGen/experiment/check.sol", { encoding: 'utf8', flag: 'r' })
     const functions = find_function(source);
-    if (functions.length > 0) {
-        for (let i = 0; i < functions.length; i++) {
-            console.log(functions[i]["function_name"]);
-            console.log("-----------------------------------");
-        }
-    }
+    // if (functions.length > 0) {
+    //     for (let i = 0; i < functions.length; i++) {
+    //         console.log(functions[i]["func"]);
+    //         console.log("-----------------------------------");
+    //     }
+    // }
+    console.log(functions[2]["contract_masked"])
 }
+
 
 async function test_find_function_has_comment(files_source, output_file) {
     let sol_files = []
@@ -59,7 +61,8 @@ async function test_find_function_has_comment(files_source, output_file) {
         contract_name: parquetjs.ParquetFieldBuilder.createStringField(),
         func_name: parquetjs.ParquetFieldBuilder.createStringField(),
         masked_contract: parquetjs.ParquetFieldBuilder.createStringField(),
-        func_body: parquetjs.ParquetFieldBuilder.createStringField(),
+        // func_body: parquetjs.ParquetFieldBuilder.createStringField(),
+        function: parquetjs.ParquetFieldBuilder.createStringField(),
         func_requirement: parquetjs.ParquetFieldBuilder.createStringField()
     })
     var writer = await parquetjs.ParquetWriter.openFile(schema, output_file)
@@ -75,7 +78,8 @@ async function test_find_function_has_comment(files_source, output_file) {
                     "contract_name": record[0],
                     "func_name": record[1],
                     "masked_contract": record[2],
-                    "func_body": record[3],
+                    // "func_body": record[3],
+                    "function": record[3],
                     "func_requirement": record[4]
                 })
             }
