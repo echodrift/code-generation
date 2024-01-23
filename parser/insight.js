@@ -19,13 +19,10 @@ async function parse_contract(file_source, output_file) {
         contract_source: parquetjs.ParquetFieldBuilder.createStringField()
     })
     var writer = await parquetjs.ParquetWriter.openFile(schema, output_file)
-    let idx = 0
     for (const sol_file of tqdm(sol_files)) {
         try {
             const source = sol_file["source_code"].replace('\r\n', '\n')
-            idx += 1
             const sourceUnit = parser.parse(source, {loc: true})
-            console.log(sourceUnit)
             for (const child of sourceUnit["children"]) {
                 if (child["type"] == "ContractDefinition" &&
                     child["kind"] == "contract") {
@@ -33,19 +30,16 @@ async function parse_contract(file_source, output_file) {
                         const [contract_start, contract_end] = get_location(source, child)
                         const contract_source = source.slice(contract_start, contract_end)
                         await writer.appendRow({
-                            "source_idx": `${idx}`,
+                            "source_idx": `${sol_file["source_idx"]}`,
                             "contract_name": contract_name, 
                             "contract_source": contract_source
                         })
                 }
             }
         } catch (e) {
-
         }
-        break
     }
     writer.close()
-    console.log("Writer closed")
 }
 
 

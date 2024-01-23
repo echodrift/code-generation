@@ -1,4 +1,4 @@
-//SP
+// SP
 
 contract Strategy is BaseStrategyInitializable {
     using SafeERC20 for IERC20;
@@ -323,5 +323,5 @@ contract Strategy is BaseStrategyInitializable {
         else router = sushiswapRouter;
     }
 
-    receive() external payable {}
+    // receive() external payable {}
 }

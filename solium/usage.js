@@ -3,16 +3,18 @@ import fs from "fs"
 
 const source = fs.readFileSync("./contracts/check.sol")
 
-const erros = solium.lint(source, {
+const errors = solium.lint(source, {
     "extends": "solium:recommended",
     "plugins": ["security"],
     "rules": {
             "quotes": ["error", "double"],
             "double-quotes": [2],   // returns a rule deprecation warning
-            "pragma-on-top": 1
+            "pragma-on-top": [1]
     },
 
     "options": { "returnInternalIssues": true }
 })
 
-erros.foreach(console.log)
+errors.forEach(element => {
+    console.log(element)
+});
