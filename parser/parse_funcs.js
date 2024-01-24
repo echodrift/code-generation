@@ -119,17 +119,17 @@ export function find_function(sol_file) {
                     if (child["subNodes"][j]["body"] && child["subNodes"][j]) {
                         let [contract_start, contract_end] = get_location(sol_file, child);
                         let [func_start, func_end] = get_location(sol_file, child["subNodes"][j]);
-                        // let [body_start, body_end] = get_location(sol_file, child["subNodes"][j]["body"]);
-                        // const body = sol_file.slice(body_start + 1, body_end - 1);
-                        // const contract_masked = sol_file.slice(contract_start, body_start + 1) + "<FILL_FUNCTION_BODY>" + sol_file.slice(body_end - 1, contract_end);
-                        const func = sol_file.slice(func_start, func_end)
-                        const contract_masked = sol_file.slice(contract_start, func_start) + "<FILL_FUNCTION>" + sol_file.slice(func_end, contract_end)
+                        let [body_start, body_end] = get_location(sol_file, child["subNodes"][j]["body"]);
+                        const body = sol_file.slice(body_start + 1, body_end - 1);
+                        const contract_masked = sol_file.slice(contract_start, body_start + 1) + "<FILL_FUNCTION_BODY>" + sol_file.slice(body_end - 1, contract_end);
+                        // const func = sol_file.slice(func_start, func_end)
+                        // const contract_masked = sol_file.slice(contract_start, func_start) + "<FILL_FUNCTION>" + sol_file.slice(func_end, contract_end)
                         functions.push({
                             "contract_name": child["name"],
                             "function_name": child["subNodes"][j]["name"],
                             "range": { "start": func_start, "end": func_end },
-                            //"body": body,
-                            "func": func,
+                            "body": body,
+                            // "func": func,
                             "contract_masked": contract_masked
                         });
                     }
@@ -152,13 +152,54 @@ export function find_function_has_comment(sol_file) {
             back_search(sol_file, comments, tmp, function_comments);
             if (function_comments.length > 0) {
                 const function_requirement = function_comments.reverse().join('\n');
-                // result.push([functions[i]["contract_name"], functions[i]["function_name"],
-                // functions[i]["contract_masked"], functions[i]["body"], function_requirement]);
                 result.push([functions[i]["contract_name"], functions[i]["function_name"],
-                functions[i]["contract_masked"], functions[i]["func"], function_requirement]);
+                functions[i]["contract_masked"], functions[i]["body"], function_requirement]);
+                // result.push([functions[i]["contract_name"], functions[i]["function_name"],
+                // functions[i]["contract_masked"], functions[i]["func"], function_requirement]);
             }
         }
     }
     return result;
 }
 
+export function find_function_only(sol_file) {
+    sol_file = sol_file.replace('\r\n', '\n');
+    let functions = [];
+    const sourceUnit = parser.parse(sol_file, { loc: true });
+    for (let child of sourceUnit["children"]) {
+        if (child["type"] == "ContractDefinition" &&
+            child["kind"] == "contract") { 
+            for (let subNode of child["subNodes"]) {
+                if (subNode["type"] == "FunctionDefinition" && subNode["body"]) {
+                    let [contract_start, contract_end] = get_location(sol_file, child);
+                    // let [body_start, body_end] = get_location(sol_file, subNode["body"]);
+                    // const body = sol_file.slice(body_start + 1, body_end - 1);
+                    // const contract_masked = sol_file.slice(contract_start, body_start + 1) + "<FILL_FUNCTION_BODY>" + sol_file.slice(body_end - 1, contract_end);
+                    let [func_start, func_end] = get_location(sol_file, subNode);
+                    const func = sol_file.slice(func_start, func_end)
+                    const contract_masked = sol_file.slice(contract_start, func_start) + "<FILL_FUNCTION>" + sol_file.slice(func_end, contract_end)
+                    functions.push({
+                        "contract_name": child["name"],
+                        "function_name": subNode["name"],
+                        "contract_masked": contract_masked,
+                        // "body": body
+                        "func": func
+                    });
+                
+                }
+            }
+        }
+    }
+    return functions
+}
+
+export function remove_comment(source) {
+    const comments = find_comment(source)
+    let removed_comment = ""
+    let begin = 0
+    for (const comment of comments) {
+        removed_comment += source.slice(begin, comment["range"]["start"])
+        begin = comment["range"]["end"]
+    }
+    return removed_comment
+}
