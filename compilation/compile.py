@@ -8,7 +8,13 @@ base = os.path.dirname(os.path.abspath(__file__))
 compiler = os.path.join(base, "compilers")
 
 
-def compile(input, hardhat, output, throw_error=False, error_path=""):
+def compile(
+    input: str,
+    hardhat: str,
+    output: str,
+    throw_error: bool = False,
+    error_path: str = "",
+):
     compilable = []
     if throw_error:
         uncompilable = {}
