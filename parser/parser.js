@@ -173,5 +173,7 @@ async function main() {
 
 }
 
-main()
+// main()
 
+fs.writeFileSync("/home/hieuvd/lvdthieu/CodeGen/parse_sample.json", 
+                JSON.stringify(test_parser("/home/hieuvd/lvdthieu/CodeGen/sample.sol")))
