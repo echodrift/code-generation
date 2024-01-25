@@ -6,6 +6,13 @@ base = os.path.dirname(os.path.abspath(__file__))
 
 
 def sharding(input: str, concurency: int, output: str):
+    """This function aims to split large parquet file into multiple small parquet files
+
+    Args:
+        input (str): Large parquet file path
+        concurency (int): Number of small files want to split
+        output (str): Directory to store result
+    """
     files_source = pd.read_parquet(input, engine="fastparquet").reset_index(drop=True)
     length = len(files_source)
     if length % concurency == 0:

@@ -1,10 +1,15 @@
 import { get_location } from "./parse_funcs.js"
-import parser from "@solidity-parser/parser"
+import parser from "@Solidity-parser/parser"
 import parquetjs from "@dsnp/parquetjs"
 import tqdm from "tqdm"
 import { ArgumentParser } from "argparse"
 
-async function parse_contract(file_source, output_file) {
+/**
+ * Parse Solidity files to get Solidity contracts 
+ * @param {string} file_source Source file path: File contains Solidity files 
+ * @param {string} output_file Output file path: File contains contracts of Solidity files in source file
+ */
+async function collect_contract(file_source, output_file) {
     let sol_files = []
     let reader = await parquetjs.ParquetReader.openFile(file_source)
     let cursor = reader.getCursor()
@@ -42,13 +47,15 @@ async function parse_contract(file_source, output_file) {
     writer.close()
 }
 
-
+/**
+ * Main function
+ */
 async function main() {
     const parser = new ArgumentParser()
     parser.add_argument('-i', '--input')
     parser.add_argument('-o', '--output')
     const args = parser.parse_args()
-    await parse_contract(args.input, args.output)
+    await collect_contract(args.input, args.output)
 }
 
 main()

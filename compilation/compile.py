@@ -15,6 +15,15 @@ def compile(
     throw_error: bool = False,
     error_path: str = "",
 ):
+    """Compile a solidity file
+
+    Args:
+        input (str): Parquet file store solidity files path
+        hardhat (str): Hardhat compiler path
+        output (str): Compile result path
+        throw_error (bool, optional): If True write compile error to file. Defaults to False.
+        error_path (str, optional): Compile error file path. Defaults to "".
+    """
     compilable = []
     if throw_error:
         uncompilable = {}

@@ -1,11 +1,17 @@
 import parser from "@solidity-parser/parser";
 
-export function get_location(sol_file, element) {
+/**
+ * Get plain location of a element in source code (from ith to jth in source code)
+ * @param {string} source Solditity source code 
+ * @param {string} element An element that parsed from source code 
+ * @returns 
+ */
+export function get_location(source, element) {
     const start_line = element["loc"]["start"]["line"];
     const start_col = element["loc"]["start"]["column"];
     const end_line = element["loc"]["end"]["line"];
     const end_col = element["loc"]["end"]["column"];
-    const lines = sol_file.split('\n');
+    const lines = source.split('\n');
     let start_idx = 0;
     for (let j = 0; j < start_line - 1; j++) {
         start_idx += lines[j].length;
@@ -20,29 +26,41 @@ export function get_location(sol_file, element) {
     return [start_idx, end_idx];
 }
 
-function back_search(sol_file, comment_list, start_point, result) {
+/**
+ * This function is a recusive function aim to get all comment before a start point
+ * @param {string} source Solidity source code
+ * @param {List[string]} comment_list List comments in that source code
+ * @param {int} start_point Start point for recursive search 
+ * @param {List[string]} result Update variable through recursion
+ */
+function back_search(source, comment_list, start_point, result) {
     let tmp = start_point;
-    while (sol_file[tmp] == ' ' || sol_file[tmp] == '\n' || sol_file[tmp] == '\t' || sol_file[tmp] == '\r') {
+    while (source[tmp] == ' ' || source[tmp] == '\n' || source[tmp] == '\t' || source[tmp] == '\r') {
         tmp -= 1;
     }
     for (let i = 0; i < comment_list.length; i++) {
         if (tmp >= comment_list[i]["range"]["start"] && tmp <= comment_list[i]["range"]["end"]) {
             result.push(comment_list[i]["content"]);
-            back_search(sol_file, comment_list, comment_list[i]["range"]["start"] - 1, result);
+            back_search(source, comment_list, comment_list[i]["range"]["start"] - 1, result);
             break;
         }
     }
 }
 
-export function find_comment(sol_file) {
-    sol_file = sol_file.replace('\r\n', '\n');
+/**
+ * This function aims to extract all comments in Solidity source code
+ * @param {string} source Solidity source code 
+ * @returns List of comments in source code
+ */
+export function find_comment(source) {
+    source = source.replace('\r\n', '\n');
     let state = "ETC";
     let i = 0;
     let comments = [];
     let currentComment = null;
 
-    while (i + 1 < sol_file.length) {
-        if (state == "ETC" && sol_file[i] == '/' && sol_file[i + 1] == '/') {
+    while (i + 1 < source.length) {
+        if (state == "ETC" && source[i] == '/' && source[i + 1] == '/') {
             state = "LINE_COMMENT";
             currentComment = {
                 "type": "LineComment",
@@ -52,7 +70,7 @@ export function find_comment(sol_file) {
             continue;
         }
 
-        if (state == "LINE_COMMENT" && sol_file[i] == '\n') {
+        if (state == "LINE_COMMENT" && source[i] == '\n') {
             state = "ETC";
             currentComment["range"]["end"] = i;
             comments.push(currentComment);
@@ -61,7 +79,7 @@ export function find_comment(sol_file) {
             continue;
         }
 
-        if (state == "ETC" && sol_file[i] == '/' && sol_file[i + 1] == '*') {
+        if (state == "ETC" && source[i] == '/' && source[i + 1] == '*') {
             state = "BLOCK_COMMENT";
             currentComment = {
                 "type": "BlockComment",
@@ -71,7 +89,7 @@ export function find_comment(sol_file) {
             continue;
         }
 
-        if (state == "BLOCK_COMMENT" && sol_file[i] == '*' && sol_file[i + 1] == '/') {
+        if (state == "BLOCK_COMMENT" && source[i] == '*' && source[i + 1] == '/') {
             state = "ETC";
             currentComment["range"]["end"] = i + 2;
             comments.push(currentComment);
@@ -83,33 +101,38 @@ export function find_comment(sol_file) {
     }
 
     if (currentComment && currentComment["type"] == "LineComment") {
-        if (sol_file[i - 1] == '\n') {
-            currentComment["range"]["end"] = sol_file.length - 1;
+        if (source[i - 1] == '\n') {
+            currentComment["range"]["end"] = source.length - 1;
         } else {
-            currentComment["range"]["end"] = sol_file.length;
+            currentComment["range"]["end"] = source.length;
         }
         comments.push(currentComment)
     }
 
 
-    function extract_content(sol_file, comments) {
+    function extract_content(source, comments) {
         for (let i = 0; i < comments.length; i++) {
             let start = comments[i]["range"]["start"] + 2;
             let end = comments[i]["type"] == "LineComment" ? comments[i]["range"]["end"] : comments[i]["range"]["end"] - 2;
-            let raw = sol_file.slice(start, end);
+            let raw = source.slice(start, end);
             comments[i]["content"] = raw.trim();
         }
         comments = comments.filter((comment) => comment["content"]);
         return comments;
     }
 
-    return extract_content(sol_file, comments);
+    return extract_content(source, comments);
 }
 
-export function find_function(sol_file) {
-    sol_file = sol_file.replace('\r\n', '\n');
+/**
+ * This function aims to extract all functions in Solidity source code
+ * @param {string} source Solidity source code 
+ * @returns List of function in source code
+ */
+export function find_function(source) {
+    source = source.replace('\r\n', '\n');
     let functions = [];
-    const sourceUnit = parser.parse(sol_file, { loc: true });
+    const sourceUnit = parser.parse(source, { loc: true });
     for (let i = 0; i < sourceUnit["children"].length; i++) {
         if (sourceUnit["children"][i]["type"] == "ContractDefinition" &&
             sourceUnit["children"][i]["kind"] == "contract") { 
@@ -117,13 +140,13 @@ export function find_function(sol_file) {
             for (let j = 0; j < child["subNodes"].length; j++) {
                 if (child["subNodes"][j]["type"] == "FunctionDefinition") {
                     if (child["subNodes"][j]["body"] && child["subNodes"][j]) {
-                        let [contract_start, contract_end] = get_location(sol_file, child);
-                        let [func_start, func_end] = get_location(sol_file, child["subNodes"][j]);
-                        let [body_start, body_end] = get_location(sol_file, child["subNodes"][j]["body"]);
-                        const body = sol_file.slice(body_start + 1, body_end - 1);
-                        const contract_masked = sol_file.slice(contract_start, body_start + 1) + "<FILL_FUNCTION_BODY>" + sol_file.slice(body_end - 1, contract_end);
-                        // const func = sol_file.slice(func_start, func_end)
-                        // const contract_masked = sol_file.slice(contract_start, func_start) + "<FILL_FUNCTION>" + sol_file.slice(func_end, contract_end)
+                        let [contract_start, contract_end] = get_location(source, child);
+                        let [func_start, func_end] = get_location(source, child["subNodes"][j]);
+                        let [body_start, body_end] = get_location(source, child["subNodes"][j]["body"]);
+                        const body = source.slice(body_start + 1, body_end - 1);
+                        const contract_masked = source.slice(contract_start, body_start + 1) + "<FILL_FUNCTION_BODY>" + source.slice(body_end - 1, contract_end);
+                        // const func = source.slice(func_start, func_end)
+                        // const contract_masked = source.slice(contract_start, func_start) + "<FILL_FUNCTION>" + source.slice(func_end, contract_end)
                         functions.push({
                             "contract_name": child["name"],
                             "function_name": child["subNodes"][j]["name"],
@@ -140,16 +163,21 @@ export function find_function(sol_file) {
     return functions
 }
 
-export function find_function_has_comment(sol_file) {
+/**
+ * This function aims to get all function that has comment(requirement) in Soldity source code
+ * @param {string} source Solidity source code 
+ * @returns List of functions that has requirement in source code
+ */
+export function find_function_has_comment(source) {
     let result = []
-    sol_file = sol_file.replace('\r\n', '\n');
-    const functions = find_function(sol_file);
-    const comments = find_comment(sol_file);
+    source = source.replace('\r\n', '\n');
+    const functions = find_function(source);
+    const comments = find_comment(source);
     if (functions.length > 0 && comments.length > 0) {
         for (let i = 0; i < functions.length; i++) {
             let tmp = functions[i]["range"]["start"] - 1;
             let function_comments = [];
-            back_search(sol_file, comments, tmp, function_comments);
+            back_search(source, comments, tmp, function_comments);
             if (function_comments.length > 0) {
                 const function_requirement = function_comments.reverse().join('\n');
                 result.push([functions[i]["contract_name"], functions[i]["function_name"],
@@ -162,22 +190,27 @@ export function find_function_has_comment(sol_file) {
     return result;
 }
 
-export function find_function_only(sol_file) {
-    sol_file = sol_file.replace('\r\n', '\n');
+/**
+ * This function aims to get all functions in Solidity source code with formated structure
+ * @param {string} source Solidity source code
+ * @returns List of functions in source code
+ */
+export function find_function_only(source) {
+    source = source.replace('\r\n', '\n');
     let functions = [];
-    const sourceUnit = parser.parse(sol_file, { loc: true });
+    const sourceUnit = parser.parse(source, { loc: true });
     for (let child of sourceUnit["children"]) {
         if (child["type"] == "ContractDefinition" &&
             child["kind"] == "contract") { 
             for (let subNode of child["subNodes"]) {
                 if (subNode["type"] == "FunctionDefinition" && subNode["body"]) {
-                    let [contract_start, contract_end] = get_location(sol_file, child);
-                    // let [body_start, body_end] = get_location(sol_file, subNode["body"]);
-                    // const body = sol_file.slice(body_start + 1, body_end - 1);
-                    // const contract_masked = sol_file.slice(contract_start, body_start + 1) + "<FILL_FUNCTION_BODY>" + sol_file.slice(body_end - 1, contract_end);
-                    let [func_start, func_end] = get_location(sol_file, subNode);
-                    const func = sol_file.slice(func_start, func_end)
-                    const contract_masked = sol_file.slice(contract_start, func_start) + "<FILL_FUNCTION>" + sol_file.slice(func_end, contract_end)
+                    let [contract_start, contract_end] = get_location(source, child);
+                    // let [body_start, body_end] = get_location(source, subNode["body"]);
+                    // const body = source.slice(body_start + 1, body_end - 1);
+                    // const contract_masked = source.slice(contract_start, body_start + 1) + "<FILL_FUNCTION_BODY>" + source.slice(body_end - 1, contract_end);
+                    let [func_start, func_end] = get_location(source, subNode);
+                    const func = source.slice(func_start, func_end)
+                    const contract_masked = source.slice(contract_start, func_start) + "<FILL_FUNCTION>" + source.slice(func_end, contract_end)
                     functions.push({
                         "contract_name": child["name"],
                         "function_name": subNode["name"],
@@ -191,15 +224,4 @@ export function find_function_only(sol_file) {
         }
     }
     return functions
-}
-
-export function remove_comment(source) {
-    const comments = find_comment(source)
-    let removed_comment = ""
-    let begin = 0
-    for (const comment of comments) {
-        removed_comment += source.slice(begin, comment["range"]["start"])
-        begin = comment["range"]["end"]
-    }
-    return removed_comment
 }
