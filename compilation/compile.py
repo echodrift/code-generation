@@ -48,8 +48,11 @@ def compile(
 
     if throw_error:
         error = test_compile[test_compile.index.isin(uncompilable)]
-        error["error"] = error.index.apply(lambda i: uncompilable[i])
-        uncompilable.to_parquet(error_path, engine="fastparquet")
+        details = []
+        for idx in error.index:
+            details.append(uncompilable[idx])
+        error["error"] = details
+        error.to_parquet(error_path, engine="fastparquet")
 
 
 if __name__ == "__main__":

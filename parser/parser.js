@@ -8,7 +8,12 @@ import { ArgumentParser } from "argparse"
 function test_parser(file) {
     const data = fs.readFileSync(file, "utf-8");
     try {
-        const ast = parser.parse(data, { loc: true });
+        const ast = parser.parse(data, { loc: false });
+        parser.visit(ast["children"], {
+            Identifier: function (node) {
+              console.log(node)
+            },
+        })
         return ast;
     } catch (e) {
         console.log("Error")

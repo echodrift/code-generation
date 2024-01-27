@@ -59,13 +59,13 @@ def split_test_suite():
     ).to_parquet(
         "/home/hieuvd/lvdthieu/CodeGen/data/test/body.parquet", engine="fastparquet"
     )
-    
+
     test_suite[["contract_name", "func_name", "filled_source_deepseek"]].rename(
         columns={"filled_source_deepseek": "source_code"}
     ).to_parquet(
         "/home/hieuvd/lvdthieu/CodeGen/data/test/deepseek.parquet", engine="fastparquet"
     )
-    
+
     test_suite[["contract_name", "func_name", "filled_source_codellama"]].rename(
         columns={"filled_source_codellama": "source_code"}
     ).to_parquet(
@@ -73,5 +73,15 @@ def split_test_suite():
     )
 
 
+def write_sample():
+    all_file = pd.read_parquet(
+        "/home/hieuvd/lvdthieu/CodeGen/data/solfile-v3/all_file.parquet",
+        engine="fastparquet",
+    )
+    with open("sample.sol", "w") as f:
+        f.write(all_file.sample(n=1, random_state=29).iloc[0, 0])
+
+
 if __name__ == "__main__":
-    split_test_suite()
+    # split_test_suite()
+    write_sample()
