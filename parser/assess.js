@@ -12,10 +12,10 @@ import fs from "fs"
  * @param {string} func_name Masked function
  * @param {string} func_body Body of masked function (ground truth) 
  * @param {string} deepseek_output Body of masked function that base LLM model generated 
- * @param {string} codellama_output Body of masked function that finetuned LLM model generated 
+ * @param {string} codellama_output Body of masked function that finetuned LLM model generated [, codellama_output]
  * @returns {Optional[List]} a list of filled contracts with func_body, deepseek_output, codellama_output respectively
  */
-function fill_contract(file_source, contract_name, func_name, func_body, deepseek_output, codellama_output) {
+function fill_contract(file_source, contract_name, func_name, func_body, deepseek_output) {
     const source = file_source.replace("\r\n", "\n")
     try {
         const sourceUnit = parser.parse(source, {loc: true})
@@ -37,8 +37,9 @@ function fill_contract(file_source, contract_name, func_name, func_body, deepsee
                     let [body_start, body_end] = get_location(source, candidates[0]["body"])
                     const filled_source_body = source.slice(0, body_start + 1) + func_body + source.slice(body_end - 1)
                     const filled_source_deepseek = source.slice(0, body_start + 1) + deepseek_output + source.slice(body_end - 1)
-                    const filled_source_codellama = source.slice(0, body_start + 1) + codellama_output + source.slice(body_end - 1)
-                    return [filled_source_body, filled_source_deepseek, filled_source_codellama]
+                    // const filled_source_codellama = source.slice(0, body_start + 1) + codellama_output + source.slice(body_end - 1)
+                    // return [filled_source_body, filled_source_deepseek, filled_source_codellama]
+                    return [filled_source_body, filled_source_deepseek]
                 } else {
                     let best_candidate = null
                     let best_similar_rate = 0
@@ -54,8 +55,9 @@ function fill_contract(file_source, contract_name, func_name, func_body, deepsee
                     let [body_start, body_end] = get_location(source, best_candidate["body"])
                     const filled_source_body = source.slice(0, body_start + 1) + func_body + source.slice(body_end - 1)
                     const filled_source_deepseek = source.slice(0, body_start + 1) + deepseek_output + source.slice(body_end - 1)
-                    const filled_source_codellama = source.slice(0, body_start + 1) + codellama_output + source.slice(body_end - 1)
-                    return [filled_source_body, filled_source_deepseek, filled_source_codellama]
+                    // const filled_source_codellama = source.slice(0, body_start + 1) + codellama_output + source.slice(body_end - 1)
+                    // return [filled_source_body, filled_source_deepseek, filled_source_codellama]
+                    return [filled_source_body, filled_source_deepseek]
                 }
             }
         }    
@@ -80,33 +82,38 @@ async function make_test_suite(source, dest) {
     var schema = new parquetjs.ParquetSchema({
         contract_name: parquetjs.ParquetFieldBuilder.createStringField(),
         func_name: parquetjs.ParquetFieldBuilder.createStringField(),
+        func_body: parquetjs.ParquetFieldBuilder.createStringField(),
+        func_body_removed_comment: parquetjs.ParquetFieldBuilder.createStringField(),
         original_source_code: parquetjs.ParquetFieldBuilder.createStringField(),
         filled_source_body: parquetjs.ParquetFieldBuilder.createStringField(),
         filled_source_deepseek: parquetjs.ParquetFieldBuilder.createStringField(),
-        filled_source_codellama: parquetjs.ParquetFieldBuilder.createStringField()
+        // filled_source_codellama: parquetjs.ParquetFieldBuilder.createStringField()
     })
-    
     var writer = await parquetjs.ParquetWriter.openFile(schema, dest)
     for (let test_case of tqdm(test_cases)){
         const result = fill_contract(test_case["file_source"], 
                                     test_case["contract_name"], 
                                     test_case["func_name"], 
                                     test_case["func_body"],
-                                    test_case["deepseek_output"], 
-                                    test_case["codeellama_output"])
+                                    test_case["deepseek_output"]
+                                    // test_case["codeellama_output"]
+                                    )
         if (!result) continue
 
-        const [filled_source_body, 
-            filled_source_deepseek, 
-            filled_source_codellama] = result
+        // const [filled_source_body, 
+        //     filled_source_deepseek, 
+        //     filled_source_codellama] = result
+        const [filled_source_body, filled_source_deepseek] = result
 
         await writer.appendRow({
             "contract_name": test_case["contract_name"],
             "func_name": test_case["func_name"],
+            "func_body": test_case["func_body"],
+            "func_body_removed_comment": test_case["func_body_removed_comment"],
             "original_source_code": test_case["file_source"],
             "filled_source_body": filled_source_body,
             "filled_source_deepseek": filled_source_deepseek,
-            "filled_source_codellama": filled_source_codellama,
+            // "filled_source_codellama": filled_source_codellama,
         })
     }
     

@@ -1,44 +1,44 @@
 #!/bin/bash
 # Setup
 DIR="$( cd "$( dirname "$0" )" && pwd )"
-compiler="$DIR/compilers"
-input=$1
-concurency=$2
-output=$3
+COMPILER="$DIR/compilers"
+INPUT=$1
+CONCURRENCY=$2
+OUTPUT=$3
+COMPILE_INFO=$4
 
 ############################################################################################################
 
 # Compile 
 
-echo "Get error?  (yes/no)"
-read get_error
 i=1
-while [ $i -le $concurency ]; do
-    if [ ! -d "$compiler/hardhat$i" ]; then
-        cp -r $compiler/hardhat $compiler/hardhat$i
-        echo Copied to $compiler/hardhat$i
+while [ $i -le $CONCURRENCY ]; do
+    if [ ! -d "$COMPILER/hardhat$i" ]; then
+        cp -r $COMPILER/hardhat $COMPILER/hardhat$i
+        echo Copied to $COMPILER/hardhat$i
     else
-        if [ -d "$compiler/hardhat$i/artifacts" ]; then
-            rm -r $compiler/hardhat$i/artifacts
+        if [ -d "$COMPILER/hardhat$i/artifacts" ]; then
+            rm -r $COMPILER/hardhat$i/artifacts
         fi
-        if [ -d "$compiler/hardhat$i/cache" ]; then
-            rm -r $compiler/hardhat$i/cache
+        if [ -d "$COMPILER/hardhat$i/cache" ]; then
+            rm -r $COMPILER/hardhat$i/cache
         fi
     fi
     i=$((i + 1))
 done
 echo Create folder done
-python $DIR/../tools/sharding.py --input $input --concurency $concurency --output $DIR/data
+python $DIR/../tools/sharding.py --input $INPUT --concurrency $CONCURRENCY --output $DIR/data
 echo Sharding done
 i=1
-while [ $i -le $concurency ]; do
-    screen -dmS hardhat$i bash -c "python compile.py -i $DIR/data/batch$i.parquet -hh hardhat$i -o $DIR/out/result$i.parquet -e $get_error -p $DIR/error/error$i.parquet"
+while [ $i -le $CONCURRENCY ]; do
+    screen -dmS hardhat$i bash -c "python compile.py -i $DIR/data/batch$i.parquet -hh hardhat$i -o $DIR/out/result$i.parquet -e $DIR/error/result$i.parquet"
     i=$(( i + 1))
 done
 
 ############################################################################################################
 
-# Merge output
+# Merging
 
-# python $DIR/../tools/merging.py --input $DIR/out --concurency $concurency --output $output 
+# python $DIR/../tools/merging.py --input $DIR/out --concurrency $CONCURRENCY --output $OUTPUT 
+# python $DIR/../tools/merging.py --input $DIR/error --concurrency $CONCURRENCY --output $COMPILE_INFO
 # echo Merging done

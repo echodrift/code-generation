@@ -10,10 +10,14 @@ ERROR = [
 ]
 
 
-def make_raw_test_suite():
-    test = pd.read_json(
-        path_or_buf="/home/hieuvd/lvdthieu/CodeGen/data/test.jsonl", lines=True
-    )
+def make_raw_test_suite(file_path: str, output: str):
+    """This function aims to create a more informative version for LLM output data
+
+    Args:
+        file_path (str): LLM output data file path
+        output (str): File path to write new data version
+    """
+    test = pd.read_json(path_or_buf=file_path, lines=True)
     contracts = pd.read_parquet(
         "/home/hieuvd/lvdthieu/CodeGen/data/contracts_filtered.parquet",
         engine="fastparquet",
@@ -35,41 +39,48 @@ def make_raw_test_suite():
             "file_source_idx",
             "source_idx",
             "masked_contract",
-            "func_body_removed_comment",
         ],
         inplace=True,
     )
-    test.to_parquet(
-        "/home/hieuvd/lvdthieu/CodeGen/data/raw_test.parquet", engine="fastparquet"
-    )
+    test.to_parquet(output, engine="fastparquet")
 
 
-def split_test_suite():
-    test_suite = pd.read_parquet(
-        "/home/hieuvd/lvdthieu/CodeGen/data/test_suite.parquet", engine="fastparquet"
-    )
-    test_suite[["contract_name", "func_name", "original_source_code"]].rename(
-        columns={"original_source_code": "source_code"}
-    ).to_parquet(
+def split_test_suite(file_path: str):
+    test_suite = pd.read_parquet(file_path, engine="fastparquet")
+    test_suite[
+        [
+            "contract_name",
+            "func_name",
+            "func_body",
+            "func_body_removed_comment",
+            "original_source_code",
+        ]
+    ].rename(columns={"original_source_code": "source_code"}).to_parquet(
         "/home/hieuvd/lvdthieu/CodeGen/data/test/original.parquet", engine="fastparquet"
     )
 
-    test_suite[["contract_name", "func_name", "filled_source_body"]].rename(
-        columns={"filled_source_body": "source_code"}
-    ).to_parquet(
+    test_suite[
+        [
+            "contract_name",
+            "func_name",
+            "func_body",
+            "func_body_removed_comment",
+            "filled_source_body",
+        ]
+    ].rename(columns={"filled_source_body": "source_code"}).to_parquet(
         "/home/hieuvd/lvdthieu/CodeGen/data/test/body.parquet", engine="fastparquet"
     )
 
-    test_suite[["contract_name", "func_name", "filled_source_deepseek"]].rename(
-        columns={"filled_source_deepseek": "source_code"}
-    ).to_parquet(
+    test_suite[
+        [
+            "contract_name",
+            "func_name",
+            "func_body",
+            "func_body_removed_comment",
+            "filled_source_deepseek",
+        ]
+    ].rename(columns={"filled_source_deepseek": "source_code"}).to_parquet(
         "/home/hieuvd/lvdthieu/CodeGen/data/test/deepseek.parquet", engine="fastparquet"
-    )
-
-    test_suite[["contract_name", "func_name", "filled_source_codellama"]].rename(
-        columns={"filled_source_codellama": "source_code"}
-    ).to_parquet(
-        "/home/hieuvd/lvdthieu/CodeGen/data/test/codellma.parquet", engine="fastparquet"
     )
 
 
@@ -83,5 +94,8 @@ def write_sample():
 
 
 if __name__ == "__main__":
-    # split_test_suite()
-    write_sample()
+    # make_raw_test_suite(
+    #     "/home/hieuvd/lvdthieu/CodeGen/data/train.jsonl",
+    #     "/home/hieuvd/lvdthieu/CodeGen/data/raw_test_v1.parquet",
+    # )
+    split_test_suite("/home/hieuvd/lvdthieu/CodeGen/data/test_suite_v1.parquet")

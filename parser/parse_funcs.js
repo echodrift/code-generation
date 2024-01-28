@@ -225,3 +225,7 @@ export function find_function_only(source) {
     }
     return functions
 }
+
+export function find_accessible_element(file_source) {
+    
+}
