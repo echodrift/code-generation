@@ -7,6 +7,9 @@ ERROR = [
     "DeclarationError",
     "TypeError",
     "UnimplementedFeatureError",
+    "InternalCompilerError",
+    "Exception",
+    "CompilerError",
 ]
 
 
@@ -28,18 +31,14 @@ def make_raw_test_suite(file_path: str, output: str):
         .astype("int64")
     )
     files = pd.read_parquet(
-        "/home/hieuvd/lvdthieu/CodeGen/data/solfile-v3/all_file.parquet",
+        "/home/hieuvd/lvdthieu/CodeGen/data/solfile/all_file.parquet",
         engine="fastparquet",
     )
     test["file_source"] = test["file_source_idx"].apply(
         lambda idx: files.loc[idx, "source_code"]
     )
     test.drop(
-        columns=[
-            "file_source_idx",
-            "source_idx",
-            "masked_contract",
-        ],
+        columns=["source_idx"],
         inplace=True,
     )
     test.to_parquet(output, engine="fastparquet")
@@ -51,20 +50,10 @@ def split_test_suite(file_path: str):
         [
             "contract_name",
             "func_name",
+            "masked_contract",
             "func_body",
             "func_body_removed_comment",
-            "original_source_code",
-        ]
-    ].rename(columns={"original_source_code": "source_code"}).to_parquet(
-        "/home/hieuvd/lvdthieu/CodeGen/data/test/original.parquet", engine="fastparquet"
-    )
-
-    test_suite[
-        [
-            "contract_name",
-            "func_name",
-            "func_body",
-            "func_body_removed_comment",
+            "file_source_idx",
             "filled_source_body",
         ]
     ].rename(columns={"filled_source_body": "source_code"}).to_parquet(
@@ -75,8 +64,11 @@ def split_test_suite(file_path: str):
         [
             "contract_name",
             "func_name",
+            "masked_contract",
             "func_body",
             "func_body_removed_comment",
+            "deepseek_output",
+            "file_source_idx",
             "filled_source_deepseek",
         ]
     ].rename(columns={"filled_source_deepseek": "source_code"}).to_parquet(
@@ -84,13 +76,30 @@ def split_test_suite(file_path: str):
     )
 
 
-def write_sample():
-    all_file = pd.read_parquet(
-        "/home/hieuvd/lvdthieu/CodeGen/data/solfile-v3/all_file.parquet",
-        engine="fastparquet",
-    )
-    with open("sample.sol", "w") as f:
-        f.write(all_file.sample(n=1, random_state=29).iloc[0, 0])
+def extract_error(file_path: str, output: str):
+    """This function aims to extract error message from compiler output
+
+    Args:
+        file_path (str): Compiler output data file path
+        output (str): Result data file path
+    """
+    source = pd.read_parquet(file_path, engine="fastparquet")
+
+    def transform(string: str) -> str:
+        if string == "<COMPILED_SUCCESSFULLY>":
+            return string
+        else:
+            errors = []
+            comps = string.split("\n\n")
+            for comp in comps:
+                for err in ERROR:
+                    if err in comp:
+                        errors.append(comp)
+            return "\n".join(errors)
+
+    source["compile_info"] = source["compile_info"].apply(lambda x: transform(x))
+
+    source.to_parquet(output, engine="fastparquet")
 
 
 if __name__ == "__main__":
@@ -98,4 +107,8 @@ if __name__ == "__main__":
     #     "/home/hieuvd/lvdthieu/CodeGen/data/train.jsonl",
     #     "/home/hieuvd/lvdthieu/CodeGen/data/raw_test_v1.parquet",
     # )
-    split_test_suite("/home/hieuvd/lvdthieu/CodeGen/data/test_suite_v1.parquet")
+    # split_test_suite("/home/hieuvd/lvdthieu/CodeGen/data/test_suite_v1.parquet")
+    extract_error(
+        "/home/hieuvd/lvdthieu/CodeGen/data/compile_info/deepseek.parquet",
+        "/home/hieuvd/lvdthieu/CodeGen/data/compile_info/deepseek_v1.parquet",
+    )

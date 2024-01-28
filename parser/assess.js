@@ -82,8 +82,11 @@ async function make_test_suite(source, dest) {
     var schema = new parquetjs.ParquetSchema({
         contract_name: parquetjs.ParquetFieldBuilder.createStringField(),
         func_name: parquetjs.ParquetFieldBuilder.createStringField(),
+        masked_contract: parquetjs.ParquetFieldBuilder.createStringField(),
         func_body: parquetjs.ParquetFieldBuilder.createStringField(),
         func_body_removed_comment: parquetjs.ParquetFieldBuilder.createStringField(),
+        deepseek_output: parquetjs.ParquetFieldBuilder.createStringField(),
+        file_source_idx: parquetjs.ParquetFieldBuilder.createStringField(),
         original_source_code: parquetjs.ParquetFieldBuilder.createStringField(),
         filled_source_body: parquetjs.ParquetFieldBuilder.createStringField(),
         filled_source_deepseek: parquetjs.ParquetFieldBuilder.createStringField(),
@@ -108,8 +111,11 @@ async function make_test_suite(source, dest) {
         await writer.appendRow({
             "contract_name": test_case["contract_name"],
             "func_name": test_case["func_name"],
+            "masked_contract": test_case["masked_contract"],
             "func_body": test_case["func_body"],
             "func_body_removed_comment": test_case["func_body_removed_comment"],
+            "deepseek_output": test_case["deepseek_output"],
+            "file_source_idx": `${test_case["file_source_idx"]}`, 
             "original_source_code": test_case["file_source"],
             "filled_source_body": filled_source_body,
             "filled_source_deepseek": filled_source_deepseek,
