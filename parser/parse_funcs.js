@@ -1,4 +1,7 @@
-import parser from "@solidity-parser/parser";
+import parser, { parse } from "@solidity-parser/parser";
+import parquetjs from "@dsnp/parquetjs"
+import tqdm from "tqdm"
+import fs from "fs"
 
 /**
  * Get plain location of a element in source code (from ith to jth in source code)
@@ -226,6 +229,94 @@ export function find_function_only(source) {
     return functions
 }
 
-export function find_accessible_element(file_source) {
-    
+export function find_accessible_element(source, contract_name, func_name, func_body) {
+    try {
+        const sourceUnit = parser.parse(source, {loc: true})
+        for (let child of sourceUnit["children"]) {
+            if (child["type"] == "ContractDefinition" && 
+                child["kind"] == "contract" &&
+                child["name"] == contract_name) {
+                let candidates = []
+                let func = null
+                for (let subNode of child["subNodes"]) {
+                    if (subNode["type"] == "FunctionDefinition" &&
+                        subNode["name"] === func_name) {
+                            candidates.push(subNode)
+                        }
+                }
+                if (candidates.length == 1) {
+                    func = candidates[0]
+                } else {
+                    let best_candidate = null
+                    let best_similar_rate = 0
+                    for (let candidate of candidates) {
+                        let [body_start, body_end] = get_location(source, candidate["body"])
+                        let ground_truth = source.slice(body_start + 1 , body_end - 1)
+                        const similar_rate = stringSimilarity.compareTwoStrings(ground_truth.toLowerCase(), func_body.toLowerCase())
+                        if (best_similar_rate < similar_rate) {
+                            best_similar_rate = similar_rate
+                            best_candidate = candidate
+                        }
+                    }
+                    func = best_candidate
+                }
+                if (func == null) {
+                    return null
+                } else {
+                    let all_assessible = new Set()
+                    let local_assessible = new Set()
+                    parser.visit(func, {
+                        Identifier: function (node) {
+                            all_assessible.add(node.name)
+                        }
+                    })
+                    parser.visit(func, {
+                        VariableDeclaration: function (node) {
+                            local_assessible.add(node.identifier.name)
+                        }
+                    })
+                    let global_assessible = [...all_assessible].filter(element => !local_assessible.has(element))
+                    return global_assessible
+                }
+            }
+        }    
+    } catch (e) {
+        return null
+    }
 }
+
+
+export async function parse_file(files_source, output_file) {
+    let sol_files = []
+    let reader = await parquetjs.ParquetReader.openFile(files_source)
+    let cursor = reader.getCursor()
+    let record = null
+    while (record = await cursor.next()) {
+        sol_files.push(record)
+    }
+    
+    var schema = new parquetjs.ParquetSchema({
+        source_code: parquetjs.ParquetFieldBuilder.createStringField(),
+        ast: parquetjs.ParquetFieldBuilder.createStringField()
+    })
+    var writer = await parquetjs.ParquetWriter.openFile(schema, output_file)
+    for (const sol_file of tqdm(sol_files)) {
+        const source = sol_file["source_code"].replace('\r\n', '\n')
+        try {
+            const ast = parser.parse(source, {loc: true})
+            await writer.appendRow({
+                "source_code": sol_file["source_code"],
+                "ast": JSON.stringify(ast)
+            })
+        } catch (e) {
+            await writer.appendRow({
+                "source_code": sol_file["source_code"],
+                "ast": "<PARSER_ERROR>"
+            })    
+            fs.appendFileSync("parse_error.sol", `${sol_file["source_code"]}\n__________________________________________________________________________________________________\n`)
+        }
+        
+    }
+    writer.close()
+}
+

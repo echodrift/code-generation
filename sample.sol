@@ -46,7 +46,6 @@ contract PhoenixLite {
     function iterateToNextRound() private {
         currentRound++;
         uint tempcurrentLimit = currentLimit;
-        
         if(currentRound == 1) {
             currentLimit = 2e14;
         }

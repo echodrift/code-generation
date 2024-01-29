@@ -1,4 +1,4 @@
-import { find_comment, find_function, find_function_has_comment, find_function_only } from "./parse_funcs.js"
+import { find_comment, find_function, find_function_has_comment, find_function_only, parse_file } from "./parse_funcs.js"
 import fs from "fs";
 import parser from "@solidity-parser/parser"
 import parquetjs from "@dsnp/parquetjs"
@@ -9,11 +9,28 @@ function test_parser(file) {
     const data = fs.readFileSync(file, "utf-8");
     try {
         const ast = parser.parse(data, { loc: false });
-        parser.visit(ast["children"], {
-            Identifier: function (node) {
-              console.log(node)
-            },
-        })
+        for (const child of ast["children"]) {
+            if (child["type"] == "ContractDefinition" &&
+                child["kind"] == "contract" &&
+                child["name"] == "PhoenixLite") {
+                    for (const subNode of child["subNodes"]) {
+                        if (subNode["type"] == "FunctionDefinition" &&
+                            subNode["name"] == "iterateToNextRound") {
+                                // parser.visit(subNode, {
+                                //     Identifier: function (node) {
+                                //         console.log(node)
+                                //     },
+                                // })
+                                parser.visit(subNode, {
+                                    VariableDeclaration: function (node) {
+                                        console.log(node.identifier.name)
+                                    }
+                                })
+                            }
+
+                    }
+                }
+        }
         return ast;
     } catch (e) {
         console.log("Error")
@@ -174,11 +191,10 @@ async function main() {
     parser.add_argument('-o', '--output')
     const args = parser.parse_args()
     // await test_find_function_has_comment(args.input, args.output)
-    await test_find_function_only(args.input, args.output)
-
+    // await test_find_function_only(args.input, args.output)
+    await parse_file(args.input, args.output)
 }
 
-// main()
+main()
 
-fs.writeFileSync("/home/hieuvd/lvdthieu/CodeGen/parse_sample.json", 
-                JSON.stringify(test_parser("/home/hieuvd/lvdthieu/CodeGen/sample.sol")))
+
