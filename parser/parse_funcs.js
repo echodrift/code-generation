@@ -296,27 +296,47 @@ export async function parse_file(files_source, output_file) {
     }
     
     var schema = new parquetjs.ParquetSchema({
-        source_code: parquetjs.ParquetFieldBuilder.createStringField(),
-        ast: parquetjs.ParquetFieldBuilder.createStringField()
+        source_idx: parquetjs.ParquetFieldBuilder.createStringField(),
+        contract_name: parquetjs.ParquetFieldBuilder.createStringField(),
+        contract_source: parquetjs.ParquetFieldBuilder.createStringField(),
+        contract_ast: parquetjs.ParquetFieldBuilder.createStringField(),
+        count: parquetjs.ParquetFieldBuilder.createStringField()
     })
     var writer = await parquetjs.ParquetWriter.openFile(schema, output_file)
     for (const sol_file of tqdm(sol_files)) {
-        const source = sol_file["source_code"].replace('\r\n', '\n')
+        const source = sol_file["contract_source"].replace('\r\n', '\n')
+        let ast_string = "<PARSER_ERROR>"
         try {
             const ast = parser.parse(source, {loc: true})
-            await writer.appendRow({
-                "source_code": sol_file["source_code"],
-                "ast": JSON.stringify(ast)
-            })
+            ast_string = JSON.stringify(ast)
         } catch (e) {
+            fs.appendFileSync("parse_error.sol", `${source}\n__________________________________________________________________________________________________\n`)
+        } finally {
             await writer.appendRow({
-                "source_code": sol_file["source_code"],
-                "ast": "<PARSER_ERROR>"
-            })    
-            fs.appendFileSync("parse_error.sol", `${sol_file["source_code"]}\n__________________________________________________________________________________________________\n`)
+                "source_idx": `${sol_file["source_idx"]}`,
+                "contract_name": sol_file["contract_name"],
+                "contract_source": sol_file["contract_source"],
+                "contract_ast": ast_string,
+                "count": `${sol_file["count"]}`
+            })
         }
-        
     }
     writer.close()
+    // for (const i in sol_files) {
+    //     if (i == 16) {
+    //         test_parser(sol_files[i]["source_code"])
+    //         break
+    //     }
+    // }
 }
 
+function test_parser(source) {
+    source = source.replace("\r\n", '\n')
+    try {
+        const ast = parser.parse(source, {loc: true})
+    } catch (e) {                    
+        fs.writeFileSync("parse_error.sol", `${source}\n__________________________________________________________________________________________________\n`)
+        console.log("Error:\n")
+        console.log(e)
+    }
+}

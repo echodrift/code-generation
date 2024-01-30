@@ -13,6 +13,11 @@ ERROR = [
 ]
 
 
+def jsonl2parquet(input: str, output: str):
+    df = pd.read_json(input, lines=True)
+    df.to_parquet(output, engine="fastparquet")
+
+
 def make_raw_test_suite(file_path: str, output: str):
     """This function aims to create a more informative version for LLM output data
 
@@ -22,7 +27,7 @@ def make_raw_test_suite(file_path: str, output: str):
     """
     test = pd.read_json(path_or_buf=file_path, lines=True)
     contracts = pd.read_parquet(
-        "/home/hieuvd/lvdthieu/CodeGen/data/contracts_filtered.parquet",
+        "/home/hieuvd/lvdthieu/CodeGen/data/contracts/contracts_filtered.parquet",
         engine="fastparquet",
     )
     test["file_source_idx"] = (
@@ -44,7 +49,7 @@ def make_raw_test_suite(file_path: str, output: str):
     test.to_parquet(output, engine="fastparquet")
 
 
-def split_test_suite(file_path: str):
+def split_test_suite(file_path: str, output_dir: str):
     test_suite = pd.read_parquet(file_path, engine="fastparquet")
     test_suite[
         [
@@ -57,7 +62,7 @@ def split_test_suite(file_path: str):
             "filled_source_body",
         ]
     ].rename(columns={"filled_source_body": "source_code"}).to_parquet(
-        "/home/hieuvd/lvdthieu/CodeGen/data/test/body.parquet", engine="fastparquet"
+        f"{output_dir}/body.parquet", engine="fastparquet"
     )
 
     test_suite[
@@ -72,7 +77,7 @@ def split_test_suite(file_path: str):
             "filled_source_deepseek",
         ]
     ].rename(columns={"filled_source_deepseek": "source_code"}).to_parquet(
-        "/home/hieuvd/lvdthieu/CodeGen/data/test/deepseek.parquet", engine="fastparquet"
+        f"{output_dir}/deepseek.parquet", engine="fastparquet"
     )
 
 
@@ -104,11 +109,14 @@ def extract_error(file_path: str, output: str):
 
 if __name__ == "__main__":
     # make_raw_test_suite(
-    #     "/home/hieuvd/lvdthieu/CodeGen/data/train.jsonl",
-    #     "/home/hieuvd/lvdthieu/CodeGen/data/raw_test_v1.parquet",
+    #     "/home/hieuvd/lvdthieu/CodeGen/data/test.jsonl",
+    #     "/home/hieuvd/lvdthieu/CodeGen/data/raw_test_6k.parquet",
     # )
-    # split_test_suite("/home/hieuvd/lvdthieu/CodeGen/data/test_suite_v1.parquet")
-    extract_error(
-        "/home/hieuvd/lvdthieu/CodeGen/data/compile_info/deepseek.parquet",
-        "/home/hieuvd/lvdthieu/CodeGen/data/compile_info/deepseek_v1.parquet",
+    split_test_suite(
+        "/home/hieuvd/lvdthieu/CodeGen/data/test_suite_6k.parquet",
+        "/home/hieuvd/lvdthieu/CodeGen/data/test/test_6k_v1"
     )
+    # extract_error(
+    #     "/home/hieuvd/lvdthieu/CodeGen/data/compile_info/test_6k/deepseek.parquet",
+    #     "/home/hieuvd/lvdthieu/CodeGen/data/compile_info/test_6k/deepseek_v1.parquet"
+    # )
