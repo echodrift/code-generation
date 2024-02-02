@@ -31,12 +31,12 @@ function fill_contract(file_source, contract_name, func_name, func_body, deepsee
                         }
                 }
                 if (candidates.length == 0) {
-                    // fs.appendFileSync("check.sol", `${file_source}\t${contract_name}\t${func_name}\n-----------------------------------------------------------------------------------------------------------------\n`)
+                    fs.appendFileSync("check.sol", `${file_source}\t${contract_name}\t${func_name}\n-----------------------------------------------------------------------------------------------------------------\n`)
                     return null
                 } else if (candidates.length == 1) {
                     let [body_start, body_end] = get_location(source, candidates[0]["body"])
-                    const filled_source_body = source.slice(0, body_start + 1) + func_body + source.slice(body_end - 1)
-                    const filled_source_deepseek = source.slice(0, body_start + 1) + deepseek_output + source.slice(body_end - 1)
+                    const filled_source_body = source.slice(0, body_start + 1) + func_body + '\n' + source.slice(body_end - 1)
+                    const filled_source_deepseek = source.slice(0, body_start + 1) + deepseek_output + '\n' + source.slice(body_end - 1)
                     // const filled_source_codellama = source.slice(0, body_start + 1) + codellama_output + source.slice(body_end - 1)
                     // return [filled_source_body, filled_source_deepseek, filled_source_codellama]
                     return [filled_source_body, filled_source_deepseek]
@@ -53,8 +53,8 @@ function fill_contract(file_source, contract_name, func_name, func_body, deepsee
                         }
                     }
                     let [body_start, body_end] = get_location(source, best_candidate["body"])
-                    const filled_source_body = source.slice(0, body_start + 1) + func_body + source.slice(body_end - 1)
-                    const filled_source_deepseek = source.slice(0, body_start + 1) + deepseek_output + source.slice(body_end - 1)
+                    const filled_source_body = source.slice(0, body_start + 1) + func_body + '\n' + source.slice(body_end - 1)
+                    const filled_source_deepseek = source.slice(0, body_start + 1) + deepseek_output + '\n' + source.slice(body_end - 1)
                     // const filled_source_codellama = source.slice(0, body_start + 1) + codellama_output + source.slice(body_end - 1)
                     // return [filled_source_body, filled_source_deepseek, filled_source_codellama]
                     return [filled_source_body, filled_source_deepseek]
@@ -93,7 +93,7 @@ async function make_test_suite(source, dest) {
         // filled_source_codellama: parquetjs.ParquetFieldBuilder.createStringField()
     })
     var writer = await parquetjs.ParquetWriter.openFile(schema, dest)
-    for (let test_case of tqdm(test_cases)){
+    for (let test_case of tqdm(test_cases)) {
         const result = fill_contract(test_case["file_source"], 
                                     test_case["contract_name"], 
                                     test_case["func_name"], 

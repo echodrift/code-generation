@@ -192,7 +192,6 @@ async function main() {
     const args = parser.parse_args()
     // await test_find_function_has_comment(args.input, args.output)
     // await test_find_function_only(args.input, args.output)
-    await parse_file(args.input, args.output)
 }
 
 main()

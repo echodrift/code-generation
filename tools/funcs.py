@@ -202,13 +202,13 @@ def fill_contract(row):
                 filled_source_body = (
                     source[: body_start + 1]
                     + row["func_body"]
-                    + "\n"
+                    # + "\n"
                     + source[body_end - 1 :]
                 )
                 filled_source_deepseek = (
                     source[: body_start + 1]
                     + row["deepseek_output"]
-                    + "\n"
+                    # + "\n"
                     + source[body_end - 1 :]
                 )
                 return filled_source_body, filled_source_deepseek

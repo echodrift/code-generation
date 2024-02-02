@@ -295,39 +295,39 @@ export async function parse_file(files_source, output_file) {
         sol_files.push(record)
     }
     
-    var schema = new parquetjs.ParquetSchema({
-        source_idx: parquetjs.ParquetFieldBuilder.createStringField(),
-        contract_name: parquetjs.ParquetFieldBuilder.createStringField(),
-        contract_source: parquetjs.ParquetFieldBuilder.createStringField(),
-        contract_ast: parquetjs.ParquetFieldBuilder.createStringField(),
-        count: parquetjs.ParquetFieldBuilder.createStringField()
-    })
-    var writer = await parquetjs.ParquetWriter.openFile(schema, output_file)
-    for (const sol_file of tqdm(sol_files)) {
-        const source = sol_file["contract_source"].replace('\r\n', '\n')
-        let ast_string = "<PARSER_ERROR>"
-        try {
-            const ast = parser.parse(source, {loc: true})
-            ast_string = JSON.stringify(ast)
-        } catch (e) {
-            fs.appendFileSync("parse_error.sol", `${source}\n__________________________________________________________________________________________________\n`)
-        } finally {
-            await writer.appendRow({
-                "source_idx": `${sol_file["source_idx"]}`,
-                "contract_name": sol_file["contract_name"],
-                "contract_source": sol_file["contract_source"],
-                "contract_ast": ast_string,
-                "count": `${sol_file["count"]}`
-            })
-        }
-    }
-    writer.close()
-    // for (const i in sol_files) {
-    //     if (i == 16) {
-    //         test_parser(sol_files[i]["source_code"])
-    //         break
+    // var schema = new parquetjs.ParquetSchema({
+    //     source_idx: parquetjs.ParquetFieldBuilder.createStringField(),
+    //     contract_name: parquetjs.ParquetFieldBuilder.createStringField(),
+    //     contract_source: parquetjs.ParquetFieldBuilder.createStringField(),
+    //     contract_ast: parquetjs.ParquetFieldBuilder.createStringField(),
+    //     count: parquetjs.ParquetFieldBuilder.createStringField()
+    // })
+    // var writer = await parquetjs.ParquetWriter.openFile(schema, output_file)
+    // for (const sol_file of tqdm(sol_files)) {
+    //     const source = sol_file["contract_source"].replace('\r\n', '\n')
+    //     let ast_string = "<PARSER_ERROR>"
+    //     try {
+    //         const ast = parser.parse(source, {loc: true})
+    //         ast_string = JSON.stringify(ast)
+    //     } catch (e) {
+    //         fs.appendFileSync("parse_error.sol", `${source}\n__________________________________________________________________________________________________\n`)
+    //     } finally {
+    //         await writer.appendRow({
+    //             "source_idx": `${sol_file["source_idx"]}`,
+    //             "contract_name": sol_file["contract_name"],
+    //             "contract_source": sol_file["contract_source"],
+    //             "contract_ast": ast_string,
+    //             "count": `${sol_file["count"]}`
+    //         })
     //     }
     // }
+    // writer.close()
+    for (const i in sol_files) {
+        if (i == 81) {
+            test_parser(sol_files[i]["source_code"])
+            break
+        }
+    }
 }
 
 function test_parser(source) {
@@ -340,3 +340,5 @@ function test_parser(source) {
         console.log(e)
     }
 }
+
+// parse_file("/home/hieuvd/lvdthieu/CodeGen/data/solfile/error_file.parquet", "")
