@@ -285,60 +285,14 @@ export function find_accessible_element(source, contract_name, func_name, func_b
     }
 }
 
-
-export async function parse_file(files_source, output_file) {
-    let sol_files = []
-    let reader = await parquetjs.ParquetReader.openFile(files_source)
-    let cursor = reader.getCursor()
-    let record = null
-    while (record = await cursor.next()) {
-        sol_files.push(record)
-    }
-    
-    // var schema = new parquetjs.ParquetSchema({
-    //     source_idx: parquetjs.ParquetFieldBuilder.createStringField(),
-    //     contract_name: parquetjs.ParquetFieldBuilder.createStringField(),
-    //     contract_source: parquetjs.ParquetFieldBuilder.createStringField(),
-    //     contract_ast: parquetjs.ParquetFieldBuilder.createStringField(),
-    //     count: parquetjs.ParquetFieldBuilder.createStringField()
-    // })
-    // var writer = await parquetjs.ParquetWriter.openFile(schema, output_file)
-    // for (const sol_file of tqdm(sol_files)) {
-    //     const source = sol_file["contract_source"].replace('\r\n', '\n')
-    //     let ast_string = "<PARSER_ERROR>"
-    //     try {
-    //         const ast = parser.parse(source, {loc: true})
-    //         ast_string = JSON.stringify(ast)
-    //     } catch (e) {
-    //         fs.appendFileSync("parse_error.sol", `${source}\n__________________________________________________________________________________________________\n`)
-    //     } finally {
-    //         await writer.appendRow({
-    //             "source_idx": `${sol_file["source_idx"]}`,
-    //             "contract_name": sol_file["contract_name"],
-    //             "contract_source": sol_file["contract_source"],
-    //             "contract_ast": ast_string,
-    //             "count": `${sol_file["count"]}`
-    //         })
-    //     }
-    // }
-    // writer.close()
-    for (const i in sol_files) {
-        if (i == 81) {
-            test_parser(sol_files[i]["source_code"])
-            break
-        }
+export function find_inherit_element(source, sourceUnit, contract_name) {
+    for (const child in sourceUnit["children"]) {
+        if (child["type"] == "ContractDefinition" &&
+            child["kind"] == "contract" &&
+            child["name"] == contract_name) {
+                let base_contracts = child["baseContracts"]
+                let base_contract_names = base_contracts.map((contract) => contract["baseName"]["namePath"])
+                console.log(base_contract_names)
+            }
     }
 }
-
-function test_parser(source) {
-    source = source.replace("\r\n", '\n')
-    try {
-        const ast = parser.parse(source, {loc: true})
-    } catch (e) {                    
-        fs.writeFileSync("parse_error.sol", `${source}\n__________________________________________________________________________________________________\n`)
-        console.log("Error:\n")
-        console.log(e)
-    }
-}
-
-// parse_file("/home/hieuvd/lvdthieu/CodeGen/data/solfile/error_file.parquet", "")

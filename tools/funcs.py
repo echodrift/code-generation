@@ -177,6 +177,12 @@ def get_location(source, element):
 
 
 def fill_contract(row):
+    contract_deepseek = row["masked_contract"].replace(
+        "<FILL_FUNCTION_BODY>", row["deepseek_output"]
+    )
+    contract_body = row["masked_contract"].replace(
+        "<FILL_FUNCTION_BODY>", row["func_body"]
+    )
     source = row["file_source"].replace("\r\n", "\n")
     sourceUnit = json.loads(sol_files.loc[row["file_source_idx"], "ast"])
     if sourceUnit == "<PARSER_ERROR>":
@@ -187,54 +193,14 @@ def fill_contract(row):
             and child["kind"] == "contract"
             and child["name"] == row["contract_name"]
         ):
-            candidates = []
-            for subNode in child["subNodes"]:
-                if (
-                    subNode["type"] == "FunctionDefinition"
-                    and subNode["name"] == row["func_name"]
-                ):
-                    candidates.append(subNode)
-
-            if len(candidates) == 0:
-                return [None, None]
-            elif len(candidates) == 1:
-                body_start, body_end = get_location(source, candidates[0]["body"])
-                filled_source_body = (
-                    source[: body_start + 1]
-                    + row["func_body"]
-                    # + "\n"
-                    + source[body_end - 1 :]
-                )
-                filled_source_deepseek = (
-                    source[: body_start + 1]
-                    + row["deepseek_output"]
-                    # + "\n"
-                    + source[body_end - 1 :]
-                )
-                return filled_source_body, filled_source_deepseek
-            else:
-                best_candidate = None
-                best_similar_rate = 0
-                for candidate in candidates:
-                    body_start, body_end = get_location(source, candidate["body"])
-                    ground_truth = source[body_start + 1 : body_end - 1]
-                    similar_rate = SequenceMatcher(
-                        None, ground_truth, row["func_body"]
-                    ).ratio()
-                    if best_similar_rate < similar_rate:
-                        best_similar_rate = similar_rate
-                        best_candidate = candidate
-
-                body_start, body_end = get_location(source, best_candidate["body"])
-                filled_source_body = (
-                    source[: body_start + 1] + row["func_body"] + source[body_end - 1 :]
-                )
-                filled_source_deepseek = (
-                    source[: body_start + 1]
-                    + row["deepseek_output"]
-                    + source[body_end - 1 :]
-                )
-                return filled_source_body, filled_source_deepseek
+            contract_start, contract_end = get_location(source, child)
+            filled_source_body = (
+                source[:contract_start] + contract_body + source[contract_end:]
+            )
+            filled_source_deepseek = (
+                source[:contract_start] + contract_deepseek + source[contract_end:]
+            )
+            return filled_source_body, filled_source_deepseek
 
 
 def make_test_suite(source, dest):
@@ -337,31 +303,94 @@ def extract_error(file_path: str, output: str):
     source.to_parquet(output, engine="fastparquet")
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--func", dest="func")
-    parser.add_argument("-i", "--input", dest="input")
-    parser.add_argument("-c", "--concurrency", dest="concurrency")
-    parser.add_argument("-o", "--output", dest="output")
-    parser.add_argument("--col", dest="col")
-    args = parser.parse_args()
+def get_inherit_element(file_path: str, output: str):
+    df = pd.read_parquet(file_path, engine="fastparquet")
+    df.drop(columns=["source_idx"], inplace=True)
+    
+    all_file = pd.read_parquet("/home/hieuvd/lvdthieu/CodeGen/data/solfile/all_file_v2.parquet", engine="fastparquet")
+    df["origin"], df["ast"]= zip(*df["file_source_idx"].apply(lambda idx: (all_file.loc[idx, "source_code"], all_file.loc[idx, "ast"])))
 
-    match args.func:
-        case "sharding":
-            sharding(args.input, int(args.concurrency), args.output)
-        case "merging":
-            merging(args.input, int(args.concurrency), args.output)
-        case "remove_comment":
-            df = pd.read_parquet(args.input, engine="fastparquet")
-            df[f"{args.col}_removed_comment"] = df[args.col].apply(
-                lambda source: remove_comment(source)
-            )
-            df.to_parquet(args.output, engine="fastparquet")
-        case "test_suite":
-            make_test_suite(args.input, args.output)
-        case "raw_test":
-            make_raw_test_suite(args.input, args.output)
-        case "split_test_suite":
-            split_test_suite(args.input, args.output)
-        case "extract_error":
-            extract_error(args.input, args.output)
+
+    def extract_inherit_element(source: str, ast: str, contract_name: str):
+        sourceUnit = json.loads(ast)
+        source = source.replace("\r\n", '\n')
+        inherit_elements = []
+        for child in sourceUnit["children"]:
+            if (child["type"] == "ContractDefinition" and
+                child["kind"] == "contract" and 
+                child["name"] == contract_name):
+                base_contracts = [base_contract["baseName"]["namePath"] for base_contract in child["baseContracts"]]
+                while base_contracts:
+                    base_contract = base_contracts.pop(0)
+                    
+                    for child1 in sourceUnit["children"]:
+                        if (child1["type"] == "ContractDefinition" and
+                            child1["name"] == base_contract):
+                            # Add base contract of base contract if there is 
+                            ancestors = [base_contract["baseName"]["namePath"] for base_contract in child1["baseContracts"]]
+                            base_contracts.extend(ancestors)
+                            
+                            for subNode in child1["subNodes"]:
+                                # Add inherit variable 
+                                if (subNode["type"] == "StateVariableDeclaration" and 
+                                    subNode["variables"][0]["visibility"] != "private"):
+                                        start_el, end_el = get_location(source, subNode)
+                                        inherit_elements.append(source[start_el:end_el])
+                                # Add inherit function
+                                if (subNode["type"] == "FunctionDefinition" and
+                                    subNode["visibility"] != "external" and
+                                    subNode["visibility"] != "private"):
+                                    start_func, end_func = get_location(source, subNode)
+                                    if subNode["body"]:
+                                        start_body, end_body = get_location(source, subNode["body"])
+                                        inherit_elements.append(source[start_func:start_body] + "{<BODY>}")
+                                    else:
+                                        inherit_elements.append(source[start_func:end_func])
+                            break
+                break
+        return str(inherit_elements)
+    
+    def transform(row):
+        return extract_inherit_element(row["origin"], row["ast"], row["contract_name"])
+
+    df["inherit_elements"] = df.apply(transform, axis=1)
+    df.to_parquet(output, engine="fastparquet")
+
+
+                    
+                
+# if __name__ == "__main__":
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument("-f", "--func", dest="func")
+#     parser.add_argument("-i", "--input", dest="input")
+#     parser.add_argument("-c", "--concurrency", dest="concurrency")
+#     parser.add_argument("-o", "--output", dest="output")
+#     parser.add_argument("--col", dest="col")
+#     args = parser.parse_args()
+
+#     match args.func:
+#         case "sharding":
+#             sharding(args.input, int(args.concurrency), args.output)
+#         case "merging":
+#             merging(args.input, int(args.concurrency), args.output)
+#         case "remove_comment":
+#             df = pd.read_parquet(args.input, engine="fastparquet")
+#             df[f"{args.col}_removed_comment"] = df[args.col].apply(
+#                 lambda source: remove_comment(source)
+#             )
+#             df.to_parquet(args.output, engine="fastparquet")
+#         case "test_suite":
+#             make_test_suite(args.input, args.output)
+#         case "raw_test":
+#             make_raw_test_suite(args.input, args.output)
+#         case "split_test_suite":
+#             split_test_suite(args.input, args.output)
+#         case "extract_error":
+#             extract_error(args.input, args.output)
+
+# with open("/home/hieuvd/lvdthieu/CodeGen/parse_sample.sol", "r") as f:
+#     source = f.read()
+# with open("/home/hieuvd/lvdthieu/CodeGen/parse_sample.json", "r") as f:
+#     ast = f.read()
+
+get_inherit_element("/home/hieuvd/lvdthieu/CodeGen/data/compile_info/refine2_6k/deepseek.parquet", "/home/hieuvd/lvdthieu/CodeGen/result.parquet")
