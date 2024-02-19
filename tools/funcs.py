@@ -178,10 +178,10 @@ def get_location(source, element):
 
 def fill_contract(row):
     contract_deepseek = row["masked_contract"].replace(
-        "<FILL_FUNCTION_BODY>", row["deepseek_output"]
+        "<FILL_FUNCTION_BODY>", row["deepseek_output"] + '\n'
     )
     contract_body = row["masked_contract"].replace(
-        "<FILL_FUNCTION_BODY>", row["func_body"]
+        "<FILL_FUNCTION_BODY>", row["func_body"] + '\n'
     )
     source = row["file_source"].replace("\r\n", "\n")
     sourceUnit = json.loads(sol_files.loc[row["file_source_idx"], "ast"])
@@ -354,43 +354,44 @@ def get_inherit_element(file_path: str, output: str):
         return extract_inherit_element(row["origin"], row["ast"], row["contract_name"])
 
     df["inherit_elements"] = df.apply(transform, axis=1)
+    df.drop(columns=["origin", "ast"], inplace=True)
     df.to_parquet(output, engine="fastparquet")
 
 
+def get_compilable_rate(file_path: str):
+    df = pd.read_parquet(file_path, engine="fastparquet")
+    print("Compilable rate:", "{:.2%}".format(len(df[df["compile_info"] == "<COMPILED_SUCCESSFULLY>"]) / len(df)))
                     
                 
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument("-f", "--func", dest="func")
-#     parser.add_argument("-i", "--input", dest="input")
-#     parser.add_argument("-c", "--concurrency", dest="concurrency")
-#     parser.add_argument("-o", "--output", dest="output")
-#     parser.add_argument("--col", dest="col")
-#     args = parser.parse_args()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-f", "--func", dest="func")
+    parser.add_argument("-i", "--input", dest="input")
+    parser.add_argument("-c", "--concurrency", dest="concurrency")
+    parser.add_argument("-o", "--output", dest="output")
+    parser.add_argument("--col", dest="col")
+    args = parser.parse_args()
 
-#     match args.func:
-#         case "sharding":
-#             sharding(args.input, int(args.concurrency), args.output)
-#         case "merging":
-#             merging(args.input, int(args.concurrency), args.output)
-#         case "remove_comment":
-#             df = pd.read_parquet(args.input, engine="fastparquet")
-#             df[f"{args.col}_removed_comment"] = df[args.col].apply(
-#                 lambda source: remove_comment(source)
-#             )
-#             df.to_parquet(args.output, engine="fastparquet")
-#         case "test_suite":
-#             make_test_suite(args.input, args.output)
-#         case "raw_test":
-#             make_raw_test_suite(args.input, args.output)
-#         case "split_test_suite":
-#             split_test_suite(args.input, args.output)
-#         case "extract_error":
-#             extract_error(args.input, args.output)
-
-# with open("/home/hieuvd/lvdthieu/CodeGen/parse_sample.sol", "r") as f:
-#     source = f.read()
-# with open("/home/hieuvd/lvdthieu/CodeGen/parse_sample.json", "r") as f:
-#     ast = f.read()
-
-get_inherit_element("/home/hieuvd/lvdthieu/CodeGen/data/compile_info/refine2_6k/deepseek.parquet", "/home/hieuvd/lvdthieu/CodeGen/result.parquet")
+    match args.func:
+        case "sharding":
+            sharding(args.input, int(args.concurrency), args.output)
+        case "merging":
+            merging(args.input, int(args.concurrency), args.output)
+        case "remove_comment":
+            df = pd.read_parquet(args.input, engine="fastparquet")
+            df[f"{args.col}_removed_comment"] = df[args.col].apply(
+                lambda source: remove_comment(source)
+            )
+            df.to_parquet(args.output, engine="fastparquet")
+        case "test_suite":
+            make_test_suite(args.input, args.output)
+        case "raw_test":
+            make_raw_test_suite(args.input, args.output)
+        case "split_test_suite":
+            split_test_suite(args.input, args.output)
+        case "extract_error":
+            extract_error(args.input, args.output)
+        case "cr":
+            get_compilable_rate(args.input)
+        case "inherit_element":
+            get_inherit_element(args.input, args.output)
