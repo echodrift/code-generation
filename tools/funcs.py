@@ -58,7 +58,7 @@ def sharding(input: str, concurrency: int, output_dir: str):
     else:
         chunk = length // concurrency + 1
 
-    files_source["source_idx"] = files_source.index
+    # files_source["source_idx"] = files_source.index
 
     for i in range(1, concurrency):
         files_source.iloc[(i - 1) * chunk : i * chunk].to_parquet(
@@ -308,6 +308,13 @@ def extract_error(input: str, output: str):
 
 
 def get_inherit_element(input: str, output: str):
+    """This function aims to add column contain inherit element info to input dataset and save to output location
+
+    Args:
+        input (str): input dataset location
+        output (str): output location
+    """
+
     df = pd.read_parquet(input, engine="fastparquet")
     df.drop(columns=["source_idx"], inplace=True)
     
@@ -315,7 +322,17 @@ def get_inherit_element(input: str, output: str):
     df["origin"], df["ast"]= zip(*df["file_source_idx"].apply(lambda idx: (all_file.loc[idx, "source_code"], all_file.loc[idx, "ast"])))
 
 
-    def extract_inherit_element(source: str, ast: str, contract_name: str):
+    def extract_inherit_element(source: str, ast: str, contract_name: str) -> str:
+        """This function aims to get inherit element of a contract in specific source code
+
+        Args:
+            source (str): Smart contract source
+            ast (str): AST of source
+            contract_name (str): Contract name
+
+        Returns:
+            str: Inherit element list
+        """
         sourceUnit = json.loads(ast)
         source = source.replace("\r\n", '\n')
         inherit_elements = []
@@ -363,11 +380,22 @@ def get_inherit_element(input: str, output: str):
 
 
 def get_compilable_rate(input: str):
+    """Get compilable rate
+
+    Args:
+        input (str): Source dataset to calculate compilable rate
+    """
     df = pd.read_parquet(input, engine="fastparquet")
     print("Compilable rate:", "{:.2%}".format(len(df[df["compile_info"] == "<COMPILED_SUCCESSFULLY>"]) / len(df)))
 
 
 def get_in_out_variable(input: str, output: str):
+    """This function aims to extract info about input and output variable of masked function
+
+    Args:
+        input (str): Source dataset location
+        output (str): Output location
+    """
     df = pd.read_parquet(input, engine="fastparquet")
     df.drop(columns=["source_idx"], inplace=True)
     
