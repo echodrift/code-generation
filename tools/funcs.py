@@ -1,7 +1,7 @@
 import os
 import argparse
 import pandas as pd
-from typing import Optional, List
+from typing import Optional, List, TypeVar, Tuple
 from difflib import SequenceMatcher
 import json
 
@@ -24,11 +24,11 @@ ERROR = [
 ]
 
 
-def merging(files_source: str, concurrency: int, output: str):
+def merging(input_dir: str, concurrency: int, output: str):
     """This function aims to merge multiple parquet files into one
 
     Args:
-        files_source (str): Directory path store parquet files
+        input_dir (str): Directory path store parquet files
         concurrency (int): Number of parquet files
         output (str): File location to store result
     """
@@ -36,20 +36,20 @@ def merging(files_source: str, concurrency: int, output: str):
     for i in range(1, concurrency + 1):
         dfs.append(
             pd.read_parquet(
-                os.path.join(files_source, f"result{i}.parquet"), engine="fastparquet"
+                os.path.join(input_dir, f"result{i}.parquet"), engine="fastparquet"
             )
         )
     result = pd.concat(dfs, axis=0).reset_index(drop=True)
     result.to_parquet(output, engine="fastparquet")
 
 
-def sharding(input: str, concurrency: int, output: str):
+def sharding(input: str, concurrency: int, output_dir: str):
     """This function aims to split large parquet file into multiple small parquet files
 
     Args:
         input (str): Large parquet file path
         concurrency (int): Number of small files want to split
-        output (str): Directory to store result
+        output_dir (str): Directory to store result
     """
     files_source = pd.read_parquet(input, engine="fastparquet").reset_index(drop=True)
     length = len(files_source)
@@ -62,11 +62,11 @@ def sharding(input: str, concurrency: int, output: str):
 
     for i in range(1, concurrency):
         files_source.iloc[(i - 1) * chunk : i * chunk].to_parquet(
-            os.path.join(output, f"batch{i}.parquet"),
+            os.path.join(output_dir, f"batch{i}.parquet"),
             engine="fastparquet",
         )
     files_source.iloc[(concurrency - 1) * chunk :].to_parquet(
-        os.path.join(output, f"batch{concurrency}.parquet"),
+        os.path.join(output_dir, f"batch{concurrency}.parquet"),
         engine="fastparquet",
     )
 
@@ -156,8 +156,18 @@ def remove_comment(source: str) -> str:
 """These functions aim for filling contract 
 """
 
+ParsedObject = TypeVar("ParsedObject")
+def get_location(source: str, element: ParsedObject) -> Tuple[int, int]:
+    """This function aims to get location of a specific element in Solidity source code
 
-def get_location(source, element):
+    Args:
+        source (str): Solidity source code
+        element (ParsedObject): an object in AST
+
+    Returns:
+        Tuple[int, int]: start index and end index of object
+    """
+
     start_line = element["loc"]["start"]["line"]
     start_col = element["loc"]["start"]["column"]
     end_line = element["loc"]["end"]["line"]
@@ -176,12 +186,18 @@ def get_location(source, element):
     return start_idx, end_idx
 
 
-def fill_contract(row):
-    contract_deepseek = row["masked_contract"].replace(
+DataFrame_row = TypeVar("DataFrame Row")
+def fill_contract(row: DataFrame_row) -> str:
+    """This function aims to create complete version of smart contract with output from LLMs 
+
+    Args:
+        row (DataFrame_row): Dataframe row which contains masked contract and LLMs output
+
+    Returns:
+        str: Filled contract
+    """
+    filled_contract = row["masked_contract"].replace(
         "<FILL_FUNCTION_BODY>", row["deepseek_output"] + '\n'
-    )
-    contract_body = row["masked_contract"].replace(
-        "<FILL_FUNCTION_BODY>", row["func_body"] + '\n'
     )
     source = row["file_source"].replace("\r\n", "\n")
     sourceUnit = json.loads(sol_files.loc[row["file_source_idx"], "ast"])
@@ -194,34 +210,35 @@ def fill_contract(row):
             and child["name"] == row["contract_name"]
         ):
             contract_start, contract_end = get_location(source, child)
-            filled_source_body = (
-                source[:contract_start] + contract_body + source[contract_end:]
+            filled_source= (
+                source[:contract_start] + filled_contract + source[contract_end:]
             )
-            filled_source_deepseek = (
-                source[:contract_start] + contract_deepseek + source[contract_end:]
-            )
-            return filled_source_body, filled_source_deepseek
+            return filled_source
 
 
-def make_test_suite(source, dest):
+def make_test_suite(source: str, dest: str):
+    """Add fill_source columns to source dataset and save it to dest location
+
+    Args:
+        source (str): Source dataset location
+        dest (str): Destination location to save processed result
+    """
     df = pd.read_parquet(source, engine="fastparquet")
-    df["filled_source_body"], df["filled_source_deepseek"] = zip(
-        *df.apply(fill_contract, axis=1)
-    )
+    df["source_code"] = df.apply(fill_contract, axis=1)
     df.to_parquet(dest, engine="fastparquet")
 
 
 ############################################################################################################
 
 
-def make_raw_test_suite(file_path: str, output: str):
+def make_raw_test_suite(input: str, output: str):
     """This function aims to create a more informative version for LLM output data
 
     Args:
-        file_path (str): LLM output data file path
+        input (str): LLM output data file path
         output (str): File path to write new data version
     """
-    test = pd.read_json(path_or_buf=file_path, lines=True)
+    test = pd.read_json(path_or_buf=input, lines=True)
     contracts = pd.read_parquet(
         "/home/hieuvd/lvdthieu/CodeGen/data/contracts/contracts_filtered.parquet",
         engine="fastparquet",
@@ -245,46 +262,33 @@ def make_raw_test_suite(file_path: str, output: str):
     test.to_parquet(output, engine="fastparquet")
 
 
-def split_test_suite(file_path: str, output_dir: str):
-    test_suite = pd.read_parquet(file_path, engine="fastparquet")
-    test_suite[
-        [
-            "contract_name",
-            "func_name",
-            "masked_contract",
-            "func_body",
-            "func_body_removed_comment",
-            "file_source_idx",
-            "filled_source_body",
-        ]
-    ].rename(columns={"filled_source_body": "source_code"}).to_parquet(
-        f"{output_dir}/body.parquet", engine="fastparquet"
-    )
+# def split_test_suite(input: str, output_dir: str):
+#     test_suite = pd.read_parquet(input, engine="fastparquet")
 
-    test_suite[
-        [
-            "contract_name",
-            "func_name",
-            "masked_contract",
-            "func_body",
-            "func_body_removed_comment",
-            "deepseek_output",
-            "file_source_idx",
-            "filled_source_deepseek",
-        ]
-    ].rename(columns={"filled_source_deepseek": "source_code"}).to_parquet(
-        f"{output_dir}/deepseek.parquet", engine="fastparquet"
-    )
+#     test_suite[
+#         [
+#             "contract_name",
+#             "func_name",
+#             "masked_contract",
+#             "func_body",
+#             "func_body_removed_comment",
+#             "deepseek_output",
+#             "file_source_idx",
+#             "filled_source",
+#         ]
+#     ].rename(columns={"filled_source": "source_code"}).to_parquet(
+#         f"{output_dir}/deepseek.parquet", engine="fastparquet"
+#     )
 
 
-def extract_error(file_path: str, output: str):
+def extract_error(input: str, output: str):
     """This function aims to extract error message from compiler output
 
     Args:
-        file_path (str): Compiler output data file path
+        input (str): Compiler output data file path
         output (str): Result data file path
     """
-    source = pd.read_parquet(file_path, engine="fastparquet")
+    source = pd.read_parquet(input, engine="fastparquet")
 
     def transform(string: str) -> str:
         if string == "<COMPILED_SUCCESSFULLY>":
@@ -303,8 +307,8 @@ def extract_error(file_path: str, output: str):
     source.to_parquet(output, engine="fastparquet")
 
 
-def get_inherit_element(file_path: str, output: str):
-    df = pd.read_parquet(file_path, engine="fastparquet")
+def get_inherit_element(input: str, output: str):
+    df = pd.read_parquet(input, engine="fastparquet")
     df.drop(columns=["source_idx"], inplace=True)
     
     all_file = pd.read_parquet("/home/hieuvd/lvdthieu/CodeGen/data/solfile/all_file_v2.parquet", engine="fastparquet")
@@ -358,10 +362,19 @@ def get_inherit_element(file_path: str, output: str):
     df.to_parquet(output, engine="fastparquet")
 
 
-def get_compilable_rate(file_path: str):
-    df = pd.read_parquet(file_path, engine="fastparquet")
+def get_compilable_rate(input: str):
+    df = pd.read_parquet(input, engine="fastparquet")
     print("Compilable rate:", "{:.2%}".format(len(df[df["compile_info"] == "<COMPILED_SUCCESSFULLY>"]) / len(df)))
-                    
+
+
+def get_in_out_variable(input: str, output: str):
+    df = pd.read_parquet(input, engine="fastparquet")
+    df.drop(columns=["source_idx"], inplace=True)
+    
+    all_file = pd.read_parquet("/home/hieuvd/lvdthieu/CodeGen/data/solfile/all_file_v2.parquet", engine="fastparquet")
+    df["origin"], df["ast"]= zip(*df["file_source_idx"].apply(lambda idx: (all_file.loc[idx, "source_code"], all_file.loc[idx, "ast"])))
+    
+
                 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
