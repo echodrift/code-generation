@@ -14,17 +14,17 @@ contracts = pd.read_parquet(
     "/home/hieuvd/lvdthieu/CodeGen/data_process/data/contracts/contracts_filtered.parquet",
     engine="fastparquet"
 )
-ERROR = [
-    "ParserError",
-    "DocstringParsingError",
-    "SyntaxError",
-    "DeclarationError",
-    "TypeError",
-    "UnimplementedFeatureError",
-    "InternalCompilerError",
-    "Exception",
-    "CompilerError",
-]
+# ERROR = [
+#     "ParserError",
+#     "DocstringParsingError",
+#     "SyntaxError",
+#     "DeclarationError",
+#     "TypeError",
+#     "UnimplementedFeatureError",
+#     "InternalCompilerError",
+#     "Exception",
+#     "CompilerError",
+# ]
 
 
 def merging(input_dir: str, concurrency: int, output: str):
@@ -247,10 +247,6 @@ def make_raw_test_suite(input: str, output: str):
         .apply(lambda idx: contracts.loc[idx, "source_idx"])
         .astype("int64")
     )
-    # sol_files = pd.read_parquet(
-    #     "/home/hieuvd/lvdthieu/CodeGen/data/solfile/all_file.parquet",
-    #     engine="fastparquet",
-    # )
     test["file_source"] = test["file_source_idx"].apply(
         lambda idx: sol_files.loc[idx, "source_code"]
     )
@@ -401,8 +397,7 @@ def get_in_out_variable(input: str, output: str):
     all_file = pd.read_parquet("/home/hieuvd/lvdthieu/CodeGen/data/solfile/all_file_v2.parquet", engine="fastparquet")
     df["origin"], df["ast"]= zip(*df["file_source_idx"].apply(lambda idx: (all_file.loc[idx, "source_code"], all_file.loc[idx, "ast"])))
     
-
-                
+      
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--func", dest="func")

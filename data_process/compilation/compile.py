@@ -48,7 +48,10 @@ def compile(input: str, hardhat: str, output: str):
                 for err in ERROR:
                     if err in comp:
                         errors.append(comp)
-            compile_info.append("\n".join(errors))
+            if errors:
+                compile_info.append("\n".join(errors))
+            else:
+                compile_info.append(data.stderr)
 
     error = test_compile
     error["compile_info"] = compile_info
