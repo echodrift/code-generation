@@ -189,8 +189,8 @@ def get_location(source: str, element: ParsedObject) -> Tuple[int, int]:
     return start_idx, end_idx
 
 
-DataFrame_row = TypeVar("DataFrame Row")
-def fill_contract(row: DataFrame_row) -> str:
+DataFrame_Row = TypeVar("DataFrame_Row")
+def fill_contract(row: DataFrame_Row) -> str:
     """This function aims to create complete version of smart contract with output from LLMs 
 
     Args:
@@ -276,30 +276,30 @@ def make_raw_test_suite(input: str, output: str):
 #     )
 
 
-def extract_error(input: str, output: str):
-    """This function aims to extract error message from compiler output
+# def extract_error(input: str, output: str):
+#     """This function aims to extract error message from compiler output
 
-    Args:
-        input (str): Compiler output data file path
-        output (str): Result data file path
-    """
-    source = pd.read_parquet(input, engine="fastparquet")
+#     Args:
+#         input (str): Compiler output data file path
+#         output (str): Result data file path
+#     """
+#     source = pd.read_parquet(input, engine="fastparquet")
 
-    def transform(string: str) -> str:
-        if string == "<COMPILED_SUCCESSFULLY>":
-            return string
-        else:
-            errors = []
-            comps = string.split("\n\n")
-            for comp in comps:
-                for err in ERROR:
-                    if err in comp:
-                        errors.append(comp)
-            return "\n".join(errors)
+#     def transform(string: str) -> str:
+#         if string == "<COMPILED_SUCCESSFULLY>":
+#             return string
+#         else:
+#             errors = []
+#             comps = string.split("\n\n")
+#             for comp in comps:
+#                 for err in ERROR:
+#                     if err in comp:
+#                         errors.append(comp)
+#             return "\n".join(errors)
 
-    source["compile_info"] = source["compile_info"].apply(lambda x: transform(x))
+#     source["compile_info"] = source["compile_info"].apply(lambda x: transform(x))
 
-    source.to_parquet(output, engine="fastparquet")
+#     source.to_parquet(output, engine="fastparquet")
 
 
 def get_inherit_element(input: str, output: str):
@@ -311,7 +311,7 @@ def get_inherit_element(input: str, output: str):
     """
 
     df = pd.read_parquet(input, engine="fastparquet")
-    df.drop(columns=["source_idx"], inplace=True)
+    # df.drop(columns=["source_idx"], inplace=True)
     
     all_file = pd.read_parquet("/home/hieuvd/lvdthieu/CodeGen/data/solfile/all_file_v2.parquet", engine="fastparquet")
     df["origin"], df["ast"]= zip(*df["file_source_idx"].apply(lambda idx: (all_file.loc[idx, "source_code"], all_file.loc[idx, "ast"])))
@@ -366,7 +366,7 @@ def get_inherit_element(input: str, output: str):
                 break
         return str(inherit_elements)
     
-    def transform(row):
+    def transform(row: DataFrame_Row) -> str:
         return extract_inherit_element(row["origin"], row["ast"], row["contract_name"])
 
     df["inherit_elements"] = df.apply(transform, axis=1)
@@ -392,12 +392,48 @@ def get_in_out_variable(input: str, output: str):
         output (str): Output location
     """
     df = pd.read_parquet(input, engine="fastparquet")
-    df.drop(columns=["source_idx"], inplace=True)
+    # df.drop(columns=["source_idx"], inplace=True)
     
     all_file = pd.read_parquet("/home/hieuvd/lvdthieu/CodeGen/data/solfile/all_file_v2.parquet", engine="fastparquet")
     df["origin"], df["ast"]= zip(*df["file_source_idx"].apply(lambda idx: (all_file.loc[idx, "source_code"], all_file.loc[idx, "ast"])))
     
-      
+    def extract_in_out_var(source: str, ast: str, contract_name: str, function_name: str) -> Tuple[str, str]:
+        """This function aims to get inherit element of a contract in specific source code
+
+        Args:
+            source (str): Smart contract source
+            ast (str): AST of source
+            contract_name (str): Contract name
+
+        Returns:
+            str: Inherit element list
+        """
+        sourceUnit = json.loads(ast)
+        source = source.replace("\r\n", '\n')
+        func_lst = []
+        for child in sourceUnit["children"]:
+            if (child["type"] == "ContractDefinition" and
+                child["kind"] == "contract" and 
+                child["name"] == contract_name):
+                for c in child["subNodes"]:
+                    if c["type"] == "FunctionDefinition" and c["name"] == function_name:
+                        func_lst.append(function_name)
+        return func_lst
+
+    def transform(row: DataFrame_Row) -> str:
+        return extract_in_out_var(row["origin"], row["ast"], row["contract_name"], row["func_name"])
+    counter = {}
+    for i in range(len(df)):
+        num = len(transform(df.loc[i]))
+        if num not in counter:
+            counter[num] = 1
+        else:
+            counter[num] += 1
+    
+    print(counter)
+    
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--func", dest="func")
@@ -422,11 +458,13 @@ if __name__ == "__main__":
             make_test_suite(args.input, args.output)
         case "raw_test":
             make_raw_test_suite(args.input, args.output)
-        case "split_test_suite":
-            split_test_suite(args.input, args.output)
-        case "extract_error":
-            extract_error(args.input, args.output)
+        # case "split_test_suite":
+        #     split_test_suite(args.input, args.output)
+        # case "extract_error":
+        #     extract_error(args.input, args.output)
         case "cr":
             get_compilable_rate(args.input)
         case "inherit_element":
             get_inherit_element(args.input, args.output)
+        case "params_return_element":
+            get_in_out_variable(args.input, args.output)
