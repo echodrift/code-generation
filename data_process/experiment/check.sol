@@ -94,6 +94,7 @@ contract BasicToken is ERC20Basic, Ownable {
   function transfer(address _to, uint256 _value) public returns (bool) {
     require(_to != address(0));
     require(_value <= balances[msg.sender]);
+    
     require(isTokenReleased);
     require(!blacklist[_to]);
     require(!blacklist[msg.sender]);
@@ -191,14 +192,21 @@ contract StandardToken is ERC20, BasicToken {
    * @param _value uint256 the amount of tokens to be transferred
    */
   function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
-    require(_value <= balances[_from]);
-require(_value <= allowed[_from][msg.sender]);
+    require(isTokenReleased);
+    require(!blacklist[_from]);
+	require(!blacklist[_to]);
+	require(!blacklist[msg.sender]);
 
-balances[_from] = balances[_from].sub(_value);
-balances[_to] = balances[_to].add(_value);
-allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
-emit Transfer(_from, _to, _value);
-return true;
+    require(_value <= balances[_from]);
+    require(_value <= allowed[_from][msg.sender]);
+
+    balances[_from] = balances[_from].sub(_value);
+    balances[_to] = balances[_to].add(_value);
+    allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
+    emit Transfer(_from, _to, _value);
+    return true;
+  
+
 }
 
   /**

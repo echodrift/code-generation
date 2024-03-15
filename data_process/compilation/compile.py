@@ -4,8 +4,8 @@ import argparse
 import os
 from tqdm import tqdm
 
-base = os.path.dirname(os.path.abspath(__file__))
-compiler = os.path.join(base, "compilers")
+BASE = os.path.dirname(os.path.abspath(__file__))
+COMPILER = os.path.join(BASE, "compilers")
 ERROR = [
     "ParserError",
     "DocstringParsingError",
@@ -31,11 +31,11 @@ def compile(input: str, hardhat: str, output: str):
     test_compile = pd.read_parquet(input, engine="fastparquet")
     for i in tqdm(test_compile.index):
         source = test_compile.loc[i, "source_code"]
-        with open(os.path.join(compiler, hardhat, "contracts", "sample.sol"), "w") as f:
+        with open(os.path.join(COMPILER, hardhat, "contracts", "sample.sol"), "w") as f:
             f.write(source)
 
         cmd = f"""
-        cd {os.path.join(compiler, hardhat)}
+        cd {os.path.join(COMPILER, hardhat)}
         npx hardhat compile --force
         """
         data = run(cmd, shell=True, capture_output=True, text=True)

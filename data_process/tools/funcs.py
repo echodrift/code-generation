@@ -6,11 +6,11 @@ from difflib import SequenceMatcher
 import json
 
 
-sol_files = pd.read_parquet(
+SOL_FILES = pd.read_parquet(
     "/home/hieuvd/lvdthieu/CodeGen/data_process/data/solfile/all_file_v2.parquet",
     engine="fastparquet",
 )
-contracts = pd.read_parquet(
+CONTRACTS = pd.read_parquet(
     "/home/hieuvd/lvdthieu/CodeGen/data_process/data/contracts/contracts_filtered.parquet",
     engine="fastparquet"
 )
@@ -190,7 +190,7 @@ def get_location(source: str, element: ParsedObject) -> Tuple[int, int]:
 
 
 DataFrame_Row = TypeVar("DataFrame_Row")
-def fill_contract(row: DataFrame_Row) -> str:
+def fill_contract(row: DataFrame_Row, sol_files: pd.DataFrame) -> str:
     """This function aims to create complete version of smart contract with output from LLMs 
 
     Args:
@@ -227,14 +227,14 @@ def make_test_suite(source: str, dest: str):
         dest (str): Destination location to save processed result
     """
     df = pd.read_parquet(source, engine="fastparquet")
-    df["source_code"] = df.apply(fill_contract, axis=1)
+    df["source_code"] = df.apply(lambda row: fill_contract(row, sol_files=SOL_FILES), axis=1)
     df.to_parquet(dest, engine="fastparquet")
 
 
 ############################################################################################################
 
 
-def make_raw_test_suite(input: str, output: str):
+def make_raw_test_suite(input: str, output: str, sol_files: pd.DataFrame):
     """This function aims to create a more informative version for LLM output data
 
     Args:
@@ -244,7 +244,7 @@ def make_raw_test_suite(input: str, output: str):
     test = pd.read_json(path_or_buf=input, lines=True)
     test["file_source_idx"] = (
         test["source_idx"]
-        .apply(lambda idx: contracts.loc[idx, "source_idx"])
+        .apply(lambda idx: CONTRACTS.loc[idx, "source_idx"])
         .astype("int64")
     )
     test["file_source"] = test["file_source_idx"].apply(
@@ -457,7 +457,7 @@ if __name__ == "__main__":
         case "test_suite":
             make_test_suite(args.input, args.output)
         case "raw_test":
-            make_raw_test_suite(args.input, args.output)
+            make_raw_test_suite(args.input, args.output, SOL_FILES)
         # case "split_test_suite":
         #     split_test_suite(args.input, args.output)
         # case "extract_error":
