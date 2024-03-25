@@ -58,17 +58,20 @@ def get_location(java_code: str, loc: Location) -> Tuple[int, int]:
 
 
 def mask_function(java_code: str) -> Optional[ASample]:
-    input_stream = InputStream(java_code)
-    lexer = JavaLexer(input_stream)
-    token_stream = CommonTokenStream(lexer)
-    parser = JavaParser(token_stream)
-    tree = parser.compilationUnit()
-    # Create listener
-    listener = Extractor(token_stream)
-    # Walk the parse tree
-    walker = ParseTreeWalker()
-    walker.walk(listener, tree)
-    functions = listener.get_function()
+    try:
+        input_stream = InputStream(java_code)
+        lexer = JavaLexer(input_stream)
+        token_stream = CommonTokenStream(lexer)
+        parser = JavaParser(token_stream)
+        tree = parser.compilationUnit()
+        # Create listener
+        listener = Extractor(token_stream)
+        # Walk the parse tree
+        walker = ParseTreeWalker()
+        walker.walk(listener, tree)
+        functions = listener.get_function()
+    except:
+        return None
 
     # If file has no function, return None
     if not functions:
@@ -110,6 +113,8 @@ def make_dataset(java_file_urls_storage_url: str) -> pd.DataFrame:
                     "masked_class": sample.masked_class,
                     "func_body": sample.func_body
                 })
+        if rows and len(rows) % 1000 == 0:
+            pd.DataFrame(rows).to_parquet("checkout.parquet", "fastparquet")
     return pd.DataFrame(rows)
     
 
