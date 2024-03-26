@@ -7,6 +7,7 @@ import random
 from typing import Tuple, Optional
 from collections import namedtuple
 from tqdm import tqdm
+import codecs
 
 random.seed(0)
 ASample = namedtuple("ASample", "class_name func_name masked_class func_body")
@@ -96,23 +97,26 @@ def mask_function(java_code: str) -> Optional[ASample]:
 def make_dataset(java_file_urls_storage_url: str) -> pd.DataFrame:
     rows = []
     with open(java_file_urls_storage_url, "r") as f:
-        java_file_urls = map(lambda url: url.strip(), f.readlines())
+        java_file_urls = list(map(lambda url: url.strip(), f.readlines()))
     
-    for java_file_url in tqdm(java_file_urls):
+    for java_file_url in tqdm(java_file_urls[11000:]):
         project_name = java_file_url[37:].split('/')[0]
         relative_path = '/'.join(java_file_url[37:].split('/')[1:])
-        with open(java_file_url, "r") as f:
-            java_code = f.read()
-            sample = mask_function(java_code)
-            if sample:
-                rows.append({
-                    "proj_name": project_name,
-                    "relative_path": relative_path,
-                    "class_name": sample.class_name,
-                    "func_name": sample.func_name,
-                    "masked_class": sample.masked_class,
-                    "func_body": sample.func_body
-                })
+        with codecs.open(java_file_url, "r", encoding="utf-8", errors="ignore") as f:
+            try:
+                java_code = f.read()
+                sample = mask_function(java_code)
+                if sample:
+                    rows.append({
+                        "proj_name": project_name,
+                        "relative_path": relative_path,
+                        "class_name": sample.class_name,
+                        "func_name": sample.func_name,
+                        "masked_class": sample.masked_class,
+                        "func_body": sample.func_body
+                    })
+            except:
+                pass
         if rows and len(rows) % 1000 == 0:
             pd.DataFrame(rows).to_parquet("checkout.parquet", "fastparquet")
     return pd.DataFrame(rows)

@@ -1,4 +1,3 @@
 *.txt
-dataset.parquet
-test.java
-checkout.parquet
+*.parquet
+*.java
