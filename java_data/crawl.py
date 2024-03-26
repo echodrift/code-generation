@@ -12,8 +12,6 @@ HEADERS = {
 
 
 def search_repo(store_search_result_url: str):
-    """Use github api to search repo
-    """
     page = 1
     all_elements = []
     while page <= 20:

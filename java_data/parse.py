@@ -9,6 +9,7 @@ from collections import namedtuple
 from tqdm import tqdm
 import codecs
 import argparse
+import re
 
 random.seed(0)
 ASample = namedtuple("ASample", "class_name func_name masked_class func_body")
@@ -100,7 +101,7 @@ def make_dataset(java_file_urls_storage_url: str, checkpoint: str) -> pd.DataFra
     with open(java_file_urls_storage_url, "r") as f:
         java_file_urls = list(map(lambda url: url.strip(), f.readlines()))
     
-    for java_file_url in tqdm(java_file_urls[11000:]):
+    for java_file_url in tqdm(java_file_urls):
         project_name = java_file_url[37:].split('/')[0]
         relative_path = '/'.join(java_file_url[37:].split('/')[1:])
         with codecs.open(java_file_url, "r", encoding="utf-8", errors="ignore") as f:
@@ -121,7 +122,17 @@ def make_dataset(java_file_urls_storage_url: str, checkpoint: str) -> pd.DataFra
         if rows and len(rows) % 1000 == 0:
             pd.DataFrame(rows).to_parquet(checkpoint, "fastparquet")
     return pd.DataFrame(rows)
+
+
+def post_processing(dataset: pd.DataFrame) -> pd.DataFrame:
+    std = lambda x: re.sub(r'[\t\n\r ]', '', x)
+    dataset["std_func_body"] = dataset["func_body"].apply(std)
+    dataset = dataset[dataset["std_func_body"] != ""]
+    dataset.drop(columns=["std_func_body"], inplace=True)
+    dataset.reset_index(drop=True, inplace=True)
+    return dataset
     
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -129,5 +140,8 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--output", dest="output")
     parser.add_argument("-c", "--check", dest="checkpoint")
     args = parser.parse_args()
-    df = make_dataset(java_file_urls_storage_url=args.input, checkpoint=args.checkpoint)
+    df = post_processing(make_dataset(java_file_urls_storage_url=args.input, checkpoint=args.checkpoint))
     df.to_parquet(args.output, "fastparquet")
+    # df = pd.read_parquet("/home/hieuvd/lvdthieu/CodeGen/java_data/data/dataset_v1.parquet", "fastparquet")
+    # df = post_processing(df)
+    # df.to_parquet("/home/hieuvd/lvdthieu/CodeGen/java_data/data/dataset_v2.parquet", "fastparquet")
