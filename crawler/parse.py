@@ -8,6 +8,7 @@ from typing import Tuple, Optional
 from collections import namedtuple
 from tqdm import tqdm
 import codecs
+import argparse
 
 random.seed(0)
 ASample = namedtuple("ASample", "class_name func_name masked_class func_body")
@@ -94,7 +95,7 @@ def mask_function(java_code: str) -> Optional[ASample]:
                    func_body=func_body)
 
 
-def make_dataset(java_file_urls_storage_url: str) -> pd.DataFrame:
+def make_dataset(java_file_urls_storage_url: str, checkpoint: str) -> pd.DataFrame:
     rows = []
     with open(java_file_urls_storage_url, "r") as f:
         java_file_urls = list(map(lambda url: url.strip(), f.readlines()))
@@ -118,11 +119,15 @@ def make_dataset(java_file_urls_storage_url: str) -> pd.DataFrame:
             except:
                 pass
         if rows and len(rows) % 1000 == 0:
-            pd.DataFrame(rows).to_parquet("checkout.parquet", "fastparquet")
+            pd.DataFrame(rows).to_parquet(checkpoint, "fastparquet")
     return pd.DataFrame(rows)
     
 
-
 if __name__ == "__main__":
-    df = make_dataset("/home/hieuvd/lvdthieu/CodeGen/crawler/java_file.txt")
-    df.to_parquet("dataset.parquet", "fastparquet")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input", dest="input")
+    parser.add_argument("-o", "--output", dest="output")
+    parser.add_argument("-c", "--check", dest="checkpoint")
+    args = parser.parse_args()
+    df = make_dataset(java_file_urls_storage_url=args.input, checkpoint=args.checkpoint)
+    df.to_parquet(args.output, "fastparquet")
