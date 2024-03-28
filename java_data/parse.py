@@ -4,16 +4,18 @@ from java.java8.JavaParser import JavaParser
 from java.java8.JavaParserListener import JavaParserListener
 import pandas as pd
 import random
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 from collections import namedtuple
 from tqdm import tqdm
 import codecs
 import argparse
 import re
 
+
 random.seed(0)
 ASample = namedtuple("ASample", "class_name func_name masked_class func_body")
 Location = namedtuple("Location", "start_line start_col end_line end_col")
+Function = namedtuple("Function", "class_name class_loc func_name func_body_loc")
 
 class Extractor(JavaParserListener):
     def __init__(self, token_stream):
@@ -41,7 +43,6 @@ class Extractor(JavaParserListener):
         except:
             pass
                             
-        
     def get_function(self):
         return self.functions
         
@@ -60,7 +61,7 @@ def get_location(java_code: str, loc: Location) -> Tuple[int, int]:
     return start_idx, end_idx
 
 
-def mask_function(java_code: str) -> Optional[ASample]:
+def get_functions(java_code: str) -> Optional[List[Function]]:
     try:
         input_stream = InputStream(java_code)
         lexer = JavaLexer(input_stream)
@@ -75,11 +76,11 @@ def mask_function(java_code: str) -> Optional[ASample]:
         functions = listener.get_function()
     except:
         return None
+    return functions
 
-    # If file has no function, return None
-    if not functions:
-        return None
-    
+
+def mask_function(java_code: str) -> Optional[ASample]:
+    functions = get_functions(java_code)
     # Randomly select a function 
     random_function = random.choice(functions)
     
@@ -96,7 +97,7 @@ def mask_function(java_code: str) -> Optional[ASample]:
                    func_body=func_body)
 
 
-def make_dataset(java_file_urls_storage_url: str, checkpoint: str) -> pd.DataFrame:
+def make_dataset(java_file_urls_storage_url: str, checkpoint: str="") -> pd.DataFrame:
     rows = []
     with open(java_file_urls_storage_url, "r") as f:
         java_file_urls = list(map(lambda url: url.strip(), f.readlines()))
@@ -119,8 +120,9 @@ def make_dataset(java_file_urls_storage_url: str, checkpoint: str) -> pd.DataFra
                     })
             except:
                 pass
-        if rows and len(rows) % 1000 == 0:
-            pd.DataFrame(rows).to_parquet(checkpoint, "fastparquet")
+        if checkpoint:
+            if rows and len(rows) % 1000 == 0:
+                pd.DataFrame(rows).to_parquet(checkpoint, "fastparquet")
     return pd.DataFrame(rows)
 
 
@@ -131,17 +133,45 @@ def post_processing(dataset: pd.DataFrame) -> pd.DataFrame:
     dataset.drop(columns=["std_func_body"], inplace=True)
     dataset.reset_index(drop=True, inplace=True)
     return dataset
+
+
+def fill_generated_code_to_file(generated_func_dataset: pd.DataFrame, 
+                                 generated_func_column: str, 
+                                 project_storage_url: str) -> pd.DataFrame:
+    tqdm.pandas()
+    def fill_file(row):
+        absolute_file_path = "{}/{}/{}".format(project_storage_url, row["proj_name"], row["relative_path"])
+        with codecs.open(absolute_file_path, "r", encoding="utf-8", errors="ignore") as f:
+            original_file = f.read().replace("\r\n", "\n")
+        filled_class = row["masked_class"].replace("<FILL_FUNCTION_BODY>", row[generated_func_column])
+        # Find class in original file
+        functions = get_functions(original_file)
+        for function in functions:
+            if function["class_name"] == row["class_name"] and function["func_name"] == row["func_name"]:
+                class_start_idx, class_end_idx = get_location(original_file, function["class_loc"])
+                filled_file = original_file[:class_start_idx] + filled_class + original_file[class_end_idx:]
+                return filled_file
+        return ""
     
+    generated_func_dataset["filled_file_" + generated_func_column] = generated_func_dataset.progress_apply(fill_file, axis=1)
 
+    return generated_func_dataset
 
+        
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", dest="input")
     parser.add_argument("-o", "--output", dest="output")
     parser.add_argument("-c", "--check", dest="checkpoint")
+    parser.add_argument("-f", "--func", dest="func")
+    parser.add_argument("-d", "--dir", dest="dir")
+    parser.add_argument("--col", dest="col")
     args = parser.parse_args()
-    df = post_processing(make_dataset(java_file_urls_storage_url=args.input, checkpoint=args.checkpoint))
-    df.to_parquet(args.output, "fastparquet")
-    # df = pd.read_parquet("/home/hieuvd/lvdthieu/CodeGen/java_data/data/dataset_v1.parquet", "fastparquet")
-    # df = post_processing(df)
-    # df.to_parquet("/home/hieuvd/lvdthieu/CodeGen/java_data/data/dataset_v2.parquet", "fastparquet")
+    match args.func:
+        case "make_dataset":
+            df = post_processing(make_dataset(java_file_urls_storage_url=args.input, checkpoint=args.checkpoint))
+            df.to_parquet(args.output, "fastparquet")
+        case "fill_file":
+            df = pd.read_parquet(args.input, "fastparquet")
+            df = fill_generated_code_to_file(df, args.col, args.dir)
+            df.to_parquet(args.output, "fastparquet")
