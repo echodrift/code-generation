@@ -1766,21 +1766,17 @@ class JavaParser ( Parser ):
         def identifier(self):
             return self.getTypedRuleContext(JavaParser.IdentifierContext,0)
 
-
         def classBody(self):
             return self.getTypedRuleContext(JavaParser.ClassBodyContext,0)
 
-
         def typeParameters(self):
             return self.getTypedRuleContext(JavaParser.TypeParametersContext,0)
-
 
         def EXTENDS(self):
             return self.getToken(JavaParser.EXTENDS, 0)
 
         def typeType(self):
             return self.getTypedRuleContext(JavaParser.TypeTypeContext,0)
-
 
         def IMPLEMENTS(self):
             return self.getToken(JavaParser.IMPLEMENTS, 0)
@@ -1790,7 +1786,6 @@ class JavaParser ( Parser ):
                 return self.getTypedRuleContexts(JavaParser.TypeListContext)
             else:
                 return self.getTypedRuleContext(JavaParser.TypeListContext,i)
-
 
         def PERMITS(self):
             return self.getToken(JavaParser.PERMITS, 0)

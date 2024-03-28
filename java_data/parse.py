@@ -3,25 +3,25 @@ from java.java8.JavaLexer import JavaLexer
 from java.java8.JavaParser import JavaParser
 from java.java8.JavaParserListener import JavaParserListener
 import pandas as pd
+import numpy as np
 import random
 from typing import Tuple, Optional, List
-from collections import namedtuple
+from collections import namedtuple, Counter
 from tqdm import tqdm
 import codecs
 import argparse
 import re
+import json
 
 
-random.seed(0)
 ASample = namedtuple("ASample", "class_name func_name masked_class func_body")
 Location = namedtuple("Location", "start_line start_col end_line end_col")
 Function = namedtuple("Function", "class_name class_loc func_name func_body_loc")
 
-class Extractor(JavaParserListener):
-    def __init__(self, token_stream):
+class ExtractFunc(JavaParserListener):
+    def __init__(self):
         super().__init__()
         self.functions = []
-        self.token_stream = token_stream
     
     def enterClassDeclaration(self, ctx):
         self.class_name = ctx.identifier().getText()
@@ -45,8 +45,20 @@ class Extractor(JavaParserListener):
                             
     def get_function(self):
         return self.functions
-        
-        
+
+
+class ExtractParentComponent(JavaParserListener):
+    def __init__(self):
+        super().__init__()
+    
+    def enterClassDeclaration(self, ctx):
+        self.class_name = ctx.identifier().getText()
+        # self.class_extends = ctx.typeType().getText()
+        # print(self.class_extends)
+        print(self.class_name)
+
+   
+
 def get_location(java_code: str, loc: Location) -> Tuple[int, int]:
     lines = java_code.split("\n")
     start_idx = 0
@@ -69,7 +81,7 @@ def get_functions(java_code: str) -> Optional[List[Function]]:
         parser = JavaParser(token_stream)
         tree = parser.compilationUnit()
         # Create listener
-        listener = Extractor(token_stream)
+        listener = ExtractFunc()
         # Walk the parse tree
         walker = ParseTreeWalker()
         walker.walk(listener, tree)
@@ -81,9 +93,46 @@ def get_functions(java_code: str) -> Optional[List[Function]]:
 
 def mask_function(java_code: str) -> Optional[ASample]:
     functions = get_functions(java_code)
+    if not functions:
+        return None
     # Randomly select a function 
     random_function = random.choice(functions)
     
+    # Extract function body 
+    class_start_idx, class_end_idx = get_location(java_code, random_function["class_loc"])
+    func_body_start_idx, func_body_end_idx = get_location(java_code, random_function["func_body_loc"])
+    masked_class = java_code[class_start_idx : func_body_start_idx + 1] + "<FILL_FUNCTION_BODY>" \
+                    + java_code[func_body_end_idx - 1 : class_end_idx]
+    func_body = java_code[func_body_start_idx + 1 : func_body_end_idx - 1]
+
+    return ASample(class_name=random_function["class_name"], 
+                   func_name=random_function["func_name"], 
+                   masked_class=masked_class, 
+                   func_body=func_body)
+
+
+def modified_mask_function(java_code: str) -> Optional[ASample]:
+    functions = get_functions(java_code)
+    if not functions:
+        return None
+    # Randomly select a function
+    def get_len(java_code: str, loc: Location) -> int:
+        start_idx, end_idx = get_location(java_code, loc)
+        return end_idx - start_idx
+    
+    functions_with_len_body = [[get_len(java_code, func["func_body_loc"]), func] for func in functions]
+    functions_with_len_body.sort(key=lambda x: x[0])
+    weights, functions = zip(*functions_with_len_body)
+    weights = list(weights)
+    functions = list(functions)
+    for i in range(1, len(weights)):
+        weights[i] = weights[i - 1] + weights[i]
+    
+    total = sum(weights)
+    cumulative_weights = [weight / total for weight in weights]
+
+    random_function = random.choices(functions, weights=cumulative_weights, k=1)[0]
+
     # Extract function body 
     class_start_idx, class_end_idx = get_location(java_code, random_function["class_loc"])
     func_body_start_idx, func_body_end_idx = get_location(java_code, random_function["func_body_loc"])
@@ -108,7 +157,8 @@ def make_dataset(java_file_urls_storage_url: str, checkpoint: str="") -> pd.Data
         with codecs.open(java_file_url, "r", encoding="utf-8", errors="ignore") as f:
             try:
                 java_code = f.read()
-                sample = mask_function(java_code)
+                # sample = mask_function(java_code)
+                sample = modified_mask_function(java_code)
                 if sample:
                     rows.append({
                         "proj_name": project_name,
@@ -157,7 +207,23 @@ def fill_generated_code_to_file(generated_func_dataset: pd.DataFrame,
 
     return generated_func_dataset
 
-        
+
+def extract_parent_component(java_code: str):
+    # try:
+        input_stream = InputStream(java_code)
+        lexer = JavaLexer(input_stream)
+        token_stream = CommonTokenStream(lexer)
+        parser = JavaParser(token_stream)
+        tree = parser.compilationUnit()
+        # Create listener
+        listener = ExtractParentComponent()
+        # Walk the parse tree
+        walker = ParseTreeWalker()
+        walker.walk(listener, tree)
+    # except:
+        # print("Error")
+    
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", dest="input")
@@ -167,6 +233,7 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--dir", dest="dir")
     parser.add_argument("--col", dest="col")
     args = parser.parse_args()
+    
     match args.func:
         case "make_dataset":
             df = post_processing(make_dataset(java_file_urls_storage_url=args.input, checkpoint=args.checkpoint))
@@ -175,3 +242,5 @@ if __name__ == "__main__":
             df = pd.read_parquet(args.input, "fastparquet")
             df = fill_generated_code_to_file(df, args.col, args.dir)
             df.to_parquet(args.output, "fastparquet")
+        case "extract_parent_component":
+            pass

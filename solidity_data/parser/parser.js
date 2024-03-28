@@ -94,7 +94,6 @@ async function transform_function_only(input_file, output_file) {
         } catch (e) {
         }
     }
-    
     writer.close()
 }
 
