@@ -18,6 +18,7 @@ ASample = namedtuple("ASample", "class_name func_name masked_class func_body")
 Location = namedtuple("Location", "start_line start_col end_line end_col")
 Function = namedtuple("Function", "class_name class_loc func_name func_body_loc")
 
+
 class ExtractFunc(JavaParserListener):
     def __init__(self):
         super().__init__()
@@ -48,17 +49,20 @@ class ExtractFunc(JavaParserListener):
 
 
 class ExtractParentComponent(JavaParserListener):
-    def __init__(self):
+    def __init__(self, class_name):
         super().__init__()
-    
+        self.class_name = class_name
+        self.parent_class = None
+
     def enterClassDeclaration(self, ctx):
-        self.class_name = ctx.identifier().getText()
-        # self.class_extends = ctx.typeType().getText()
-        # print(self.class_extends)
-        print(self.class_name)
+        if self.class_name == ctx.identifier().getText():
+            if ctx.typeType():
+                self.parent_class = ctx.typeType().getText()
+
+    def get_parent_class(self):
+        return self.parent_class
 
    
-
 def get_location(java_code: str, loc: Location) -> Tuple[int, int]:
     lines = java_code.split("\n")
     start_idx = 0
@@ -208,7 +212,7 @@ def fill_generated_code_to_file(generated_func_dataset: pd.DataFrame,
     return generated_func_dataset
 
 
-def extract_parent_component(java_code: str):
+def extract_parent_component(java_code: str, class_name: str):
     # try:
         input_stream = InputStream(java_code)
         lexer = JavaLexer(input_stream)
@@ -216,10 +220,14 @@ def extract_parent_component(java_code: str):
         parser = JavaParser(token_stream)
         tree = parser.compilationUnit()
         # Create listener
-        listener = ExtractParentComponent()
+        listener = ExtractParentComponent(class_name)
         # Walk the parse tree
         walker = ParseTreeWalker()
         walker.walk(listener, tree)
+        parent_class = listener.get_parent_class()
+        if parent_class:
+            print(parent_class)
+                
     # except:
         # print("Error")
     
@@ -235,12 +243,76 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     match args.func:
-        case "make_dataset":
+        case "md":
             df = post_processing(make_dataset(java_file_urls_storage_url=args.input, checkpoint=args.checkpoint))
             df.to_parquet(args.output, "fastparquet")
-        case "fill_file":
+        case "ff":
             df = pd.read_parquet(args.input, "fastparquet")
             df = fill_generated_code_to_file(df, args.col, args.dir)
             df.to_parquet(args.output, "fastparquet")
-        case "extract_parent_component":
-            pass
+        case "epc":
+            java_code = \
+"""
+/*
+* Copyright (c) 2013-2017 Chris Newland.
+* Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
+* Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
+*/
+package org.adoptopenjdk.jitwatch.core;
+
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
+import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
+
+import java.util.LinkedHashMap;
+import java.util.Map;   
+
+public class ErrorLog extends Log
+{
+    private Map<String, Integer> errorCountMap = new LinkedHashMap<>();
+
+    public void clear()
+    {
+        // Some comment here
+        errorCountMap.clear();
+    }
+
+    public void addEntry(String entry)
+    {
+        if (errorCountMap.containsKey(entry))
+        {
+            errorCountMap.put(entry, errorCountMap.get(entry) + 1);
+        }
+        else
+        {
+            errorCountMap.put(entry, 1);
+        }
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
+
+        for (Map.Entry<String, Integer> entry : errorCountMap.entrySet())
+        {
+            String msg = entry.getKey();
+            int count = entry.getValue();
+
+            if (count == 1)
+            {
+                builder.append(msg).append(S_NEWLINE);
+            }
+            else
+            {
+                builder.append(msg).append(S_SPACE).append(S_OPEN_PARENTHESES).append(count).append(S_SPACE).append("times").append(S_CLOSE_PARENTHESES).append(S_NEWLINE);
+            }
+        }
+
+        return builder.toString();
+
+    }
+}
+"""
+            extract_parent_component(java_code=java_code, class_name="ErrorLog")

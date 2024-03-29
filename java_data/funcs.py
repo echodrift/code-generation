@@ -53,8 +53,7 @@ def extract_error(compile_infos: dict) -> defaultdict:
         
 def check_compilable(df: pd.DataFrame, column: str, proj_storage_url: str, tmp_dir_url: str, compile_info_storage_url: str):
     projects = list(set(df["proj_name"].to_list()))
-    run(f"rm -rf {tmp_dir_url}/*", shell=True)
-    # run(["rm", "-rf", f"{tmp_dir_url}/*/"])
+    # run(f"rm -rf {tmp_dir_url}/*", shell=True)
     for _, row in tqdm(df.iterrows()):
         path_to_folder = "{}/{}".format(proj_storage_url, row["proj_name"])
         if not os.path.exists("{}/{}".format(tmp_dir_url, row["proj_name"])):
