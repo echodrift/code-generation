@@ -1,7 +1,7 @@
 import argparse
 import re
 import requests
-from collections import Counter, namedtuple, defaultdict
+from collections import namedtuple, defaultdict
 import pandas as pd
 from tqdm import tqdm
 from subprocess import run
@@ -14,6 +14,7 @@ HEADERS = {
     'Authorization': '<GITHUB_TOKEN>', 
     'Accept': 'application/vnd.github.v3+json'
 }
+
 
 def timing(f):
     @wraps(f)

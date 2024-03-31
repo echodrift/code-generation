@@ -3,15 +3,15 @@ from java.java8.JavaLexer import JavaLexer
 from java.java8.JavaParser import JavaParser
 from java.java8.JavaParserListener import JavaParserListener
 import pandas as pd
-import numpy as np
 import random
 from typing import Tuple, Optional, List
-from collections import namedtuple, Counter
+from collections import namedtuple, Counter, defaultdict
 from tqdm import tqdm
 import codecs
 import argparse
 import re
-import json
+
+from java_data.java.java8.JavaParser import JavaParser
 
 
 ASample = namedtuple("ASample", "class_name func_name masked_class func_body")
@@ -63,6 +63,30 @@ class ExtractParentComponent(JavaParserListener):
         return self.parent_class
 
    
+class ExtractSignatureAndVar(JavaParserListener):
+    def __init__(self):
+        super().__init__()
+        self.class_comp = defaultdict(list)
+    
+    def enterClassDeclaration(self, ctx):
+        self.class_name = ctx.identifier().getText()
+
+    def enterMethodDeclaration(self, ctx):
+        self.func_name = ctx.identifier().getText()
+        body = ctx.methodBody().block()
+        func_body_start_idx, _ = get_location(Location(body.start.line, body.start.column, 
+                                                       body.stop.line, body.stop.column + len(body.stop.text)))
+        func_start_idx, _ = get_location(Location(ctx.start.line, ctx.start.column,
+                                                  ctx.stop.line, ctx.stop.column + len(ctx.stop.text)))
+        self.class_comp[self.class_name].append((func_start_idx, func_body_start_idx))
+    
+    def enterVariableDeclaratorId(self, ctx: VariableDeclaratorIdContext):
+        return super().enterVariableDeclaratorId(ctx)
+
+    def get_class_comp(self):
+        return self.class_comp
+
+
 def get_location(java_code: str, loc: Location) -> Tuple[int, int]:
     lines = java_code.split("\n")
     start_idx = 0
@@ -212,7 +236,18 @@ def fill_generated_code_to_file(generated_func_dataset: pd.DataFrame,
     return generated_func_dataset
 
 
-def extract_parent_component(java_code: str, class_name: str):
+def extract_parent_component(java_code: str, proj_name: str, class_name: str):
+    # parsed_file = file_url.replace(".txt", ".json")
+    # with open(parsed_file, "r") as f:
+    #     ast = json.load(f)
+    # super_class_name = None
+    # for cls in ast["types"]:
+    #     if not cls["interface"] and cls["name"]["identifier"] == class_name:
+    #         if cls["superclassType"]:
+    #             super_class_name = cls["superclassType"]["name"]["identifier"]
+    #             break
+    # else:
+    #     return None
     # try:
         input_stream = InputStream(java_code)
         lexer = JavaLexer(input_stream)
@@ -224,14 +259,29 @@ def extract_parent_component(java_code: str, class_name: str):
         # Walk the parse tree
         walker = ParseTreeWalker()
         walker.walk(listener, tree)
-        parent_class = listener.get_parent_class()
-        if parent_class:
-            print(parent_class)
-                
-    # except:
-        # print("Error")
-    
+        parent = listener.get_parent_class()
+        
+        if not parent:
+            return ""
+        else:
+            pass
 
+
+def get_signature_component(java_code: str):
+    input_stream = InputStream(java_code)
+    lexer = JavaLexer(input_stream)
+    token_stream = CommonTokenStream(lexer)
+    parser = JavaParser(token_stream)
+    tree = parser.compilationUnit()
+    # Create listener
+    listener = ExtractSignatureAndVar()
+    # Walk the parse tree
+    walker = ParseTreeWalker()
+    walker.walk(listener, tree)
+    class_comps = listener.get_class_comp()
+    print(class_comps)
+    
+        
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", dest="input")
@@ -253,66 +303,168 @@ if __name__ == "__main__":
         case "epc":
             java_code = \
 """
-/*
-* Copyright (c) 2013-2017 Chris Newland.
-* Licensed under https://github.com/AdoptOpenJDK/jitwatch/blob/master/LICENSE-BSD
-* Instructions: https://github.com/AdoptOpenJDK/jitwatch/wiki
-*/
-package org.adoptopenjdk.jitwatch.core;
+/*******************************************************************************
+ *     ___                  _   ____  ____
+ *    / _ \ _   _  ___  ___| |_|  _ \| __ )
+ *   | | | | | | |/ _ \/ __| __| | | |  _ \
+ *   | |_| | |_| |  __/\__ \ |_| |_| | |_) |
+ *    \__\_\\__,_|\___||___/\__|____/|____/
+ *
+ *  Copyright (c) 2014-2019 Appsicle
+ *  Copyright (c) 2019-2023 QuestDB
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ ******************************************************************************/
 
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_CLOSE_PARENTHESES;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_NEWLINE;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_OPEN_PARENTHESES;
-import static org.adoptopenjdk.jitwatch.core.JITWatchConstants.S_SPACE;
+package io.questdb.cairo.frm.file;
 
-import java.util.LinkedHashMap;
-import java.util.Map;   
+import io.questdb.cairo.CairoConfiguration;
+import io.questdb.cairo.ColumnType;
+import io.questdb.cairo.frm.FrameColumn;
+import io.questdb.cairo.frm.FrameColumnPool;
+import io.questdb.cairo.frm.FrameColumnTypePool;
+import io.questdb.std.FilesFacade;
+import io.questdb.std.ObjList;
+import io.questdb.std.str.Path;
 
-public class ErrorLog extends Log
-{
-    private Map<String, Integer> errorCountMap = new LinkedHashMap<>();
+import java.io.Closeable;
 
-    public void clear()
-    {
-        // Some comment here
-        errorCountMap.clear();
-    }
+public class ContiguousFileColumnPool implements FrameColumnPool, Closeable {
+    private final ColumnTypePool columnTypePool = new ColumnTypePool();
+    private final CairoConfiguration configuration;
+    private final FilesFacade ff;
+    private final ListPool<ContiguousFileFixFrameColumn> fixColumnPool = new ListPool<>();
+    private final ListPool<ContiguousFileFixFrameColumn> indexedColumnPool = new ListPool<>();
+    private final ListPool<ContiguousFileVarFrameColumn> varColumnPool = new ListPool<>();
+    private boolean canWrite;
+    private boolean isClosed;
 
-    public void addEntry(String entry)
-    {
-        if (errorCountMap.containsKey(entry))
-        {
-            errorCountMap.put(entry, errorCountMap.get(entry) + 1);
-        }
-        else
-        {
-            errorCountMap.put(entry, 1);
-        }
+    public ContiguousFileColumnPool(CairoConfiguration configuration) {
+        this.ff = configuration.getFilesFacade();
+        this.configuration = configuration;
     }
 
     @Override
-    public String toString()
-    {
-        StringBuilder builder = new StringBuilder();
+    public void close() {
+        this.isClosed = true;
+    }
 
-        for (Map.Entry<String, Integer> entry : errorCountMap.entrySet())
-        {
-            String msg = entry.getKey();
-            int count = entry.getValue();
+    @Override
+    public FrameColumnTypePool getPoolRO(int columnType) {
+        this.canWrite = false;
+        return columnTypePool;
+    }
 
-            if (count == 1)
-            {
-                builder.append(msg).append(S_NEWLINE);
+    @Override
+    public FrameColumnTypePool getPoolRW(int columnType) {
+        this.canWrite = true;
+        return columnTypePool;
+    }
+
+    private class ColumnTypePool implements FrameColumnTypePool {
+
+        @Override
+        public FrameColumn create(
+                Path partitionPath,
+                CharSequence columnName,
+                long columnTxn,
+                int columnType,
+                int indexBlockCapacity,
+                long columnTop,
+                int columnIndex,
+                boolean isEmpty
+        ) {
+            boolean isIndexed = indexBlockCapacity > 0;
+
+            if (ColumnType.isVarSize(columnType)) {
+                ContiguousFileVarFrameColumn column = getVarColumn();
+                if (canWrite) {
+                    column.ofRW(partitionPath, columnName, columnTxn, columnType, columnTop, columnIndex);
+                } else {
+                    column.ofRO(partitionPath, columnName, columnTxn, columnType, columnTop, columnIndex, isEmpty);
+                }
+                return column;
             }
-            else
-            {
-                builder.append(msg).append(S_SPACE).append(S_OPEN_PARENTHESES).append(count).append(S_SPACE).append("times").append(S_CLOSE_PARENTHESES).append(S_NEWLINE);
+
+            if (columnType == ColumnType.SYMBOL) {
+                if (canWrite && isIndexed) {
+                    ContiguousFileIndexedFrameColumn indexedColumn = getIndexedColumn();
+                    indexedColumn.ofRW(partitionPath, columnName, columnTxn, columnType, indexBlockCapacity, columnTop, columnIndex, isEmpty);
+                    return indexedColumn;
+                }
             }
+
+            ContiguousFileFixFrameColumn column = getFixColumn();
+            if (canWrite) {
+                column.ofRW(partitionPath, columnName, columnTxn, columnType, columnTop, columnIndex);
+            } else {
+                column.ofRO(partitionPath, columnName, columnTxn, columnType, columnTop, columnIndex, isEmpty);
+            }
+            return column;
         }
 
-        return builder.toString();
+        private ContiguousFileFixFrameColumn getFixColumn() {
+            if (fixColumnPool.size() > 0) {
+                return fixColumnPool.pop();
+            }
+            ContiguousFileFixFrameColumn col = new ContiguousFileFixFrameColumn(configuration);
+            col.setPool(fixColumnPool);
+            return col;
+        }
 
+        private ContiguousFileIndexedFrameColumn getIndexedColumn() {
+            if (indexedColumnPool.size() > 0) {
+                return (ContiguousFileIndexedFrameColumn) indexedColumnPool.pop();
+            }
+            ContiguousFileIndexedFrameColumn col = new ContiguousFileIndexedFrameColumn(configuration);
+            col.setPool(indexedColumnPool);
+            return col;
+        }
+
+        private ContiguousFileVarFrameColumn getVarColumn() {
+            if (varColumnPool.size() > 0) {
+                return varColumnPool.pop();
+            }
+            ContiguousFileVarFrameColumn col = new ContiguousFileVarFrameColumn(configuration);
+            col.setPool(varColumnPool);
+            return col;
+        }
+    }
+
+    private class ListPool<T> implements RecycleBin<T> {
+        private final ObjList<T> pool = new ObjList<>();
+
+        @Override
+        public boolean isClosed() {
+            return isClosed;
+        }
+
+        public T pop() {
+            T last = pool.getLast();
+            pool.setPos(pool.size() - 1);
+            return last;
+        }
+
+        @Override
+        public void put(T frame) {
+            pool.add(frame);
+        }
+
+        public int size() {
+            return pool.size();
+        }
     }
 }
 """
-            extract_parent_component(java_code=java_code, class_name="ErrorLog")
+            get_signature_component(java_code)

@@ -2,18 +2,28 @@ import os
 import argparse
 import pandas as pd
 from typing import Optional, List, TypeVar, Tuple
-from difflib import SequenceMatcher
 import json
+from collections import namedtuple
+import random
+from tqdm import tqdm
+import multiprocessing as mp
+import numpy as np
+import dask.dataframe as dd
+from dask.diagnostics import ProgressBar
 
 
 SOL_FILES = pd.read_parquet(
-    "/home/hieuvd/lvdthieu/CodeGen/data_process/data/solfile/all_file_v2.parquet",
+    "/home/hieuvd/lvdthieu/CodeGen/solidity_data/data/solfile/all_file_v2.parquet",
     engine="fastparquet",
 )
 CONTRACTS = pd.read_parquet(
-    "/home/hieuvd/lvdthieu/CodeGen/data_process/data/contracts/contracts_filtered.parquet",
+    "/home/hieuvd/lvdthieu/CodeGen/solidity_data/data/contracts/contracts_filtered.parquet",
     engine="fastparquet"
 )
+
+ContractInfo = namedtuple("ContractInfo", "source_idx contract_name contract_source contract_ast count")
+ASample = namedtuple("ASample", "source_idx contract_name func_name masked_body masked_all func_body signature_only signature_extend")
+Location = namedtuple("Location", "start_line start_col end_line end_col")
 # ERROR = [
 #     "ParserError",
 #     "DocstringParsingError",
@@ -188,6 +198,19 @@ def get_location(source: str, element: ParsedObject) -> Tuple[int, int]:
 
     return start_idx, end_idx
 
+
+def modified_get_location(solidity_code: str, loc: Location) -> Tuple[int, int]:
+    lines = solidity_code.split('\n')
+    start_idx = 0
+    for i in range(loc.start_line - 1):
+        start_idx += len(lines[i])
+    start_idx = start_idx + loc.start_col + loc.start_line - 1
+
+    end_idx = 0
+    for i in range(loc.end_line - 1):
+        end_idx += len(lines[i])
+    end_idx = end_idx + loc.end_col + loc.end_line - 1
+    return start_idx, end_idx
 
 DataFrame_Row = TypeVar("DataFrame_Row")
 def fill_contract(row: DataFrame_Row, sol_files: pd.DataFrame) -> str:
@@ -433,6 +456,87 @@ def get_in_out_variable(input: str, output: str):
     print(counter)
     
 
+def back_search(solidity_code: str, comment_list: List[dict], start_point: int, result: List[dict]):
+    tmp = start_point
+    while (solidity_code[tmp] == ' ' or solidity_code[tmp] == '\n' or solidity_code[tmp] == '\t' or solidity_code[tmp] == '\r'):
+        tmp -= 1
+
+    for comment in comment_list:
+        if (tmp >= comment["range"]["start"] and tmp <= comment["range"]["end"]):
+            result.append(comment["range"]["start"])
+            back_search(solidity_code, comment_list, comment["range"]["start"] - 1, result)
+            break
+
+
+def mask_function(row: DataFrame_Row) -> Optional[ASample]:
+    try:
+        contract_source = row["contract_source"].replace("\r\n", "\n")
+        # Extract functions in a contract
+        functions = []
+        contract_ast = json.loads(row["contract_ast"])
+        for subNode in contract_ast["children"][0]["subNodes"]:
+            if subNode["type"] == "FunctionDefinition" and subNode["body"] and subNode["body"]["statements"]:
+                func_loc = Location(subNode["loc"]["start"]["line"], subNode["loc"]["start"]["column"],
+                                    subNode["loc"]["end"]["line"], subNode["loc"]["end"]["column"])
+                func_body = subNode["body"]
+                func_body_loc = Location(func_body["loc"]["start"]["line"], func_body["loc"]["start"]["column"],
+                                         func_body["loc"]["end"]["line"], func_body["loc"]["end"]["column"])
+                
+                functions.append({"func_name": subNode["name"], 
+                                  "func_loc": func_loc,
+                                  "func_body_loc": func_body_loc})
+        if not functions:
+            return (None, None, None, None, None, None, None, None)
+        
+        # Randomly select a function
+        def get_len(solidity_code: str, loc: Location) -> int:
+            start_idx, end_idx = modified_get_location(solidity_code, loc)
+            cnt = 0
+            for i in range(start_idx, end_idx):
+                if solidity_code[i] not in ['\n', '\t', '\r', '\a']:
+                    cnt += 1
+            return cnt
+        for func in functions:
+            func["func_body_len"] = get_len(contract_source, func["func_body_loc"])
+        functions.sort(key=lambda func: func["func_body_len"])
+        weights = [func["func_body_len"] for func in functions]
+        for i in range(1, len(weights)):
+            weights[i] = (weights[i - 1] + weights[i])
+        total_weight = sum(weights)
+        cumulative_weights = [weight / total_weight for weight in weights]
+        random_function = random.choices(functions, weights=cumulative_weights, k=1)[0]
+
+        # Mask function 
+
+        # Mask function body
+        func_body_start_idx, func_body_end_idx = modified_get_location(contract_source, random_function["func_body_loc"])
+        masked_body = contract_source[0:func_body_start_idx + 1] + "<FILL_FUNCTION_BODY>" + \
+                        contract_source[func_body_end_idx - 1:]
+        func_body = contract_source[func_body_start_idx + 1 : func_body_end_idx - 1]
+
+        # Mask function body and signature
+        func_start_idx, func_end_idx = modified_get_location(contract_source, random_function["func_loc"])
+        # Find comments
+        comments = find_comment(contract_source)
+        comment_start_idxes = [] 
+        back_search(contract_source, comments, func_start_idx - 1, comment_start_idxes)
+        start_idx = min(comment_start_idxes) if comment_start_idxes else func_start_idx
+        masked_all = contract_source[0:start_idx] + "<FILL_FUNCTION>" + \
+                    contract_source[func_end_idx + 1:]
+        signature_only = contract_source[func_start_idx:func_body_start_idx]
+        signature_extend = contract_source[start_idx:func_body_start_idx]
+        return ASample(source_idx=row["source_idx"], 
+                   contract_name=row["contract_name"],
+                   func_name=random_function["func_name"],
+                   masked_body=masked_body,
+                   masked_all=masked_all,
+                   func_body=func_body,
+                   signature_only=signature_only,
+                   signature_extend=signature_extend
+                   ) 
+    except:
+        return (None, None, None, None, None, None, None, None)
+    
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -468,3 +572,10 @@ if __name__ == "__main__":
             get_inherit_element(args.input, args.output)
         case "params_return_element":
             get_in_out_variable(args.input, args.output)
+        case "make_dataset":
+            tqdm.pandas()
+            df = pd.read_parquet(args.input, "fastparquet")
+            df = df.progress_apply(mask_function, axis=1)
+            df = pd.DataFrame(df.values.tolist(), columns=df.iloc[0]._fields)
+            df.to_parquet(args.output, "fastparquet")
+            
