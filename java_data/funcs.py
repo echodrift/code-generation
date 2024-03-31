@@ -6,12 +6,25 @@ import pandas as pd
 from tqdm import tqdm
 from subprocess import run
 import os
+from functools import wraps
+from time import time
 
 PROJ_INFO = namedtuple("PROJ_INFO", "full_name created_at star")
 HEADERS = {
     'Authorization': '<GITHUB_TOKEN>', 
     'Accept': 'application/vnd.github.v3+json'
 }
+
+def timing(f):
+    @wraps(f)
+    def wrap(*args, **kw):
+        ts = time()
+        result = f(*args, **kw)
+        te = time()
+        print('func:%r args:[%r, %r] took: %2.4f sec' % \
+          (f.__name__, args, kw, te-ts))
+        return result
+    return wrap
 
 
 def get_all_proj_urls(file_url: str):
@@ -49,8 +62,9 @@ def extract_error(compile_infos: dict) -> defaultdict:
             relative_path = error[0].split(proj_name)[1][1:]
             error_files[(proj_name, relative_path)] += "(Line: {}, Column: {}, Error: {})\n".format(error[1], error[2], error[3])
     return error_files
-         
         
+        
+@timing       
 def check_compilable(df: pd.DataFrame, column: str, proj_storage_url: str, tmp_dir_url: str, compile_info_storage_url: str):
     projects = list(set(df["proj_name"].to_list()))
     # run(f"rm -rf {tmp_dir_url}/*", shell=True)
