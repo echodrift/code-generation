@@ -1,17 +1,15 @@
 import requests
 import json
 from collections import Counter
-from dataclasses import dataclass
-from typing import List
+from typing import List, TypeVar
+
 
 HEADERS = {
     'Authorization': '<GITHUB_TOKEN>', 
     'Accept': 'application/vnd.github.v3+json'
 }
 REPO_METADATA_STORAGE_URL = "repos.json"
-
-class RepoMetadata:
-    pass
+RepoMetadata = TypeVar("RepoMetadata")
 
 class Crawler:
     def __init__():
@@ -19,9 +17,6 @@ class Crawler:
 
     def search_repo():
         """Search for all top star public java projects on Github platform using GithubAPI
-
-        Returns:
-            _type_: _description_
         """
         page = 1
         all_elements: List[RepoMetadata] = []
@@ -38,7 +33,7 @@ class Crawler:
             page += 1
         return all_elements
     
-    def store_repo_metadata(repo_metadata: List[RepoMetadata], storage_url: str):
+    def store_repo_metadata(self, repo_metadata: List[RepoMetadata], storage_url: str):
         """Store repo metadata into a file
 
         Args:
@@ -48,7 +43,7 @@ class Crawler:
         with open(storage_url, "w") as f:
             json.dump(repo_metadata, f)
 
-    def get_repo_html_url(storage_url: str) -> List[str]:
+    def get_repo_html_url(self, storage_url: str) -> List[str]:
         with open(storage_url, "r") as f:
             repos = json.loads(f.read())
     

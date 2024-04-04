@@ -4,19 +4,17 @@ from java.java8.JavaParser import JavaParser
 from java.java8.JavaParserListener import JavaParserListener
 import pandas as pd
 import random
-from typing import Tuple, Optional, List
-from collections import namedtuple, Counter, defaultdict
+from typing import Tuple, Optional, List, NamedTuple
+from collections import namedtuple, defaultdict
 from tqdm import tqdm
 import codecs
 import argparse
 import re
 
-from java_data.java.java8.JavaParser import JavaParser
 
-
-ASample = namedtuple("ASample", "class_name func_name masked_class func_body")
-Location = namedtuple("Location", "start_line start_col end_line end_col")
-Function = namedtuple("Function", "class_name class_loc func_name func_body_loc")
+ASample = NamedTuple("ASample", [("class_name", str), ("func_name", str), ("masked_class", str), ("func_body", str)])
+Location = NamedTuple("Location", [("start_line", int), ("start_col", int), ("end_line", int), ("end_col", int)])
+Function = NamedTuple("Function", [("class_name", str), ("class_loc", Location), ("func_name", str), ("func_body_loc", Location)])
 
 
 class ExtractFunc(JavaParserListener):

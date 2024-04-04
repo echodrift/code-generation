@@ -8,18 +8,12 @@ import os
 from functools import wraps
 from time import time
 from dataclasses import dataclass
-from typing import Dict
+from typing import List, Dict, NamedTuple
 
 HEADERS = {
     'Authorization': '<GITHUB_TOKEN>', 
     'Accept': 'application/vnd.github.v3+json'
 }
-
-@dataclass
-class ProjectInfo:
-    full_name: str
-    created_at: str
-    start: str
 
 
 def timing(f):
@@ -34,53 +28,75 @@ def timing(f):
     return wrap
 
 
-def extract_error(compile_info: Dict[str, str]) -> List[FileError]:
-    error_files = defaultdict(str)
-    err_pattern = r'^\[ERROR\] (.+?):\[(?P<line>\d+),(?P<col>\d+)\] (?P<err>.+)$'
-    compile_errors = []
-    for repo_name in compile_info:
-        errors = set(re.findall(pattern, compile_info[repo_name], re.MULTILINE))
-        for error in errors:
-            relative_path = error[0].split(repo_name)[1][1:]
-            error_files[(repo_name, relative_path)] += "(Line: {}, Column: {}, Error: {})\n".format(error[1], error[2], error[3])
-    return error_files
-        
-        
-def copy_repo_to_tmp_dir(df: pd.DataFrame, column: str, proj_storage_url: str, tmp_dir: str,):
-    # Copy repo into TEMPORARY DIRECTORY
-    repos = list(set(df["proj_name"].to_list()))
-    for _, row in tqdm(df.iterrows()):
-        path_to_folder = "{}/{}".format(proj_storage_url, row["proj_name"])
-        if not os.path.exists("{}/{}".format(tmp_dir, row["proj_name"])):
-            run(f"cp -rf {path_to_folder} {tmp_dir}", shell=True)
-        path_to_file = "{}/{}/{}".format(tmp_dir, row["proj_name"], row["relative_path"])
-        # If fail log file path into error file
-        try:
-            with open(path_to_file, "w") as f:
-                f.write(row[column])
-        except:
-            with open("./error.txt", "w") as f:
-                f.write(path_to_file + '\n')
+CompilerFeedback = NamedTuple("CompilerFeedback", [("project_name", str), ("feedback", str)])
+FileInfo = NamedTuple("FileInfo", [("project_name", str), ("relative_path", str)])
+ErrorInfo = NamedTuple("ErrorInfo", [("error_info", str)])
 
-@timing       
-def check_compilable(compile_info_storage_url: str):
-    compile_infos = {}
-    for repo in tqdm(repos):
-        path_to_folder = "{}/{}".format(tmp_dir, repo)
-        cmd = f"""
-        cd {path_to_folder}
-        cd $(ls -d */|head -n 1)
-        /home/hieuvd/apache-maven-3.6.3/bin/mvn clean compile
-        """
-        data = run(cmd, shell=True, capture_output=True, text=True)
-        compile_infos[repo] = data.stdout
-        
-    error_files = extract_error(compile_infos)
-    def compile_info(row):
-        error = error_files[(row["proj_name"], row["relative_path"])]
-        return error if error else "<COMPILED_SUCCESSFULLY>"
-    df["compile_info_" + column] = df.apply(compile_info, axis=1)
-    df.to_parquet(compile_info_storage_url, "fastparquet")
+
+class CompilableChecker:
+    def __init__(self, df: pd.DataFrame, column_to_check: str, proj_storage_dir: str, tmp_dir: str, output: str):
+        self.df = df
+        self.column_to_check = column_to_check
+        self.proj_storage_dir = proj_storage_dir
+        self.tmp_dir = tmp_dir
+        self.output = output
+        self.projects = list(set(df["proj_name"].to_list()))
+    
+    def copy_project_to_tmp_dir(self):
+        for project in self.projects:
+            path_to_project = "{}/{}".format(self.proj_storage_dir, project)
+            if not os.path.exists("{}/{}".format(self.tmp_dir, project)):
+                run(f"cp -rf {path_to_project} {self.tmp_dir}", shell=True)
+    
+    def modified_files(self):
+        for _, row in tqdm(df.iterrows()):
+            path_to_file = "{}/{}/{}".format(self.tmp_dir, row["proj_name"], row["relative_path"])
+            # If fail log file path into error file
+            try:
+                with open(path_to_file, "w") as f:
+                    f.write(row[self.column_to_check])
+            except:
+                with open("./error.txt", "w") as f:
+                    f.write(path_to_file + '\n')
+
+    def extract_error(self, compile_info: List[CompilerFeedback]) -> Dict[FileInfo, ErrorInfo]:
+        error_files: Dict[FileInfo, ErrorInfo] = {}
+        err_pattern = r'^\[ERROR\] (.+?):\[(?P<line>\d+),(?P<col>\d+)\] (?P<err>.+)$'
+        for project_name, feedback  in compile_info:
+            errors = set(re.findall(err_pattern, feedback, re.MULTILINE))
+            for error in errors:
+                relative_path = error[0].split(project_name)[1][1:]
+                file_error = f"""(Line: {error["line"]}, Column: {error["col"]}, Error: {error["err"]})\n"""
+                error_files[FileInfo(project_name, relative_path)] = ErrorInfo(file_error)
+        return error_files
+    
+    @timing       
+    def add_compile_info(self) -> pd.DataFrame:
+        compile_info: List[CompilerFeedback] = []
+        for project in tqdm(self.projects):
+            path_to_project = "{}/{}".format(self.tmp_dir, project)
+            cmd = f"""
+            cd {path_to_project}
+            cd $(ls -d */|head -n 1)
+            /home/hieuvd/apache-maven-3.6.3/bin/mvn clean compile
+            """
+            data = run(cmd, shell=True, capture_output=True, text=True)
+            compile_info.append(CompilerFeedback(project, data.stdout))
+        error_files = self.extract_error(compile_info)
+        def get_compile_info(row):
+            error = error_files[(row["proj_name"], row["relative_path"])]
+            return error if error else "<COMPILED_SUCCESSFULLY>"
+        df["compile_info_" + self.column_to_check] = df.apply(get_compile_info, axis=1)
+        return df
+    
+    def store_file(self, df: pd.DataFrame):
+        df.to_parquet(self.output, "fastparquet")
+    
+    def check_compilable(self):
+        self.copy_project_to_tmp_dir()
+        self.modified_files()
+        new_df = self.add_compile_info()
+        self.store_file(new_df)
 
 
 if __name__ == "__main__":
@@ -91,10 +107,9 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--tmp", dest="tmp")
     parser.add_argument("--col", dest="col")
     args = parser.parse_args()
-    df = pd.read_parquet(args.input, "fastparquet")
-    check_compilable(df, args.col, args.dir, args.tmp, args.output)
     
-
+    df = pd.read_parquet(args.input, "fastparquet")
+    CompilableChecker(df, args.col, args.dir, args.tmp, args.output).check_compilable()
 
 
 
