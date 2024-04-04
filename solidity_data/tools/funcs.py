@@ -6,20 +6,17 @@ import json
 from collections import namedtuple
 import random
 from tqdm import tqdm
-import multiprocessing as mp
-import numpy as np
-import dask.dataframe as dd
-from dask.diagnostics import ProgressBar
+import traceback
 
 
-SOL_FILES = pd.read_parquet(
-    "/home/hieuvd/lvdthieu/CodeGen/solidity_data/data/solfile/all_file_v2.parquet",
-    engine="fastparquet",
-)
-CONTRACTS = pd.read_parquet(
-    "/home/hieuvd/lvdthieu/CodeGen/solidity_data/data/contracts/contracts_filtered.parquet",
-    engine="fastparquet"
-)
+# SOL_FILES = pd.read_parquet(
+#     "/home/hieuvd/lvdthieu/CodeGen/solidity_data/data/solfile/all_file_v2.parquet",
+#     engine="fastparquet",
+# )
+# CONTRACTS = pd.read_parquet(
+#     "/home/hieuvd/lvdthieu/CodeGen/solidity_data/data/contracts/contracts_118k_no_ast.parquet",
+#     engine="fastparquet"
+# )
 
 ContractInfo = namedtuple("ContractInfo", "source_idx contract_name contract_source contract_ast count")
 ASample = namedtuple("ASample", "source_idx contract_name func_name masked_body masked_all func_body signature_only signature_extend")
@@ -538,6 +535,67 @@ def mask_function(row: DataFrame_Row) -> Optional[ASample]:
         return (None, None, None, None, None, None, None, None)
     
 
+def modified_mask_function(row: DataFrame_Row) -> Optional[ASample]:
+    try:
+        contract_source = row["contract_source"].replace("\r\n", "\n")
+        # Extract functions in a contract
+        functions = []
+        contract_ast = json.loads(row["contract_ast"])
+        for subNode in contract_ast["children"][0]["subNodes"]:
+            if subNode["type"] == "FunctionDefinition" and subNode["name"] == row["func_name"]:
+                func_loc = Location(subNode["loc"]["start"]["line"], subNode["loc"]["start"]["column"],
+                                    subNode["loc"]["end"]["line"], subNode["loc"]["end"]["column"])
+                func_body = subNode["body"]
+                func_body_loc = Location(func_body["loc"]["start"]["line"], func_body["loc"]["start"]["column"],
+                                         func_body["loc"]["end"]["line"], func_body["loc"]["end"]["column"])
+                functions.append({"func_name": subNode["name"], 
+                                  "func_loc": func_loc,
+                                  "func_body_loc": func_body_loc})
+                
+        # Mask function 
+        if not functions:
+            return (None, None, None, None, None, None, None, None)
+        elif len(functions) == 1:
+            random_function = functions[0] 
+        else:
+            start_idx = row["masked_contract"].find("<FILL_FUNCTION_BODY>")
+            distances = []
+            for function in functions:
+                func_body_start_idx, func_body_end_idx = modified_get_location(contract_source, function["func_body_loc"])
+                distances.append(abs(func_body_start_idx - start_idx))
+            most_match = distances.index(min(distances))
+            random_function = functions[most_match]
+        # Mask function body
+        func_body_start_idx, func_body_end_idx = modified_get_location(contract_source, random_function["func_body_loc"])
+        masked_body = contract_source[0:func_body_start_idx + 1] + "<FILL_FUNCTION_BODY>" + \
+                        contract_source[func_body_end_idx - 1:]
+        func_body = contract_source[func_body_start_idx + 1 : func_body_end_idx - 1]
+
+        # Mask function body and signature
+        func_start_idx, func_end_idx = modified_get_location(contract_source, random_function["func_loc"])
+        # Find comments
+        comments = find_comment(contract_source)
+        comment_start_idxes = [] 
+        back_search(contract_source, comments, func_start_idx - 1, comment_start_idxes)
+        start_idx = min(comment_start_idxes) if comment_start_idxes else func_start_idx
+        masked_all = contract_source[0:start_idx] + "<FILL_FUNCTION>" + \
+                    contract_source[func_end_idx + 1:]
+        signature_only = contract_source[func_start_idx:func_body_start_idx]
+        signature_extend = contract_source[start_idx:func_body_start_idx]
+        return ASample(source_idx=row["source_idx"], 
+                   contract_name=row["contract_name"],
+                   func_name=random_function["func_name"],
+                   masked_body=masked_body,
+                   masked_all=masked_all,
+                   func_body=func_body,
+                   signature_only=signature_only,
+                   signature_extend=signature_extend
+                   ) 
+    except Exception as e:
+        with open("error.txt", "a") as f:
+            f.write(f"{traceback.format_exc()}\n" + "-" * 200)
+        return (None, None, None, None, None, None, None, None)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--func", dest="func")
@@ -575,7 +633,7 @@ if __name__ == "__main__":
         case "make_dataset":
             tqdm.pandas()
             df = pd.read_parquet(args.input, "fastparquet")
-            df = df.progress_apply(mask_function, axis=1)
+            df = df.progress_apply(modified_mask_function, axis=1)
             df = pd.DataFrame(df.values.tolist(), columns=df.iloc[0]._fields)
             df.to_parquet(args.output, "fastparquet")
             

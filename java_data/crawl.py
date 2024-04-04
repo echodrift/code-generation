@@ -1,64 +1,76 @@
-import os
 import requests
-from typing import List
 import json
-from tqdm import tqdm
 from collections import Counter
+from dataclasses import dataclass
+from typing import List
 
 HEADERS = {
     'Authorization': '<GITHUB_TOKEN>', 
     'Accept': 'application/vnd.github.v3+json'
 }
+REPO_METADATA_STORAGE_URL = "repos.json"
 
-
-def search_repo(store_search_result_url: str):
-    page = 1
-    all_elements = []
-    while page <= 20:
-        print("Current page:", page)
-        url = f"https://api.github.com/search/repositories?q=language:java&sort=star&order=desc&per_page=100&page={page}"
-        response = requests.get(url, headers=HEADERS)
-        if response.status_code != 200:
-            print(response.status_code)
-            print(response.text)
-            break
-        cur_page_elements = response.json()
-        all_elements += cur_page_elements["items"]
-        page += 1
-        
-    with open(store_search_result_url, "w") as f:
-        json.dump(all_elements, f)
-
-
-def get_all_project_url(store_search_result_url: str):
-    with open(store_search_result_url, "r") as f:
-        repos = json.loads(f.read())
-    
-    repo_urls = [repo["html_url"] for repo in repos]
-    return repo_urls
-
-
-def check_clone(store_cloned_project_url: str):
+class RepoMetadata:
     pass
 
+class Crawler:
+    def __init__():
+        pass
+
+    def search_repo():
+        """Search for all top star public java projects on Github platform using GithubAPI
+
+        Returns:
+            _type_: _description_
+        """
+        page = 1
+        all_elements: List[RepoMetadata] = []
+        while page <= 20:
+            print("Current page:", page)
+            url = f"https://api.github.com/search/repositories?q=language:java&sort=star&order=desc&per_page=100&page={page}"
+            response = requests.get(url, headers=HEADERS)
+            if response.status_code != 200:
+                print(response.status_code)
+                print(response.text)
+                break
+            cur_page_elements = response.json()
+            all_elements += cur_page_elements["items"]
+            page += 1
+        return all_elements
+    
+    def store_repo_metadata(repo_metadata: List[RepoMetadata], storage_url: str):
+        """Store repo metadata into a file
+
+        Args:
+            repo_metadata (List[RepoMetadata]): Github repositories metadata
+            storage_url (str): File url to store
+        """
+        with open(storage_url, "w") as f:
+            json.dump(repo_metadata, f)
+
+    def get_repo_html_url(storage_url: str) -> List[str]:
+        with open(storage_url, "r") as f:
+            repos = json.loads(f.read())
+    
+        repo_urls: List[str] = [repo["html_url"] for repo in repos]
+        return repo_urls
+
+    
 if __name__ == "__main__":
-    project_urls = get_all_project_url("repos.json")
-    project_names = []
+    # # Crawl repo metadata and store into a file
+    # Crawler.store_repo_metadata(Crawler.search_repo(), REPO_METADATA_STORAGE_URL)
+
+    # Read repo url from a file
+    repo_urls = Crawler.get_repo_html_url(REPO_METADATA_STORAGE_URL)
+
+    # Check if repo name is unique accross searched repos' metadata
+    repo_names = []
     tmp = 0
-    for project_url in project_urls:
-        tmp = project_url.split('/')
-        project_names.append((tmp[-2], tmp[-1]))
+    for repo_url in repo_urls:
+        tmp = repo_url.split('/')
+        owner, repo = tmp[-2], tmp[-1]
+        repo_names.append((owner, repo))
 
-    project_user, project_repo = zip(*project_names)
-    counter = Counter(project_repo)
-    unique_projects = {}
-    for repo in counter:
-        if counter[repo] == 1:
-            unique_projects[repo] = True
-        else:
-            unique_projects[repo] = False
-    with open("not_unique_repos.txt", "w") as f:
-        for project_name in project_names:
-            if not unique_projects[project_name[1]]:
-                f.write(f"https://github.com/{project_name[0]}/{project_name[1]}" + ';' + project_name[0] + ';' + project_name[1] + '\n')
-
+    repo_owner, repo_repo = zip(*repo_names)
+    counter = Counter(repo_repo)
+    

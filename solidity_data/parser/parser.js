@@ -152,5 +152,5 @@ async function main() {
 }
 
 // main()
-test_parser("/home/hieuvd/lvdthieu/CodeGen/parse_sample.sol")
+test_parser("/home/hieuvd/lvdthieu/CodeGen/solidity_data/check.sol")
 
