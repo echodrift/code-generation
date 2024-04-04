@@ -1,7 +1,6 @@
 import argparse
 import re
-import requests
-from collections import namedtuple, defaultdict
+from collections import defaultdict
 import pandas as pd
 from tqdm import tqdm
 from subprocess import run
