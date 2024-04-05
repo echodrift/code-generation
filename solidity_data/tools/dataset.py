@@ -1,5 +1,6 @@
-import pandas as pd
 import os
+
+import pandas as pd
 
 BASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 

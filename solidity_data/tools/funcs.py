@@ -1,37 +1,41 @@
-import os
 import argparse
-import pandas as pd
-from typing import Optional, List, TypeVar, Tuple
 import json
-from collections import namedtuple
+import os
 import random
-from tqdm import tqdm
 import traceback
+from collections import namedtuple
+from typing import List, Optional, Tuple, TypeVar
+
+import pandas as pd
+from tqdm import tqdm
 
 
-# SOL_FILES = pd.read_parquet(
-#     "/home/hieuvd/lvdthieu/CodeGen/solidity_data/data/solfile/all_file_v2.parquet",
-#     engine="fastparquet",
-# )
-# CONTRACTS = pd.read_parquet(
-#     "/home/hieuvd/lvdthieu/CodeGen/solidity_data/data/contracts/contracts_118k_no_ast.parquet",
-#     engine="fastparquet"
-# )
+class ParsedObject:
+    pass
 
+
+SOL_FILES = pd.read_parquet(
+    "/home/hieuvd/lvdthieu/CodeGen/solidity_data/data/solfile/all_file_v2.parquet",
+    engine="fastparquet",
+)
+CONTRACTS = pd.read_parquet(
+    "/home/hieuvd/lvdthieu/CodeGen/solidity_data/data/contracts/contracts_118k_no_ast.parquet",
+    engine="fastparquet"
+)
 ContractInfo = namedtuple("ContractInfo", "source_idx contract_name contract_source contract_ast count")
 ASample = namedtuple("ASample", "source_idx contract_name func_name masked_body masked_all func_body signature_only signature_extend")
 Location = namedtuple("Location", "start_line start_col end_line end_col")
-# ERROR = [
-#     "ParserError",
-#     "DocstringParsingError",
-#     "SyntaxError",
-#     "DeclarationError",
-#     "TypeError",
-#     "UnimplementedFeatureError",
-#     "InternalCompilerError",
-#     "Exception",
-#     "CompilerError",
-# ]
+ERROR = [
+    "ParserError",
+    "DocstringParsingError",
+    "SyntaxError",
+    "DeclarationError",
+    "TypeError",
+    "UnimplementedFeatureError",
+    "InternalCompilerError",
+    "Exception",
+    "CompilerError",
+]
 
 
 def merging(input_dir: str, concurrency: int, output: str):
@@ -79,11 +83,6 @@ def sharding(input: str, concurrency: int, output_dir: str):
         os.path.join(output_dir, f"batch{concurrency}.parquet"),
         engine="fastparquet",
     )
-
-
-############################################################################################################
-"""These functions aims for removing comment in solidity source code
-"""
 
 
 def find_comment(source: str) -> Optional[List[dict]]:
@@ -162,11 +161,6 @@ def remove_comment(source: str) -> str:
     return removed_comment
 
 
-############################################################################################################
-"""These functions aim for filling contract 
-"""
-
-ParsedObject = TypeVar("ParsedObject")
 def get_location(source: str, element: ParsedObject) -> Tuple[int, int]:
     """This function aims to get location of a specific element in Solidity source code
 
@@ -209,12 +203,12 @@ def modified_get_location(solidity_code: str, loc: Location) -> Tuple[int, int]:
     end_idx = end_idx + loc.end_col + loc.end_line - 1
     return start_idx, end_idx
 
-DataFrame_Row = TypeVar("DataFrame_Row")
-def fill_contract(row: DataFrame_Row, sol_files: pd.DataFrame) -> str:
+
+def fill_contract(row, sol_files: pd.DataFrame) -> str:
     """This function aims to create complete version of smart contract with output from LLMs 
 
     Args:
-        row (DataFrame_row): Dataframe row which contains masked contract and LLMs output
+        row: Dataframe row which contains masked contract and LLMs output
 
     Returns:
         str: Filled contract
@@ -251,9 +245,6 @@ def make_test_suite(source: str, dest: str):
     df.to_parquet(dest, engine="fastparquet")
 
 
-############################################################################################################
-
-
 def make_raw_test_suite(input: str, output: str, sol_files: pd.DataFrame):
     """This function aims to create a more informative version for LLM output data
 
@@ -275,51 +266,6 @@ def make_raw_test_suite(input: str, output: str, sol_files: pd.DataFrame):
         inplace=True,
     )
     test.to_parquet(output, engine="fastparquet")
-
-
-# def split_test_suite(input: str, output_dir: str):
-#     test_suite = pd.read_parquet(input, engine="fastparquet")
-
-#     test_suite[
-#         [
-#             "contract_name",
-#             "func_name",
-#             "masked_contract",
-#             "func_body",
-#             "func_body_removed_comment",
-#             "deepseek_output",
-#             "file_source_idx",
-#             "filled_source",
-#         ]
-#     ].rename(columns={"filled_source": "source_code"}).to_parquet(
-#         f"{output_dir}/deepseek.parquet", engine="fastparquet"
-#     )
-
-
-# def extract_error(input: str, output: str):
-#     """This function aims to extract error message from compiler output
-
-#     Args:
-#         input (str): Compiler output data file path
-#         output (str): Result data file path
-#     """
-#     source = pd.read_parquet(input, engine="fastparquet")
-
-#     def transform(string: str) -> str:
-#         if string == "<COMPILED_SUCCESSFULLY>":
-#             return string
-#         else:
-#             errors = []
-#             comps = string.split("\n\n")
-#             for comp in comps:
-#                 for err in ERROR:
-#                     if err in comp:
-#                         errors.append(comp)
-#             return "\n".join(errors)
-
-#     source["compile_info"] = source["compile_info"].apply(lambda x: transform(x))
-
-#     source.to_parquet(output, engine="fastparquet")
 
 
 def get_inherit_element(input: str, output: str):
@@ -440,7 +386,7 @@ def get_in_out_variable(input: str, output: str):
                         func_lst.append(function_name)
         return func_lst
 
-    def transform(row: DataFrame_Row) -> str:
+    def transform(row) -> str:
         return extract_in_out_var(row["origin"], row["ast"], row["contract_name"], row["func_name"])
     counter = {}
     for i in range(len(df)):
@@ -465,7 +411,7 @@ def back_search(solidity_code: str, comment_list: List[dict], start_point: int, 
             break
 
 
-def mask_function(row: DataFrame_Row) -> Optional[ASample]:
+def mask_function(row) -> Optional[ASample]:
     try:
         contract_source = row["contract_source"].replace("\r\n", "\n")
         # Extract functions in a contract
@@ -535,7 +481,7 @@ def mask_function(row: DataFrame_Row) -> Optional[ASample]:
         return (None, None, None, None, None, None, None, None)
     
 
-def modified_mask_function(row: DataFrame_Row) -> Optional[ASample]:
+def modified_mask_function(row) -> Optional[ASample]:
     try:
         contract_source = row["contract_source"].replace("\r\n", "\n")
         # Extract functions in a contract
@@ -620,10 +566,6 @@ if __name__ == "__main__":
             make_test_suite(args.input, args.output)
         case "raw_test":
             make_raw_test_suite(args.input, args.output, SOL_FILES)
-        # case "split_test_suite":
-        #     split_test_suite(args.input, args.output)
-        # case "extract_error":
-        #     extract_error(args.input, args.output)
         case "cr":
             get_compilable_rate(args.input)
         case "inherit_element":

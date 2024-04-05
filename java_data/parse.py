@@ -1,16 +1,16 @@
+import argparse
+import codecs
+import random
+import re
+from collections import defaultdict, namedtuple
+from typing import List, NamedTuple, Optional, Tuple
+
+import pandas as pd
 from antlr4 import *
 from java.java8.JavaLexer import JavaLexer
 from java.java8.JavaParser import JavaParser
 from java.java8.JavaParserListener import JavaParserListener
-import pandas as pd
-import random
-from typing import Tuple, Optional, List, NamedTuple
-from collections import namedtuple, defaultdict
 from tqdm import tqdm
-import codecs
-import argparse
-import re
-
 
 ASample = NamedTuple("ASample", [("class_name", str), ("func_name", str), ("masked_class", str), ("func_body", str)])
 Location = NamedTuple("Location", [("start_line", int), ("start_col", int), ("end_line", int), ("end_col", int)])
@@ -78,7 +78,7 @@ class ExtractSignatureAndVar(JavaParserListener):
                                                   ctx.stop.line, ctx.stop.column + len(ctx.stop.text)))
         self.class_comp[self.class_name].append((func_start_idx, func_body_start_idx))
     
-    def enterVariableDeclaratorId(self, ctx: VariableDeclaratorIdContext):
+    def enterVariableDeclaratorId(self, ctx):
         return super().enterVariableDeclaratorId(ctx)
 
     def get_class_comp(self):

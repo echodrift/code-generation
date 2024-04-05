@@ -1,15 +1,17 @@
-import requests
 import json
 from collections import Counter
-from typing import List, TypeVar
+from typing import List
 
+import requests
 
 HEADERS = {
     'Authorization': '<GITHUB_TOKEN>', 
     'Accept': 'application/vnd.github.v3+json'
 }
 REPO_METADATA_STORAGE_URL = "repos.json"
-RepoMetadata = TypeVar("RepoMetadata")
+
+class RepoMetadata:
+    pass
 
 class Crawler:
     def __init__():

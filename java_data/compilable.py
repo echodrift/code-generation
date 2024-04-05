@@ -1,19 +1,23 @@
 import argparse
+import os
 import re
-from collections import defaultdict
+from functools import wraps
+from subprocess import run
+from time import time
+from typing import Dict, List, NamedTuple
+
 import pandas as pd
 from tqdm import tqdm
-from subprocess import run
-import os
-from functools import wraps
-from time import time
-from dataclasses import dataclass
-from typing import List, Dict, NamedTuple
 
 HEADERS = {
     'Authorization': '<GITHUB_TOKEN>', 
     'Accept': 'application/vnd.github.v3+json'
 }
+MAVEN_PATH = "/home/hieuvd/apache-maven-3.6.3/bin/mvn"
+
+CompilerFeedback = NamedTuple("CompilerFeedback", [("project_name", str), ("feedback", str)])
+FileInfo = NamedTuple("FileInfo", [("project_name", str), ("relative_path", str)])
+ErrorInfo = NamedTuple("ErrorInfo", [("error_info", str)])
 
 
 def timing(f):
@@ -26,11 +30,6 @@ def timing(f):
           (f.__name__, args, kw, te-ts))
         return result
     return wrap
-
-
-CompilerFeedback = NamedTuple("CompilerFeedback", [("project_name", str), ("feedback", str)])
-FileInfo = NamedTuple("FileInfo", [("project_name", str), ("relative_path", str)])
-ErrorInfo = NamedTuple("ErrorInfo", [("error_info", str)])
 
 
 class CompilableChecker:
@@ -78,7 +77,7 @@ class CompilableChecker:
             cmd = f"""
             cd {path_to_project}
             cd $(ls -d */|head -n 1)
-            /home/hieuvd/apache-maven-3.6.3/bin/mvn clean compile
+            {MAVEN_PATH} clean compile
             """
             data = run(cmd, shell=True, capture_output=True, text=True)
             compile_info.append(CompilerFeedback(project, data.stdout))

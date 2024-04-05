@@ -1,7 +1,8 @@
-import pandas as pd
-from subprocess import run
 import argparse
 import os
+from subprocess import run
+
+import pandas as pd
 from tqdm import tqdm
 
 BASE = os.path.dirname(os.path.abspath(__file__))
