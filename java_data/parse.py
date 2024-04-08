@@ -297,8 +297,6 @@ if __name__ == "__main__":
             df = fill_generated_code_to_file(df, args.col, args.dir)
             store_dataset(df, args.output)
         case "epc":  # Extract Parent Component
-            # java_code = open(args.input, "r").read()
-            # extract_signature_and_var(java_code)
             df = pd.read_parquet(args.input, "fastparquet")
             new_df = get_parent_signature_and_var(df, args.dir)
             store_dataset(new_df, args.output)
