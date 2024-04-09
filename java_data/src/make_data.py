@@ -1,9 +1,7 @@
 import argparse
 import codecs
-import json
 import random
 import re
-from collections import defaultdict
 from typing import List, NamedTuple, Optional, Tuple
 
 import pandas as pd
@@ -12,7 +10,6 @@ from java.java8.JavaLexer import JavaLexer
 from java.java8.JavaParser import JavaParser
 from java.java8.JavaParserListener import JavaParserListener
 from tqdm import tqdm
-
 
 ASample = NamedTuple("ASample", [("class_name", str), ("func_name", str), ("masked_class", str), ("func_body", str)])
 Location = NamedTuple("Location", [("start_line", int), ("start_col", int), ("end_line", int), ("end_col", int)])
@@ -46,33 +43,6 @@ class ExtractFunc(JavaParserListener):
                             
     def get_function(self):
         return self.functions
-
-
-class ExtractSignatureAndVar(JavaParserListener):
-    def __init__(self, java_code: str):
-        super().__init__()
-        self.class_comp = defaultdict(list)
-        self.java_code = java_code
-
-    def enterClassDeclaration(self, ctx):
-        self.class_name = ctx.identifier().getText()
-
-    def enterMethodDeclaration(self, ctx):
-        self.func_name = ctx.identifier().getText()
-        body = ctx.methodBody().block()
-        func_body_start_idx, _ = get_location(self.java_code, Location(body.start.line, body.start.column, 
-                                                       body.stop.line, body.stop.column + len(body.stop.text)))
-        func_start_idx, _ = get_location(self.java_code, Location(ctx.start.line, ctx.start.column,
-                                                  ctx.stop.line, ctx.stop.column + len(ctx.stop.text)))
-        self.class_comp[self.class_name].append(self.java_code[func_start_idx : func_body_start_idx])
-    
-    def enterFieldDeclaration(self, ctx):
-        variable_name = ctx.variableDeclarators().getText()
-        variable_type = ctx.typeType().getText()
-        self.class_comp[self.class_name].append("%s %s;" % (variable_type, variable_name))
-
-    def get_class_comp(self):
-        return self.class_comp
 
 
 def get_location(java_code: str, loc: Location) -> Tuple[int, int]:
@@ -201,102 +171,14 @@ def post_processing(dataset: pd.DataFrame) -> pd.DataFrame:
     return dataset
 
 
-def fill_generated_code_to_file(generated_func_dataset: pd.DataFrame, 
-                                generated_func_column: str, 
-                                project_storage_url: str) -> pd.DataFrame:
-    tqdm.pandas()
-    def fill_file(row):
-        absolute_file_path = "{}/{}/{}".format(project_storage_url, row["proj_name"], row["relative_path"])
-        with codecs.open(absolute_file_path, "r", encoding="utf-8", errors="ignore") as f:
-            original_file = f.read().replace("\r\n", "\n")
-        filled_class = row["masked_class"].replace("<FILL_FUNCTION_BODY>", row[generated_func_column])
-        # Find class in original file
-        functions = get_functions(original_file)
-        for function in functions:
-            if function["class_name"] == row["class_name"] and function["func_name"] == row["func_name"]:
-                class_start_idx, class_end_idx = get_location(original_file, function["class_loc"])
-                filled_file = original_file[:class_start_idx] + filled_class + original_file[class_end_idx:]
-                return filled_file
-        return ""
-    
-    generated_func_dataset["filled_file_" + generated_func_column] = generated_func_dataset.progress_apply(fill_file, axis=1)
-
-    return generated_func_dataset
-
-
-def search_parent_class(df: pd.DataFrame, storage_url: str) -> pd.DataFrame:
-    def get_parent_class(row, storage_url: str):
-        parsed_project_path = "{}/parsed_{}.json".format(storage_url, row["proj_name"])
-        with open(parsed_project_path, "r") as f:
-            class_info = json.load(f)
-        for cls in class_info:
-            if (cls["classInfos"]["filePath"] == "{}/{}".format(row["proj_name"], row["relative_path"]) and
-                cls["classInfos"]["className"] == row["class_name"]):
-                if cls["classInfos"]["extendedClassQualifiedName"] not in ["", "java.lang.Object"]:
-                    parent_class = cls["classInfos"]["extendedClassQualifiedName"]
-                else:
-                    parent_class = ""
-                break
-        else:
-            parent_class = ""
-        
-        if parent_class == "":
-            return ""
-        else:
-            for cls in class_info:
-                if (cls["classInfos"]["QualifiedName"] == parent_class):
-                    return cls["classInfos"]["sourceCode"]
-            return ""
-    tqdm.pandas()
-    df["parent_class_code"] = df.progress_apply(lambda row: get_parent_class(row, storage_url), axis=1)
-    return df
-
-
-def extract_signature_and_var(java_code: str):
-    if not java_code:
-        return ""
-    input_stream = InputStream(java_code)
-    lexer = JavaLexer(input_stream)
-    token_stream = CommonTokenStream(lexer)
-    parser = JavaParser(token_stream)
-    tree = parser.compilationUnit()
-    # Create listener
-    listener = ExtractSignatureAndVar(java_code)
-    # Walk the parse tree
-    walker = ParseTreeWalker()
-    walker.walk(listener, tree)
-    class_comps = listener.get_class_comp()
-    return json.dumps(class_comps)
-
-
-def get_parent_signature_and_var(df: pd.DataFrame, storage_url: str) -> pd.DataFrame:
-    new_df = search_parent_class(df, storage_url)
-    new_df["inherit_elements"] = new_df["parent_class_code"].apply(extract_signature_and_var)
-    return new_df
-
-
-def store_dataset(df: pd.DataFrame, storage_url: str):
-    df.to_parquet(storage_url, "fastparquet")
-
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", dest="input")
     parser.add_argument("-o", "--output", dest="output")
     parser.add_argument("-c", "--check", dest="checkpoint")
-    parser.add_argument("-f", "--func", dest="func")
-    parser.add_argument("-d", "--dir", dest="dir")
-    parser.add_argument("--col", dest="col")
     args = parser.parse_args()
-    
-    match args.func:
-        case "md":  # Make Dataset
-            df = post_processing(make_dataset(java_file_urls_storage_url=args.input, checkpoint=args.checkpoint))
-            store_dataset(df, args.output)
-        case "ff":  # Fill Generated Code
-            df = pd.read_parquet(args.input, "fastparquet")
-            df = fill_generated_code_to_file(df, args.col, args.dir)
-            store_dataset(df, args.output)
-        case "epc":  # Extract Parent Component
-            df = pd.read_parquet(args.input, "fastparquet")
-            new_df = get_parent_signature_and_var(df, args.dir)
-            store_dataset(new_df, args.output)
+    df = post_processing(make_dataset(java_file_urls_storage_url=args.input, checkpoint=args.checkpoint))
+    df.to_parquet(args.output, "fastparquet")
+
+if __name__ == "__main__":
+    main()

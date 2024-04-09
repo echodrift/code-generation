@@ -13,6 +13,6 @@ text = '''contract KKNK is SafeMath{ string public name; string public symbol; u
 model_input = tokenizer(text, return_tensors="pt", padding=True, max_length=2048, truncation=True).to("cuda")
 
 with torch.no_grad():
-    output = tokenizer.decode(model.generate(**model_input, max_new_tokens=1028, pad_token_id=tokenizer.eos_token_id)[0], skip_special_tokens=True)
+    output = tokenizer.decode(model.generate(**model_input, max_new_tokens=1028, pad_token_id=tokenizer.eos_token_id)[0], skip_special_tokens=False)
 
 print(output)
