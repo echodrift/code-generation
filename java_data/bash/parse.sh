@@ -1,17 +1,31 @@
+#!bin/bash
+FLUTE=$1
+JAVA_FILES_DIR=$2
+CLASS_FILE_DIR=$3
+PROJ_NAMES=$4
+DATA=$5
 while read PROJ_NAME
-do
+do  
+    echo "$PROJ_NAME"
     command=""
-    command+="mkdir $(pwd)/$PROJ_NAME && "
-    command+="javac -d $(pwd)/$PROJ_NAME -cp /home/hieuvd/lvdthieu/CodeGen/java_data/parser/lib/Flute.jar "
-    command+="/home/hieuvd/lvdthieu/CodeGen/java_data/parser/src/Main.java "
-    command+="/home/hieuvd/lvdthieu/CodeGen/java_data/parser/src/Project.java "
-    command+="/home/hieuvd/lvdthieu/CodeGen/java_data/parser/src/ClassInfo.java "
-    command+="&& cd $(pwd)/$PROJ_NAME "
-    command+="&& java -cp .:/home/hieuvd/lvdthieu/CodeGen/java_data/parser/lib/Flute.jar Main "
-    command+="/home/hieuvd/lvdthieu/CodeGen/java_data/data/java-36k/project_${PROJ_NAME}.json "
-    command+="/home/hieuvd/lvdthieu/CodeGen/java_data/data/java-36k/parse_${PROJ_NAME}.json"
+    command+="mkdir -p $CLASS_FILE_DIR/$PROJ_NAME && "
+    command+="javac -d $CLASS_FILE_DIR/$PROJ_NAME -cp $FLUTE "
+    command+="$JAVA_FILES_DIR/*.java "
+    command+="&& cd $CLASS_FILE_DIR/$PROJ_NAME "
+    command+="&& java -cp ".:$FLUTE" Main "
+    command+="$DATA/projects/project_${PROJ_NAME}.json "
+    command+="$DATA/parsed/parsed_${PROJ_NAME}.json"
     screen -dmS ${PROJ_NAME} bash -c "$command"
-done < /home/hieuvd/lvdthieu/CodeGen/java_data/data/urls/projects.txt
-# PROJ_NAME="AdoptOpenJDK_jitwatch"
+done < $PROJ_NAMES
 
-# eval $command
+# PROJ_NAME="vert-x3_vertx-examples"
+# command=""
+# command+="mkdir -p $CLASS_FILE_DIR/$PROJ_NAME && "
+# command+="javac -d $CLASS_FILE_DIR/$PROJ_NAME -cp $FLUTE "
+# command+="$JAVA_FILES_DIR/*.java "
+# command+="&& cd $CLASS_FILE_DIR/$PROJ_NAME "
+# command+="&& java -cp ".:$FLUTE" Main "
+# command+="$DATA/projects/project_${PROJ_NAME}.json "
+# command+="$DATA/parsed/parsed_${PROJ_NAME}.json"
+# screen -dmS ${PROJ_NAME} bash -c "$command"
+

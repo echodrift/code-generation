@@ -84,7 +84,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Config.JAVAFX_DIR = "/home/hieuvd/lvdthieu/CodeGen/javafx-jmods-17.0.10";
+        Config.JAVAFX_DIR = "/var/data/lvdthieu/javafx-sdk-22/lib";
         // Parse args
         String filePath = args[0];
         String outputFile = args[1];

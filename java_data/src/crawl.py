@@ -3,6 +3,7 @@ import json
 from collections import Counter
 from subprocess import run
 from typing import List
+from tqdm import tqdm
 
 import requests
 
@@ -16,18 +17,17 @@ class RepoMetadata:
     pass
 
 class Crawler:
-    def __init__():
+    def __init__(self):
         pass
 
-    def search_repo() -> List[RepoMetadata]:
+    def search_repo(self) -> List[RepoMetadata]:
         """Search top 1000 java repositories
 
         Returns:
             List[RepoMetadata]: Github repositories metadata
         """
-        page = 1
         all_elements: List[RepoMetadata] = []
-        while page <= 10:
+        for page in tqdm(range(1, 11)):
             print("Current page:", page)
             url = f"https://api.github.com/search/repositories?q=language:java&sort=star&order=desc&per_page=100&page={page}"
             response = requests.get(url, headers=HEADERS)
@@ -82,8 +82,8 @@ class Crawler:
             repo_urls (List[str]): Github repositories html url
             repo_storage_url (str): File url to store
         """
-        for repo_url in repo_urls:
-            owner, repo = repo_url.split('/')[-2:]
+        for repo_url in tqdm(repo_urls):
+            owner, repo = repo_url.split('/')[:-2]
             cmd = \
             f"""
             if [ ! -d "{repo_storage_url}/{owner}_{repo}" ]
