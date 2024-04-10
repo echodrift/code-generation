@@ -332,7 +332,7 @@ def get_inherit_element(input: str, output: str):
                 break
         return str(inherit_elements)
     
-    def transform(row: DataFrame_Row) -> str:
+    def transform(row: pd.core.series.Series) -> str:
         return extract_inherit_element(row["origin"], row["ast"], row["contract_name"])
 
     df["inherit_elements"] = df.apply(transform, axis=1)
