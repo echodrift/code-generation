@@ -9,7 +9,7 @@ from java.java8.JavaParser import JavaParser
 from java.java8.JavaParserListener import JavaParserListener
 from make_data import Location, get_location
 from tqdm import tqdm
-
+from typing import Optional
 
 class ExtractSignatureAndVar(JavaParserListener):
     """Extract signature and variables in a class"""
@@ -49,30 +49,32 @@ class ExtractSignatureAndVar(JavaParserListener):
         return self.class_comp
 
 
-def extract_signature_and_var(java_code: str):
+def extract_signature_and_var(java_code: str) -> str:
     """Extract signature and variables in a class
 
     Args:
         java_code (str): Java code
 
     Returns:
-        str: Signature and variables
+        str: Signature and variables 
     """
     if not java_code:
         return ""
-    input_stream = InputStream(java_code)
-    lexer = JavaLexer(input_stream)
-    token_stream = CommonTokenStream(lexer)
-    parser = JavaParser(token_stream)
-    tree = parser.compilationUnit()
-    # Create listener
-    listener = ExtractSignatureAndVar(java_code)
-    # Walk the parse tree
-    walker = ParseTreeWalker()
-    walker.walk(listener, tree)
-    class_comps = listener.get_class_comp()
-    return json.dumps(class_comps)
-
+    try:
+        input_stream = InputStream(java_code)
+        lexer = JavaLexer(input_stream)
+        token_stream = CommonTokenStream(lexer)
+        parser = JavaParser(token_stream)
+        tree = parser.compilationUnit()
+        # Create listener
+        listener = ExtractSignatureAndVar(java_code)
+        # Walk the parse tree
+        walker = ParseTreeWalker()
+        walker.walk(listener, tree)
+        class_comps = listener.get_class_comp()
+        return json.dumps(class_comps)
+    except:
+        return ""
 
 def get_parent_class(row, storage_url: str):
     """Get parent class in a class
@@ -106,17 +108,29 @@ def get_parent_class(row, storage_url: str):
         return ""
     
 
-def get_parent_signature_and_var(df: pd.DataFrame, storage_url: str) -> pd.DataFrame:
-    """Get parent signature and variables in a class
+def get_parent_class_code(df: pd.DataFrame, storage_url: str) -> pd.DataFrame:
+    """Get parent class code
     Args:
         df (pd.DataFrame): Dataset
         storage_url (str): Storage url  
 
     Returns:
-        pd.DataFrame: Dataset with parent signature and variables
+        pd.DataFrame: Dataset with parent class code (if exist)
     """
     tqdm.pandas()
     df["parent_class_code"] = df.progress_apply(lambda row: get_parent_class(row, storage_url), axis=1)
+    return df
+
+
+def get_parent_signature_and_var(df: pd.DataFrame) -> pd.DataFrame:
+    """Get parent signature and variables in a class
+    Args:
+        df (pd.DataFrame): Dataset
+
+    Returns:
+        pd.DataFrame: Dataset with parent signature and variables
+    """
+    tqdm.pandas()
     df["inherit_elements"] = df["parent_class_code"].progress_apply(extract_signature_and_var)
     return df
 
@@ -126,6 +140,7 @@ def main():
     args.add_argument("-i", "--input", dest="input")
     args.add_argument("-t", "--type", dest="input_type", help="Input type select from [jsonl, parquet, csv]")
     args.add_argument("-o", "--output", dest="output")
+    args.add_argument("-c", "--checkpoint", dest="checkpoint")
     args.add_argument("-d", "--dir", dest="dir", help="Directoriy of parsed projects (json files)")
     args = args.parse_args()
     match args.input_type:
@@ -135,8 +150,10 @@ def main():
             df = pd.read_parquet(args.input, "fastparquet")
         case "csv":
             df = pd.read_csv(args.input)
-    new_df = get_parent_signature_and_var(df=df, storage_url=args.dir)
-    new_df.to_parquet(args.output, "fastparquet")
+    df = get_parent_class_code(df=df, storage_url=args.dir)
+    df.to_parquet(args.checkpoint, "fastparquet")
+    df = get_parent_signature_and_var(df=df)
+    df.to_parquet(args.output, "fastparquet")
 
 if __name__=="__main__":
     main()
