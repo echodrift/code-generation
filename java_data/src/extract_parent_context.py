@@ -30,11 +30,15 @@ class ExtractSignatureAndVar(JavaParserListener):
     def enterMethodDeclaration(self, ctx):
         self.func_name = ctx.identifier().getText()
         body = ctx.methodBody().block()
-        func_body_start_idx, _ = get_location(self.java_code, Location(body.start.line, body.start.column, 
-                                                       body.stop.line, body.stop.column + len(body.stop.text)))
-        func_start_idx, _ = get_location(self.java_code, Location(ctx.start.line, ctx.start.column,
-                                                  ctx.stop.line, ctx.stop.column + len(ctx.stop.text)))
-        self.class_comp[self.class_name].append(self.java_code[func_start_idx : func_body_start_idx])
+        func_start_idx, func_end_idx = get_location(self.java_code, Location(ctx.start.line, ctx.start.column,
+                                                    ctx.stop.line, ctx.stop.column + len(ctx.stop.text)))
+        if body:
+            func_body_start_idx, _ = get_location(self.java_code, Location(body.start.line, body.start.column, 
+                                                        body.stop.line, body.stop.column + len(body.stop.text)))
+            self.class_comp[self.class_name].append(self.java_code[func_start_idx : func_body_start_idx] + "{<BODY>}")
+        else:
+            self.class_comp[self.class_name].append(self.java_code[func_start_idx : func_end_idx])
+        
     
     def enterFieldDeclaration(self, ctx):
         variable_name = ctx.variableDeclarators().getText()
@@ -83,7 +87,7 @@ def get_parent_class(row, storage_url: str):
     with open(parsed_project_path, "r") as f:
         class_info = json.load(f)
     for cls in class_info:
-        if (cls["classInfos"]["filePath"] == "{}/{}".format(row["proj_name"], row["relative_path"]) and
+        if (cls["classInfos"]["filePath"].replace(cls["projectPath"] + '/', '') == row["relative_path"] and
             cls["classInfos"]["className"] == row["class_name"]):
             if cls["classInfos"]["extendedClassQualifiedName"] not in ["", "java.lang.Object"]:
                 parent_class = cls["classInfos"]["extendedClassQualifiedName"]
@@ -97,7 +101,7 @@ def get_parent_class(row, storage_url: str):
         return ""
     else:
         for cls in class_info:
-            if (cls["classInfos"]["QualifiedName"] == parent_class):
+            if (cls["classInfos"]["classQualifiedName"] == parent_class):
                 return cls["classInfos"]["sourceCode"]
         return ""
     
@@ -113,19 +117,28 @@ def get_parent_signature_and_var(df: pd.DataFrame, storage_url: str) -> pd.DataF
     """
     tqdm.pandas()
     df["parent_class_code"] = df.progress_apply(lambda row: get_parent_class(row, storage_url), axis=1)
-    df["inherit_elements"] = df["parent_class_code"].apply(extract_signature_and_var)
+    df["inherit_elements"] = df["parent_class_code"].progress_apply(extract_signature_and_var)
     return df
 
 
 def main():
     args = argparse.ArgumentParser()
     args.add_argument("-i", "--input", dest="input")
+    args.add_argument("-t", "--type", dest="input_type", help="Input type select from [jsonl, parquet, csv]")
     args.add_argument("-o", "--output", dest="output")
     args.add_argument("-d", "--dir", dest="dir", help="Directoriy of parsed projects (json files)")
     args = args.parse_args()
-    df = pd.read_parquet(args.input, "fastparquet")
+    match args.input_type:
+        case "jsonl":
+            df = pd.read_json(args.input, lines=True)
+        case "parquet":
+            df = pd.read_parquet(args.input, "fastparquet")
+        case "csv":
+            df = pd.read_csv(args.input)
     new_df = get_parent_signature_and_var(df=df, storage_url=args.dir)
     new_df.to_parquet(args.output, "fastparquet")
 
+if __name__=="__main__":
+    main()
 
 

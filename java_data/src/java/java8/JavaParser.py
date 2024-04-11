@@ -1,4 +1,4 @@
-# Generated from JavaParser.g4 by ANTLR 4.10.1
+# Generated from JavaParser.g4 by ANTLR 4.13.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -1090,7 +1090,7 @@ class JavaParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.10.1")
+        self.checkVersion("4.13.1")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -1176,11 +1176,11 @@ class JavaParser ( Parser ):
                         self.state = 257
                         self._errHandler.sync(self)
                         token = self._input.LA(1)
-                        if token in [JavaParser.IMPORT]:
+                        if token in [25]:
                             self.state = 255
                             self.importDeclaration()
                             pass
-                        elif token in [JavaParser.SEMI]:
+                        elif token in [84]:
                             self.state = 256
                             self.match(JavaParser.SEMI)
                             pass
@@ -1194,15 +1194,15 @@ class JavaParser ( Parser ):
                 self.state = 266
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while ((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & ((1 << (JavaParser.ABSTRACT - 1)) | (1 << (JavaParser.CLASS - 1)) | (1 << (JavaParser.ENUM - 1)) | (1 << (JavaParser.FINAL - 1)) | (1 << (JavaParser.INTERFACE - 1)) | (1 << (JavaParser.PRIVATE - 1)) | (1 << (JavaParser.PROTECTED - 1)) | (1 << (JavaParser.PUBLIC - 1)) | (1 << (JavaParser.STATIC - 1)) | (1 << (JavaParser.STRICTFP - 1)) | (1 << (JavaParser.MODULE - 1)) | (1 << (JavaParser.OPEN - 1)) | (1 << (JavaParser.REQUIRES - 1)) | (1 << (JavaParser.EXPORTS - 1)) | (1 << (JavaParser.OPENS - 1)) | (1 << (JavaParser.TO - 1)) | (1 << (JavaParser.USES - 1)) | (1 << (JavaParser.PROVIDES - 1)) | (1 << (JavaParser.WITH - 1)) | (1 << (JavaParser.TRANSITIVE - 1)) | (1 << (JavaParser.VAR - 1)) | (1 << (JavaParser.YIELD - 1)) | (1 << (JavaParser.RECORD - 1)) | (1 << (JavaParser.SEALED - 1)))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (JavaParser.PERMITS - 65)) | (1 << (JavaParser.NON_SEALED - 65)) | (1 << (JavaParser.SEMI - 65)) | (1 << (JavaParser.AT - 65)) | (1 << (JavaParser.IDENTIFIER - 65)))) != 0):
+                while ((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & -1125457390829311) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & -8935141660702539773) != 0):
                     self.state = 264
                     self._errHandler.sync(self)
                     token = self._input.LA(1)
-                    if token in [JavaParser.ABSTRACT, JavaParser.CLASS, JavaParser.ENUM, JavaParser.FINAL, JavaParser.INTERFACE, JavaParser.PRIVATE, JavaParser.PROTECTED, JavaParser.PUBLIC, JavaParser.STATIC, JavaParser.STRICTFP, JavaParser.MODULE, JavaParser.OPEN, JavaParser.REQUIRES, JavaParser.EXPORTS, JavaParser.OPENS, JavaParser.TO, JavaParser.USES, JavaParser.PROVIDES, JavaParser.WITH, JavaParser.TRANSITIVE, JavaParser.VAR, JavaParser.YIELD, JavaParser.RECORD, JavaParser.SEALED, JavaParser.PERMITS, JavaParser.NON_SEALED, JavaParser.AT, JavaParser.IDENTIFIER]:
+                    if token in [1, 9, 16, 18, 28, 33, 34, 35, 38, 39, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 123, 128]:
                         self.state = 262
                         self.typeDeclaration()
                         pass
-                    elif token in [JavaParser.SEMI]:
+                    elif token in [84]:
                         self.state = 263
                         self.match(JavaParser.SEMI)
                         pass
@@ -1281,7 +1281,7 @@ class JavaParser ( Parser ):
             self.state = 277
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & ((1 << (JavaParser.MODULE - 51)) | (1 << (JavaParser.OPEN - 51)) | (1 << (JavaParser.REQUIRES - 51)) | (1 << (JavaParser.EXPORTS - 51)) | (1 << (JavaParser.OPENS - 51)) | (1 << (JavaParser.TO - 51)) | (1 << (JavaParser.USES - 51)) | (1 << (JavaParser.PROVIDES - 51)) | (1 << (JavaParser.WITH - 51)) | (1 << (JavaParser.TRANSITIVE - 51)) | (1 << (JavaParser.VAR - 51)) | (1 << (JavaParser.YIELD - 51)) | (1 << (JavaParser.RECORD - 51)) | (1 << (JavaParser.SEALED - 51)) | (1 << (JavaParser.PERMITS - 51)))) != 0) or _la==JavaParser.AT or _la==JavaParser.IDENTIFIER:
+            while ((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & 32767) != 0) or _la==123 or _la==128:
                 self.state = 274
                 self.annotation()
                 self.state = 279
@@ -1355,7 +1355,7 @@ class JavaParser ( Parser ):
             self.state = 286
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.STATIC:
+            if _la==38:
                 self.state = 285
                 self.match(JavaParser.STATIC)
 
@@ -1365,7 +1365,7 @@ class JavaParser ( Parser ):
             self.state = 291
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.DOT:
+            if _la==86:
                 self.state = 289
                 self.match(JavaParser.DOT)
                 self.state = 290
@@ -1451,23 +1451,23 @@ class JavaParser ( Parser ):
             self.state = 306
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.CLASS]:
+            if token in [9]:
                 self.state = 301
                 self.classDeclaration()
                 pass
-            elif token in [JavaParser.ENUM]:
+            elif token in [16]:
                 self.state = 302
                 self.enumDeclaration()
                 pass
-            elif token in [JavaParser.INTERFACE]:
+            elif token in [28]:
                 self.state = 303
                 self.interfaceDeclaration()
                 pass
-            elif token in [JavaParser.AT]:
+            elif token in [123]:
                 self.state = 304
                 self.annotationTypeDeclaration()
                 pass
-            elif token in [JavaParser.RECORD]:
+            elif token in [63]:
                 self.state = 305
                 self.recordDeclaration()
                 pass
@@ -1528,27 +1528,27 @@ class JavaParser ( Parser ):
             self.state = 313
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.ABSTRACT, JavaParser.FINAL, JavaParser.PRIVATE, JavaParser.PROTECTED, JavaParser.PUBLIC, JavaParser.STATIC, JavaParser.STRICTFP, JavaParser.MODULE, JavaParser.OPEN, JavaParser.REQUIRES, JavaParser.EXPORTS, JavaParser.OPENS, JavaParser.TO, JavaParser.USES, JavaParser.PROVIDES, JavaParser.WITH, JavaParser.TRANSITIVE, JavaParser.VAR, JavaParser.YIELD, JavaParser.RECORD, JavaParser.SEALED, JavaParser.PERMITS, JavaParser.NON_SEALED, JavaParser.AT, JavaParser.IDENTIFIER]:
+            if token in [1, 18, 33, 34, 35, 38, 39, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 123, 128]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 308
                 self.classOrInterfaceModifier()
                 pass
-            elif token in [JavaParser.NATIVE]:
+            elif token in [30]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 309
                 self.match(JavaParser.NATIVE)
                 pass
-            elif token in [JavaParser.SYNCHRONIZED]:
+            elif token in [42]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 310
                 self.match(JavaParser.SYNCHRONIZED)
                 pass
-            elif token in [JavaParser.TRANSIENT]:
+            elif token in [46]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 311
                 self.match(JavaParser.TRANSIENT)
                 pass
-            elif token in [JavaParser.VOLATILE]:
+            elif token in [49]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 312
                 self.match(JavaParser.VOLATILE)
@@ -1731,12 +1731,12 @@ class JavaParser ( Parser ):
             self.state = 329
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.FINAL]:
+            if token in [18]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 327
                 self.match(JavaParser.FINAL)
                 pass
-            elif token in [JavaParser.MODULE, JavaParser.OPEN, JavaParser.REQUIRES, JavaParser.EXPORTS, JavaParser.OPENS, JavaParser.TO, JavaParser.USES, JavaParser.PROVIDES, JavaParser.WITH, JavaParser.TRANSITIVE, JavaParser.VAR, JavaParser.YIELD, JavaParser.RECORD, JavaParser.SEALED, JavaParser.PERMITS, JavaParser.AT, JavaParser.IDENTIFIER]:
+            elif token in [51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 123, 128]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 328
                 self.annotation()
@@ -1766,17 +1766,21 @@ class JavaParser ( Parser ):
         def identifier(self):
             return self.getTypedRuleContext(JavaParser.IdentifierContext,0)
 
+
         def classBody(self):
             return self.getTypedRuleContext(JavaParser.ClassBodyContext,0)
 
+
         def typeParameters(self):
             return self.getTypedRuleContext(JavaParser.TypeParametersContext,0)
+
 
         def EXTENDS(self):
             return self.getToken(JavaParser.EXTENDS, 0)
 
         def typeType(self):
             return self.getTypedRuleContext(JavaParser.TypeTypeContext,0)
+
 
         def IMPLEMENTS(self):
             return self.getToken(JavaParser.IMPLEMENTS, 0)
@@ -1786,6 +1790,7 @@ class JavaParser ( Parser ):
                 return self.getTypedRuleContexts(JavaParser.TypeListContext)
             else:
                 return self.getTypedRuleContext(JavaParser.TypeListContext,i)
+
 
         def PERMITS(self):
             return self.getToken(JavaParser.PERMITS, 0)
@@ -1818,7 +1823,7 @@ class JavaParser ( Parser ):
             self.state = 334
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.LT:
+            if _la==89:
                 self.state = 333
                 self.typeParameters()
 
@@ -1826,7 +1831,7 @@ class JavaParser ( Parser ):
             self.state = 338
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.EXTENDS:
+            if _la==17:
                 self.state = 336
                 self.match(JavaParser.EXTENDS)
                 self.state = 337
@@ -1836,7 +1841,7 @@ class JavaParser ( Parser ):
             self.state = 342
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.IMPLEMENTS:
+            if _la==24:
                 self.state = 340
                 self.match(JavaParser.IMPLEMENTS)
                 self.state = 341
@@ -1846,7 +1851,7 @@ class JavaParser ( Parser ):
             self.state = 346
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.PERMITS:
+            if _la==65:
                 self.state = 344
                 self.match(JavaParser.PERMITS)
                 self.state = 345
@@ -1918,7 +1923,7 @@ class JavaParser ( Parser ):
             self.state = 356
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==JavaParser.COMMA:
+            while _la==85:
                 self.state = 352
                 self.match(JavaParser.COMMA)
                 self.state = 353
@@ -2000,7 +2005,7 @@ class JavaParser ( Parser ):
             self.state = 376
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.EXTENDS:
+            if _la==17:
                 self.state = 368
                 self.match(JavaParser.EXTENDS)
                 self.state = 372
@@ -2073,7 +2078,7 @@ class JavaParser ( Parser ):
             self.state = 383
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==JavaParser.BITAND:
+            while _la==106:
                 self.state = 379
                 self.match(JavaParser.BITAND)
                 self.state = 380
@@ -2157,7 +2162,7 @@ class JavaParser ( Parser ):
             self.state = 390
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.IMPLEMENTS:
+            if _la==24:
                 self.state = 388
                 self.match(JavaParser.IMPLEMENTS)
                 self.state = 389
@@ -2169,7 +2174,7 @@ class JavaParser ( Parser ):
             self.state = 394
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & ((1 << (JavaParser.MODULE - 51)) | (1 << (JavaParser.OPEN - 51)) | (1 << (JavaParser.REQUIRES - 51)) | (1 << (JavaParser.EXPORTS - 51)) | (1 << (JavaParser.OPENS - 51)) | (1 << (JavaParser.TO - 51)) | (1 << (JavaParser.USES - 51)) | (1 << (JavaParser.PROVIDES - 51)) | (1 << (JavaParser.WITH - 51)) | (1 << (JavaParser.TRANSITIVE - 51)) | (1 << (JavaParser.VAR - 51)) | (1 << (JavaParser.YIELD - 51)) | (1 << (JavaParser.RECORD - 51)) | (1 << (JavaParser.SEALED - 51)) | (1 << (JavaParser.PERMITS - 51)))) != 0) or _la==JavaParser.AT or _la==JavaParser.IDENTIFIER:
+            if ((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & 32767) != 0) or _la==123 or _la==128:
                 self.state = 393
                 self.enumConstants()
 
@@ -2177,7 +2182,7 @@ class JavaParser ( Parser ):
             self.state = 397
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.COMMA:
+            if _la==85:
                 self.state = 396
                 self.match(JavaParser.COMMA)
 
@@ -2185,7 +2190,7 @@ class JavaParser ( Parser ):
             self.state = 400
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.SEMI:
+            if _la==84:
                 self.state = 399
                 self.enumBodyDeclarations()
 
@@ -2328,7 +2333,7 @@ class JavaParser ( Parser ):
             self.state = 420
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.LPAREN:
+            if _la==78:
                 self.state = 419
                 self.arguments()
 
@@ -2336,7 +2341,7 @@ class JavaParser ( Parser ):
             self.state = 423
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.LBRACE:
+            if _la==80:
                 self.state = 422
                 self.classBody()
 
@@ -2393,7 +2398,7 @@ class JavaParser ( Parser ):
             self.state = 429
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & ((1 << (JavaParser.ABSTRACT - 1)) | (1 << (JavaParser.BOOLEAN - 1)) | (1 << (JavaParser.BYTE - 1)) | (1 << (JavaParser.CHAR - 1)) | (1 << (JavaParser.CLASS - 1)) | (1 << (JavaParser.DOUBLE - 1)) | (1 << (JavaParser.ENUM - 1)) | (1 << (JavaParser.FINAL - 1)) | (1 << (JavaParser.FLOAT - 1)) | (1 << (JavaParser.INT - 1)) | (1 << (JavaParser.INTERFACE - 1)) | (1 << (JavaParser.LONG - 1)) | (1 << (JavaParser.NATIVE - 1)) | (1 << (JavaParser.PRIVATE - 1)) | (1 << (JavaParser.PROTECTED - 1)) | (1 << (JavaParser.PUBLIC - 1)) | (1 << (JavaParser.SHORT - 1)) | (1 << (JavaParser.STATIC - 1)) | (1 << (JavaParser.STRICTFP - 1)) | (1 << (JavaParser.SYNCHRONIZED - 1)) | (1 << (JavaParser.TRANSIENT - 1)) | (1 << (JavaParser.VOID - 1)) | (1 << (JavaParser.VOLATILE - 1)) | (1 << (JavaParser.MODULE - 1)) | (1 << (JavaParser.OPEN - 1)) | (1 << (JavaParser.REQUIRES - 1)) | (1 << (JavaParser.EXPORTS - 1)) | (1 << (JavaParser.OPENS - 1)) | (1 << (JavaParser.TO - 1)) | (1 << (JavaParser.USES - 1)) | (1 << (JavaParser.PROVIDES - 1)) | (1 << (JavaParser.WITH - 1)) | (1 << (JavaParser.TRANSITIVE - 1)) | (1 << (JavaParser.VAR - 1)) | (1 << (JavaParser.YIELD - 1)) | (1 << (JavaParser.RECORD - 1)) | (1 << (JavaParser.SEALED - 1)))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (JavaParser.PERMITS - 65)) | (1 << (JavaParser.NON_SEALED - 65)) | (1 << (JavaParser.LBRACE - 65)) | (1 << (JavaParser.SEMI - 65)) | (1 << (JavaParser.LT - 65)) | (1 << (JavaParser.AT - 65)) | (1 << (JavaParser.IDENTIFIER - 65)))) != 0):
+            while ((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & -665791937994347) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & -8935141660685729789) != 0):
                 self.state = 426
                 self.classBodyDeclaration()
                 self.state = 431
@@ -2472,7 +2477,7 @@ class JavaParser ( Parser ):
             self.state = 435
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.LT:
+            if _la==89:
                 self.state = 434
                 self.typeParameters()
 
@@ -2480,7 +2485,7 @@ class JavaParser ( Parser ):
             self.state = 439
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.EXTENDS:
+            if _la==17:
                 self.state = 437
                 self.match(JavaParser.EXTENDS)
                 self.state = 438
@@ -2490,7 +2495,7 @@ class JavaParser ( Parser ):
             self.state = 443
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.PERMITS:
+            if _la==65:
                 self.state = 441
                 self.match(JavaParser.PERMITS)
                 self.state = 442
@@ -2554,7 +2559,7 @@ class JavaParser ( Parser ):
             self.state = 451
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & ((1 << (JavaParser.ABSTRACT - 1)) | (1 << (JavaParser.BOOLEAN - 1)) | (1 << (JavaParser.BYTE - 1)) | (1 << (JavaParser.CHAR - 1)) | (1 << (JavaParser.CLASS - 1)) | (1 << (JavaParser.DOUBLE - 1)) | (1 << (JavaParser.ENUM - 1)) | (1 << (JavaParser.FINAL - 1)) | (1 << (JavaParser.FLOAT - 1)) | (1 << (JavaParser.INT - 1)) | (1 << (JavaParser.INTERFACE - 1)) | (1 << (JavaParser.LONG - 1)) | (1 << (JavaParser.NATIVE - 1)) | (1 << (JavaParser.PRIVATE - 1)) | (1 << (JavaParser.PROTECTED - 1)) | (1 << (JavaParser.PUBLIC - 1)) | (1 << (JavaParser.SHORT - 1)) | (1 << (JavaParser.STATIC - 1)) | (1 << (JavaParser.STRICTFP - 1)) | (1 << (JavaParser.SYNCHRONIZED - 1)) | (1 << (JavaParser.TRANSIENT - 1)) | (1 << (JavaParser.VOID - 1)) | (1 << (JavaParser.VOLATILE - 1)) | (1 << (JavaParser.MODULE - 1)) | (1 << (JavaParser.OPEN - 1)) | (1 << (JavaParser.REQUIRES - 1)) | (1 << (JavaParser.EXPORTS - 1)) | (1 << (JavaParser.OPENS - 1)) | (1 << (JavaParser.TO - 1)) | (1 << (JavaParser.USES - 1)) | (1 << (JavaParser.PROVIDES - 1)) | (1 << (JavaParser.WITH - 1)) | (1 << (JavaParser.TRANSITIVE - 1)) | (1 << (JavaParser.VAR - 1)) | (1 << (JavaParser.YIELD - 1)) | (1 << (JavaParser.RECORD - 1)) | (1 << (JavaParser.SEALED - 1)))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (JavaParser.PERMITS - 65)) | (1 << (JavaParser.NON_SEALED - 65)) | (1 << (JavaParser.LBRACE - 65)) | (1 << (JavaParser.SEMI - 65)) | (1 << (JavaParser.LT - 65)) | (1 << (JavaParser.AT - 65)) | (1 << (JavaParser.IDENTIFIER - 65)))) != 0):
+            while ((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & -665791937994347) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & -8935141660685729789) != 0):
                 self.state = 448
                 self.classBodyDeclaration()
                 self.state = 453
@@ -2618,7 +2623,7 @@ class JavaParser ( Parser ):
             self.state = 460
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & ((1 << (JavaParser.ABSTRACT - 1)) | (1 << (JavaParser.BOOLEAN - 1)) | (1 << (JavaParser.BYTE - 1)) | (1 << (JavaParser.CHAR - 1)) | (1 << (JavaParser.CLASS - 1)) | (1 << (JavaParser.DEFAULT - 1)) | (1 << (JavaParser.DOUBLE - 1)) | (1 << (JavaParser.ENUM - 1)) | (1 << (JavaParser.FINAL - 1)) | (1 << (JavaParser.FLOAT - 1)) | (1 << (JavaParser.INT - 1)) | (1 << (JavaParser.INTERFACE - 1)) | (1 << (JavaParser.LONG - 1)) | (1 << (JavaParser.NATIVE - 1)) | (1 << (JavaParser.PRIVATE - 1)) | (1 << (JavaParser.PROTECTED - 1)) | (1 << (JavaParser.PUBLIC - 1)) | (1 << (JavaParser.SHORT - 1)) | (1 << (JavaParser.STATIC - 1)) | (1 << (JavaParser.STRICTFP - 1)) | (1 << (JavaParser.SYNCHRONIZED - 1)) | (1 << (JavaParser.TRANSIENT - 1)) | (1 << (JavaParser.VOID - 1)) | (1 << (JavaParser.VOLATILE - 1)) | (1 << (JavaParser.MODULE - 1)) | (1 << (JavaParser.OPEN - 1)) | (1 << (JavaParser.REQUIRES - 1)) | (1 << (JavaParser.EXPORTS - 1)) | (1 << (JavaParser.OPENS - 1)) | (1 << (JavaParser.TO - 1)) | (1 << (JavaParser.USES - 1)) | (1 << (JavaParser.PROVIDES - 1)) | (1 << (JavaParser.WITH - 1)) | (1 << (JavaParser.TRANSITIVE - 1)) | (1 << (JavaParser.VAR - 1)) | (1 << (JavaParser.YIELD - 1)) | (1 << (JavaParser.RECORD - 1)) | (1 << (JavaParser.SEALED - 1)))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (JavaParser.PERMITS - 65)) | (1 << (JavaParser.NON_SEALED - 65)) | (1 << (JavaParser.SEMI - 65)) | (1 << (JavaParser.LT - 65)) | (1 << (JavaParser.AT - 65)) | (1 << (JavaParser.IDENTIFIER - 65)))) != 0):
+            while ((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & -665791937992299) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & -8935141660685762557) != 0):
                 self.state = 457
                 self.interfaceBodyDeclaration()
                 self.state = 462
@@ -2698,7 +2703,7 @@ class JavaParser ( Parser ):
                 self.state = 467
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==JavaParser.STATIC:
+                if _la==38:
                     self.state = 466
                     self.match(JavaParser.STATIC)
 
@@ -2945,7 +2950,7 @@ class JavaParser ( Parser ):
             self.state = 498
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==JavaParser.LBRACK:
+            while _la==82:
                 self.state = 494
                 self.match(JavaParser.LBRACK)
                 self.state = 495
@@ -2957,7 +2962,7 @@ class JavaParser ( Parser ):
             self.state = 503
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.THROWS:
+            if _la==45:
                 self.state = 501
                 self.match(JavaParser.THROWS)
                 self.state = 502
@@ -3011,12 +3016,12 @@ class JavaParser ( Parser ):
             self.state = 509
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.LBRACE]:
+            if token in [80]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 507
                 self.block()
                 pass
-            elif token in [JavaParser.SEMI]:
+            elif token in [84]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 508
                 self.match(JavaParser.SEMI)
@@ -3069,12 +3074,12 @@ class JavaParser ( Parser ):
             self.state = 513
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.BOOLEAN, JavaParser.BYTE, JavaParser.CHAR, JavaParser.DOUBLE, JavaParser.FLOAT, JavaParser.INT, JavaParser.LONG, JavaParser.SHORT, JavaParser.MODULE, JavaParser.OPEN, JavaParser.REQUIRES, JavaParser.EXPORTS, JavaParser.OPENS, JavaParser.TO, JavaParser.USES, JavaParser.PROVIDES, JavaParser.WITH, JavaParser.TRANSITIVE, JavaParser.VAR, JavaParser.YIELD, JavaParser.RECORD, JavaParser.SEALED, JavaParser.PERMITS, JavaParser.AT, JavaParser.IDENTIFIER]:
+            if token in [3, 5, 8, 14, 20, 27, 29, 37, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 123, 128]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 511
                 self.typeType()
                 pass
-            elif token in [JavaParser.VOID]:
+            elif token in [48]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 512
                 self.match(JavaParser.VOID)
@@ -3242,7 +3247,7 @@ class JavaParser ( Parser ):
             self.state = 525
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.THROWS:
+            if _la==45:
                 self.state = 523
                 self.match(JavaParser.THROWS)
                 self.state = 524
@@ -3423,7 +3428,7 @@ class JavaParser ( Parser ):
             self.state = 550
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.ABSTRACT, JavaParser.BOOLEAN, JavaParser.BYTE, JavaParser.CHAR, JavaParser.CLASS, JavaParser.DEFAULT, JavaParser.DOUBLE, JavaParser.ENUM, JavaParser.FINAL, JavaParser.FLOAT, JavaParser.INT, JavaParser.INTERFACE, JavaParser.LONG, JavaParser.NATIVE, JavaParser.PRIVATE, JavaParser.PROTECTED, JavaParser.PUBLIC, JavaParser.SHORT, JavaParser.STATIC, JavaParser.STRICTFP, JavaParser.SYNCHRONIZED, JavaParser.TRANSIENT, JavaParser.VOID, JavaParser.VOLATILE, JavaParser.MODULE, JavaParser.OPEN, JavaParser.REQUIRES, JavaParser.EXPORTS, JavaParser.OPENS, JavaParser.TO, JavaParser.USES, JavaParser.PROVIDES, JavaParser.WITH, JavaParser.TRANSITIVE, JavaParser.VAR, JavaParser.YIELD, JavaParser.RECORD, JavaParser.SEALED, JavaParser.PERMITS, JavaParser.NON_SEALED, JavaParser.LT, JavaParser.AT, JavaParser.IDENTIFIER]:
+            if token in [1, 3, 5, 8, 9, 12, 14, 16, 18, 20, 27, 28, 29, 30, 33, 34, 35, 37, 38, 39, 42, 46, 48, 49, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 89, 123, 128]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 545
                 self._errHandler.sync(self)
@@ -3439,7 +3444,7 @@ class JavaParser ( Parser ):
                 self.state = 548
                 self.interfaceMemberDeclaration()
                 pass
-            elif token in [JavaParser.SEMI]:
+            elif token in [84]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 549
                 self.match(JavaParser.SEMI)
@@ -3630,7 +3635,7 @@ class JavaParser ( Parser ):
             self.state = 568
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==JavaParser.COMMA:
+            while _la==85:
                 self.state = 564
                 self.match(JavaParser.COMMA)
                 self.state = 565
@@ -3706,7 +3711,7 @@ class JavaParser ( Parser ):
             self.state = 578
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==JavaParser.LBRACK:
+            while _la==82:
                 self.state = 574
                 self.match(JavaParser.LBRACK)
                 self.state = 575
@@ -3836,32 +3841,32 @@ class JavaParser ( Parser ):
             self.state = 598
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.MODULE, JavaParser.OPEN, JavaParser.REQUIRES, JavaParser.EXPORTS, JavaParser.OPENS, JavaParser.TO, JavaParser.USES, JavaParser.PROVIDES, JavaParser.WITH, JavaParser.TRANSITIVE, JavaParser.VAR, JavaParser.YIELD, JavaParser.RECORD, JavaParser.SEALED, JavaParser.PERMITS, JavaParser.AT, JavaParser.IDENTIFIER]:
+            if token in [51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 123, 128]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 592
                 self.annotation()
                 pass
-            elif token in [JavaParser.PUBLIC]:
+            elif token in [35]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 593
                 self.match(JavaParser.PUBLIC)
                 pass
-            elif token in [JavaParser.ABSTRACT]:
+            elif token in [1]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 594
                 self.match(JavaParser.ABSTRACT)
                 pass
-            elif token in [JavaParser.DEFAULT]:
+            elif token in [12]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 595
                 self.match(JavaParser.DEFAULT)
                 pass
-            elif token in [JavaParser.STATIC]:
+            elif token in [38]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 596
                 self.match(JavaParser.STATIC)
                 pass
-            elif token in [JavaParser.STRICTFP]:
+            elif token in [39]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 597
                 self.match(JavaParser.STRICTFP)
@@ -3924,7 +3929,7 @@ class JavaParser ( Parser ):
             self.state = 603
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & ((1 << (JavaParser.ABSTRACT - 1)) | (1 << (JavaParser.DEFAULT - 1)) | (1 << (JavaParser.PUBLIC - 1)) | (1 << (JavaParser.STATIC - 1)) | (1 << (JavaParser.STRICTFP - 1)) | (1 << (JavaParser.MODULE - 1)) | (1 << (JavaParser.OPEN - 1)) | (1 << (JavaParser.REQUIRES - 1)) | (1 << (JavaParser.EXPORTS - 1)) | (1 << (JavaParser.OPENS - 1)) | (1 << (JavaParser.TO - 1)) | (1 << (JavaParser.USES - 1)) | (1 << (JavaParser.PROVIDES - 1)) | (1 << (JavaParser.WITH - 1)) | (1 << (JavaParser.TRANSITIVE - 1)) | (1 << (JavaParser.VAR - 1)) | (1 << (JavaParser.YIELD - 1)) | (1 << (JavaParser.RECORD - 1)) | (1 << (JavaParser.SEALED - 1)))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (JavaParser.PERMITS - 65)) | (1 << (JavaParser.AT - 65)) | (1 << (JavaParser.IDENTIFIER - 65)))) != 0):
+            while ((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & -1125470410110975) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & -8935141660703064063) != 0):
                 self.state = 600
                 self.interfaceMethodModifier()
                 self.state = 605
@@ -4034,7 +4039,7 @@ class JavaParser ( Parser ):
             self.state = 622
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==JavaParser.LBRACK:
+            while _la==82:
                 self.state = 618
                 self.match(JavaParser.LBRACK)
                 self.state = 619
@@ -4046,7 +4051,7 @@ class JavaParser ( Parser ):
             self.state = 627
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.THROWS:
+            if _la==45:
                 self.state = 625
                 self.match(JavaParser.THROWS)
                 self.state = 626
@@ -4110,7 +4115,7 @@ class JavaParser ( Parser ):
             self.state = 636
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==JavaParser.COMMA:
+            while _la==85:
                 self.state = 632
                 self.match(JavaParser.COMMA)
                 self.state = 633
@@ -4172,7 +4177,7 @@ class JavaParser ( Parser ):
             self.state = 642
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.ASSIGN:
+            if _la==87:
                 self.state = 640
                 self.match(JavaParser.ASSIGN)
                 self.state = 641
@@ -4237,7 +4242,7 @@ class JavaParser ( Parser ):
             self.state = 649
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==JavaParser.LBRACK:
+            while _la==82:
                 self.state = 645
                 self.match(JavaParser.LBRACK)
                 self.state = 646
@@ -4292,12 +4297,12 @@ class JavaParser ( Parser ):
             self.state = 654
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.LBRACE]:
+            if token in [80]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 652
                 self.arrayInitializer()
                 pass
-            elif token in [JavaParser.BOOLEAN, JavaParser.BYTE, JavaParser.CHAR, JavaParser.DOUBLE, JavaParser.FLOAT, JavaParser.INT, JavaParser.LONG, JavaParser.NEW, JavaParser.SHORT, JavaParser.SUPER, JavaParser.SWITCH, JavaParser.THIS, JavaParser.VOID, JavaParser.MODULE, JavaParser.OPEN, JavaParser.REQUIRES, JavaParser.EXPORTS, JavaParser.OPENS, JavaParser.TO, JavaParser.USES, JavaParser.PROVIDES, JavaParser.WITH, JavaParser.TRANSITIVE, JavaParser.VAR, JavaParser.YIELD, JavaParser.RECORD, JavaParser.SEALED, JavaParser.PERMITS, JavaParser.DECIMAL_LITERAL, JavaParser.HEX_LITERAL, JavaParser.OCT_LITERAL, JavaParser.BINARY_LITERAL, JavaParser.FLOAT_LITERAL, JavaParser.HEX_FLOAT_LITERAL, JavaParser.BOOL_LITERAL, JavaParser.CHAR_LITERAL, JavaParser.STRING_LITERAL, JavaParser.TEXT_BLOCK, JavaParser.NULL_LITERAL, JavaParser.LPAREN, JavaParser.LT, JavaParser.BANG, JavaParser.TILDE, JavaParser.INC, JavaParser.DEC, JavaParser.ADD, JavaParser.SUB, JavaParser.AT, JavaParser.IDENTIFIER]:
+            elif token in [3, 5, 8, 14, 20, 27, 29, 31, 37, 40, 41, 43, 48, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 89, 90, 91, 100, 101, 102, 103, 123, 128]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 653
                 self.expression(0)
@@ -4366,7 +4371,7 @@ class JavaParser ( Parser ):
             self.state = 668
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & ((1 << (JavaParser.BOOLEAN - 3)) | (1 << (JavaParser.BYTE - 3)) | (1 << (JavaParser.CHAR - 3)) | (1 << (JavaParser.DOUBLE - 3)) | (1 << (JavaParser.FLOAT - 3)) | (1 << (JavaParser.INT - 3)) | (1 << (JavaParser.LONG - 3)) | (1 << (JavaParser.NEW - 3)) | (1 << (JavaParser.SHORT - 3)) | (1 << (JavaParser.SUPER - 3)) | (1 << (JavaParser.SWITCH - 3)) | (1 << (JavaParser.THIS - 3)) | (1 << (JavaParser.VOID - 3)) | (1 << (JavaParser.MODULE - 3)) | (1 << (JavaParser.OPEN - 3)) | (1 << (JavaParser.REQUIRES - 3)) | (1 << (JavaParser.EXPORTS - 3)) | (1 << (JavaParser.OPENS - 3)) | (1 << (JavaParser.TO - 3)) | (1 << (JavaParser.USES - 3)) | (1 << (JavaParser.PROVIDES - 3)) | (1 << (JavaParser.WITH - 3)) | (1 << (JavaParser.TRANSITIVE - 3)) | (1 << (JavaParser.VAR - 3)) | (1 << (JavaParser.YIELD - 3)) | (1 << (JavaParser.RECORD - 3)) | (1 << (JavaParser.SEALED - 3)) | (1 << (JavaParser.PERMITS - 3)))) != 0) or ((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & ((1 << (JavaParser.DECIMAL_LITERAL - 67)) | (1 << (JavaParser.HEX_LITERAL - 67)) | (1 << (JavaParser.OCT_LITERAL - 67)) | (1 << (JavaParser.BINARY_LITERAL - 67)) | (1 << (JavaParser.FLOAT_LITERAL - 67)) | (1 << (JavaParser.HEX_FLOAT_LITERAL - 67)) | (1 << (JavaParser.BOOL_LITERAL - 67)) | (1 << (JavaParser.CHAR_LITERAL - 67)) | (1 << (JavaParser.STRING_LITERAL - 67)) | (1 << (JavaParser.TEXT_BLOCK - 67)) | (1 << (JavaParser.NULL_LITERAL - 67)) | (1 << (JavaParser.LPAREN - 67)) | (1 << (JavaParser.LBRACE - 67)) | (1 << (JavaParser.LT - 67)) | (1 << (JavaParser.BANG - 67)) | (1 << (JavaParser.TILDE - 67)) | (1 << (JavaParser.INC - 67)) | (1 << (JavaParser.DEC - 67)) | (1 << (JavaParser.ADD - 67)) | (1 << (JavaParser.SUB - 67)) | (1 << (JavaParser.AT - 67)) | (1 << (JavaParser.IDENTIFIER - 67)))) != 0):
+            if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & 9223127275610966053) != 0) or ((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & 2377900732130013183) != 0):
                 self.state = 657
                 self.variableInitializer()
                 self.state = 662
@@ -4385,7 +4390,7 @@ class JavaParser ( Parser ):
                 self.state = 666
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==JavaParser.COMMA:
+                if _la==85:
                     self.state = 665
                     self.match(JavaParser.COMMA)
 
@@ -4465,7 +4470,7 @@ class JavaParser ( Parser ):
                     self.state = 674
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==JavaParser.LT:
+                    if _la==89:
                         self.state = 673
                         self.typeArguments()
 
@@ -4556,7 +4561,7 @@ class JavaParser ( Parser ):
                 self.state = 691
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while ((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & ((1 << (JavaParser.MODULE - 51)) | (1 << (JavaParser.OPEN - 51)) | (1 << (JavaParser.REQUIRES - 51)) | (1 << (JavaParser.EXPORTS - 51)) | (1 << (JavaParser.OPENS - 51)) | (1 << (JavaParser.TO - 51)) | (1 << (JavaParser.USES - 51)) | (1 << (JavaParser.PROVIDES - 51)) | (1 << (JavaParser.WITH - 51)) | (1 << (JavaParser.TRANSITIVE - 51)) | (1 << (JavaParser.VAR - 51)) | (1 << (JavaParser.YIELD - 51)) | (1 << (JavaParser.RECORD - 51)) | (1 << (JavaParser.SEALED - 51)) | (1 << (JavaParser.PERMITS - 51)))) != 0) or _la==JavaParser.AT or _la==JavaParser.IDENTIFIER:
+                while ((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & 32767) != 0) or _la==123 or _la==128:
                     self.state = 688
                     self.annotation()
                     self.state = 693
@@ -4568,10 +4573,10 @@ class JavaParser ( Parser ):
                 self.state = 697
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==JavaParser.EXTENDS or _la==JavaParser.SUPER:
+                if _la==17 or _la==40:
                     self.state = 695
                     _la = self._input.LA(1)
-                    if not(_la==JavaParser.EXTENDS or _la==JavaParser.SUPER):
+                    if not(_la==17 or _la==40):
                         self._errHandler.recoverInline(self)
                     else:
                         self._errHandler.reportMatch(self)
@@ -4638,7 +4643,7 @@ class JavaParser ( Parser ):
             self.state = 706
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==JavaParser.COMMA:
+            while _la==85:
                 self.state = 702
                 self.match(JavaParser.COMMA)
                 self.state = 703
@@ -4710,7 +4715,7 @@ class JavaParser ( Parser ):
                 self.state = 711
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & ((1 << (JavaParser.BOOLEAN - 3)) | (1 << (JavaParser.BYTE - 3)) | (1 << (JavaParser.CHAR - 3)) | (1 << (JavaParser.DOUBLE - 3)) | (1 << (JavaParser.FLOAT - 3)) | (1 << (JavaParser.INT - 3)) | (1 << (JavaParser.LONG - 3)) | (1 << (JavaParser.SHORT - 3)) | (1 << (JavaParser.MODULE - 3)) | (1 << (JavaParser.OPEN - 3)) | (1 << (JavaParser.REQUIRES - 3)) | (1 << (JavaParser.EXPORTS - 3)) | (1 << (JavaParser.OPENS - 3)) | (1 << (JavaParser.TO - 3)) | (1 << (JavaParser.USES - 3)) | (1 << (JavaParser.PROVIDES - 3)) | (1 << (JavaParser.WITH - 3)) | (1 << (JavaParser.TRANSITIVE - 3)) | (1 << (JavaParser.VAR - 3)) | (1 << (JavaParser.YIELD - 3)) | (1 << (JavaParser.RECORD - 3)) | (1 << (JavaParser.SEALED - 3)) | (1 << (JavaParser.PERMITS - 3)))) != 0) or _la==JavaParser.AT or _la==JavaParser.IDENTIFIER:
+                if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & 9223090579141953573) != 0) or _la==123 or _la==128:
                     self.state = 710
                     self.receiverParameter()
 
@@ -4723,7 +4728,7 @@ class JavaParser ( Parser ):
                 self.state = 716
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==JavaParser.COMMA:
+                if _la==85:
                     self.state = 714
                     self.match(JavaParser.COMMA)
                     self.state = 715
@@ -4736,7 +4741,7 @@ class JavaParser ( Parser ):
                 self.state = 719
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & ((1 << (JavaParser.BOOLEAN - 3)) | (1 << (JavaParser.BYTE - 3)) | (1 << (JavaParser.CHAR - 3)) | (1 << (JavaParser.DOUBLE - 3)) | (1 << (JavaParser.FINAL - 3)) | (1 << (JavaParser.FLOAT - 3)) | (1 << (JavaParser.INT - 3)) | (1 << (JavaParser.LONG - 3)) | (1 << (JavaParser.SHORT - 3)) | (1 << (JavaParser.MODULE - 3)) | (1 << (JavaParser.OPEN - 3)) | (1 << (JavaParser.REQUIRES - 3)) | (1 << (JavaParser.EXPORTS - 3)) | (1 << (JavaParser.OPENS - 3)) | (1 << (JavaParser.TO - 3)) | (1 << (JavaParser.USES - 3)) | (1 << (JavaParser.PROVIDES - 3)) | (1 << (JavaParser.WITH - 3)) | (1 << (JavaParser.TRANSITIVE - 3)) | (1 << (JavaParser.VAR - 3)) | (1 << (JavaParser.YIELD - 3)) | (1 << (JavaParser.RECORD - 3)) | (1 << (JavaParser.SEALED - 3)) | (1 << (JavaParser.PERMITS - 3)))) != 0) or _la==JavaParser.AT or _la==JavaParser.IDENTIFIER:
+                if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & 9223090579141986341) != 0) or _la==123 or _la==128:
                     self.state = 718
                     self.formalParameterList()
 
@@ -4808,7 +4813,7 @@ class JavaParser ( Parser ):
             self.state = 731
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & ((1 << (JavaParser.MODULE - 51)) | (1 << (JavaParser.OPEN - 51)) | (1 << (JavaParser.REQUIRES - 51)) | (1 << (JavaParser.EXPORTS - 51)) | (1 << (JavaParser.OPENS - 51)) | (1 << (JavaParser.TO - 51)) | (1 << (JavaParser.USES - 51)) | (1 << (JavaParser.PROVIDES - 51)) | (1 << (JavaParser.WITH - 51)) | (1 << (JavaParser.TRANSITIVE - 51)) | (1 << (JavaParser.VAR - 51)) | (1 << (JavaParser.YIELD - 51)) | (1 << (JavaParser.RECORD - 51)) | (1 << (JavaParser.SEALED - 51)) | (1 << (JavaParser.PERMITS - 51)))) != 0) or _la==JavaParser.IDENTIFIER:
+            while ((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & 32767) != 0) or _la==128:
                 self.state = 726
                 self.identifier()
                 self.state = 727
@@ -4895,7 +4900,7 @@ class JavaParser ( Parser ):
                 self.state = 746
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==JavaParser.COMMA:
+                if _la==85:
                     self.state = 744
                     self.match(JavaParser.COMMA)
                     self.state = 745
@@ -5055,7 +5060,7 @@ class JavaParser ( Parser ):
             self.state = 770
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & ((1 << (JavaParser.MODULE - 51)) | (1 << (JavaParser.OPEN - 51)) | (1 << (JavaParser.REQUIRES - 51)) | (1 << (JavaParser.EXPORTS - 51)) | (1 << (JavaParser.OPENS - 51)) | (1 << (JavaParser.TO - 51)) | (1 << (JavaParser.USES - 51)) | (1 << (JavaParser.PROVIDES - 51)) | (1 << (JavaParser.WITH - 51)) | (1 << (JavaParser.TRANSITIVE - 51)) | (1 << (JavaParser.VAR - 51)) | (1 << (JavaParser.YIELD - 51)) | (1 << (JavaParser.RECORD - 51)) | (1 << (JavaParser.SEALED - 51)) | (1 << (JavaParser.PERMITS - 51)))) != 0) or _la==JavaParser.AT or _la==JavaParser.IDENTIFIER:
+            while ((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & 32767) != 0) or _la==123 or _la==128:
                 self.state = 767
                 self.annotation()
                 self.state = 772
@@ -5121,7 +5126,7 @@ class JavaParser ( Parser ):
             self.state = 781
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==JavaParser.COMMA:
+            while _la==85:
                 self.state = 777
                 self.match(JavaParser.COMMA)
                 self.state = 778
@@ -5320,37 +5325,37 @@ class JavaParser ( Parser ):
             self.state = 808
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.DECIMAL_LITERAL, JavaParser.HEX_LITERAL, JavaParser.OCT_LITERAL, JavaParser.BINARY_LITERAL]:
+            if token in [67, 68, 69, 70]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 801
                 self.integerLiteral()
                 pass
-            elif token in [JavaParser.FLOAT_LITERAL, JavaParser.HEX_FLOAT_LITERAL]:
+            elif token in [71, 72]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 802
                 self.floatLiteral()
                 pass
-            elif token in [JavaParser.CHAR_LITERAL]:
+            elif token in [74]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 803
                 self.match(JavaParser.CHAR_LITERAL)
                 pass
-            elif token in [JavaParser.STRING_LITERAL]:
+            elif token in [75]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 804
                 self.match(JavaParser.STRING_LITERAL)
                 pass
-            elif token in [JavaParser.BOOL_LITERAL]:
+            elif token in [73]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 805
                 self.match(JavaParser.BOOL_LITERAL)
                 pass
-            elif token in [JavaParser.NULL_LITERAL]:
+            elif token in [77]:
                 self.enterOuterAlt(localctx, 6)
                 self.state = 806
                 self.match(JavaParser.NULL_LITERAL)
                 pass
-            elif token in [JavaParser.TEXT_BLOCK]:
+            elif token in [76]:
                 self.enterOuterAlt(localctx, 7)
                 self.state = 807
                 self.match(JavaParser.TEXT_BLOCK)
@@ -5409,7 +5414,7 @@ class JavaParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 810
             _la = self._input.LA(1)
-            if not(((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & ((1 << (JavaParser.DECIMAL_LITERAL - 67)) | (1 << (JavaParser.HEX_LITERAL - 67)) | (1 << (JavaParser.OCT_LITERAL - 67)) | (1 << (JavaParser.BINARY_LITERAL - 67)))) != 0)):
+            if not(((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & 15) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -5459,7 +5464,7 @@ class JavaParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 812
             _la = self._input.LA(1)
-            if not(_la==JavaParser.FLOAT_LITERAL or _la==JavaParser.HEX_FLOAT_LITERAL):
+            if not(_la==71 or _la==72):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -5520,7 +5525,7 @@ class JavaParser ( Parser ):
             self.state = 819
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & ((1 << (JavaParser.MODULE - 51)) | (1 << (JavaParser.OPEN - 51)) | (1 << (JavaParser.REQUIRES - 51)) | (1 << (JavaParser.EXPORTS - 51)) | (1 << (JavaParser.OPENS - 51)) | (1 << (JavaParser.TO - 51)) | (1 << (JavaParser.USES - 51)) | (1 << (JavaParser.PROVIDES - 51)) | (1 << (JavaParser.WITH - 51)) | (1 << (JavaParser.TRANSITIVE - 51)) | (1 << (JavaParser.VAR - 51)) | (1 << (JavaParser.YIELD - 51)) | (1 << (JavaParser.RECORD - 51)) | (1 << (JavaParser.SEALED - 51)) | (1 << (JavaParser.PERMITS - 51)))) != 0) or _la==JavaParser.IDENTIFIER:
+            while ((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & 32767) != 0) or _la==128:
                 self.state = 814
                 self.identifier()
                 self.state = 815
@@ -5614,7 +5619,7 @@ class JavaParser ( Parser ):
             self.state = 836
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.LPAREN:
+            if _la==78:
                 self.state = 830
                 self.match(JavaParser.LPAREN)
                 self.state = 833
@@ -5688,7 +5693,7 @@ class JavaParser ( Parser ):
             self.state = 843
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==JavaParser.COMMA:
+            while _la==85:
                 self.state = 839
                 self.match(JavaParser.COMMA)
                 self.state = 840
@@ -5880,7 +5885,7 @@ class JavaParser ( Parser ):
             self.state = 864
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & ((1 << (JavaParser.BOOLEAN - 3)) | (1 << (JavaParser.BYTE - 3)) | (1 << (JavaParser.CHAR - 3)) | (1 << (JavaParser.DOUBLE - 3)) | (1 << (JavaParser.FLOAT - 3)) | (1 << (JavaParser.INT - 3)) | (1 << (JavaParser.LONG - 3)) | (1 << (JavaParser.NEW - 3)) | (1 << (JavaParser.SHORT - 3)) | (1 << (JavaParser.SUPER - 3)) | (1 << (JavaParser.SWITCH - 3)) | (1 << (JavaParser.THIS - 3)) | (1 << (JavaParser.VOID - 3)) | (1 << (JavaParser.MODULE - 3)) | (1 << (JavaParser.OPEN - 3)) | (1 << (JavaParser.REQUIRES - 3)) | (1 << (JavaParser.EXPORTS - 3)) | (1 << (JavaParser.OPENS - 3)) | (1 << (JavaParser.TO - 3)) | (1 << (JavaParser.USES - 3)) | (1 << (JavaParser.PROVIDES - 3)) | (1 << (JavaParser.WITH - 3)) | (1 << (JavaParser.TRANSITIVE - 3)) | (1 << (JavaParser.VAR - 3)) | (1 << (JavaParser.YIELD - 3)) | (1 << (JavaParser.RECORD - 3)) | (1 << (JavaParser.SEALED - 3)) | (1 << (JavaParser.PERMITS - 3)))) != 0) or ((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & ((1 << (JavaParser.DECIMAL_LITERAL - 67)) | (1 << (JavaParser.HEX_LITERAL - 67)) | (1 << (JavaParser.OCT_LITERAL - 67)) | (1 << (JavaParser.BINARY_LITERAL - 67)) | (1 << (JavaParser.FLOAT_LITERAL - 67)) | (1 << (JavaParser.HEX_FLOAT_LITERAL - 67)) | (1 << (JavaParser.BOOL_LITERAL - 67)) | (1 << (JavaParser.CHAR_LITERAL - 67)) | (1 << (JavaParser.STRING_LITERAL - 67)) | (1 << (JavaParser.TEXT_BLOCK - 67)) | (1 << (JavaParser.NULL_LITERAL - 67)) | (1 << (JavaParser.LPAREN - 67)) | (1 << (JavaParser.LBRACE - 67)) | (1 << (JavaParser.LT - 67)) | (1 << (JavaParser.BANG - 67)) | (1 << (JavaParser.TILDE - 67)) | (1 << (JavaParser.INC - 67)) | (1 << (JavaParser.DEC - 67)) | (1 << (JavaParser.ADD - 67)) | (1 << (JavaParser.SUB - 67)) | (1 << (JavaParser.AT - 67)) | (1 << (JavaParser.IDENTIFIER - 67)))) != 0):
+            if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & 9223127275610966053) != 0) or ((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & 2377900732130013183) != 0):
                 self.state = 856
                 self.elementValue()
                 self.state = 861
@@ -5901,7 +5906,7 @@ class JavaParser ( Parser ):
             self.state = 867
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.COMMA:
+            if _la==85:
                 self.state = 866
                 self.match(JavaParser.COMMA)
 
@@ -6021,7 +6026,7 @@ class JavaParser ( Parser ):
             self.state = 880
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & ((1 << (JavaParser.ABSTRACT - 1)) | (1 << (JavaParser.BOOLEAN - 1)) | (1 << (JavaParser.BYTE - 1)) | (1 << (JavaParser.CHAR - 1)) | (1 << (JavaParser.CLASS - 1)) | (1 << (JavaParser.DOUBLE - 1)) | (1 << (JavaParser.ENUM - 1)) | (1 << (JavaParser.FINAL - 1)) | (1 << (JavaParser.FLOAT - 1)) | (1 << (JavaParser.INT - 1)) | (1 << (JavaParser.INTERFACE - 1)) | (1 << (JavaParser.LONG - 1)) | (1 << (JavaParser.NATIVE - 1)) | (1 << (JavaParser.PRIVATE - 1)) | (1 << (JavaParser.PROTECTED - 1)) | (1 << (JavaParser.PUBLIC - 1)) | (1 << (JavaParser.SHORT - 1)) | (1 << (JavaParser.STATIC - 1)) | (1 << (JavaParser.STRICTFP - 1)) | (1 << (JavaParser.SYNCHRONIZED - 1)) | (1 << (JavaParser.TRANSIENT - 1)) | (1 << (JavaParser.VOLATILE - 1)) | (1 << (JavaParser.MODULE - 1)) | (1 << (JavaParser.OPEN - 1)) | (1 << (JavaParser.REQUIRES - 1)) | (1 << (JavaParser.EXPORTS - 1)) | (1 << (JavaParser.OPENS - 1)) | (1 << (JavaParser.TO - 1)) | (1 << (JavaParser.USES - 1)) | (1 << (JavaParser.PROVIDES - 1)) | (1 << (JavaParser.WITH - 1)) | (1 << (JavaParser.TRANSITIVE - 1)) | (1 << (JavaParser.VAR - 1)) | (1 << (JavaParser.YIELD - 1)) | (1 << (JavaParser.RECORD - 1)) | (1 << (JavaParser.SEALED - 1)))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (JavaParser.PERMITS - 65)) | (1 << (JavaParser.NON_SEALED - 65)) | (1 << (JavaParser.SEMI - 65)) | (1 << (JavaParser.AT - 65)) | (1 << (JavaParser.IDENTIFIER - 65)))) != 0):
+            while ((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & -806529426349675) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & -8935141660702539773) != 0):
                 self.state = 877
                 self.annotationTypeElementDeclaration()
                 self.state = 882
@@ -6082,7 +6087,7 @@ class JavaParser ( Parser ):
             self.state = 893
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.ABSTRACT, JavaParser.BOOLEAN, JavaParser.BYTE, JavaParser.CHAR, JavaParser.CLASS, JavaParser.DOUBLE, JavaParser.ENUM, JavaParser.FINAL, JavaParser.FLOAT, JavaParser.INT, JavaParser.INTERFACE, JavaParser.LONG, JavaParser.NATIVE, JavaParser.PRIVATE, JavaParser.PROTECTED, JavaParser.PUBLIC, JavaParser.SHORT, JavaParser.STATIC, JavaParser.STRICTFP, JavaParser.SYNCHRONIZED, JavaParser.TRANSIENT, JavaParser.VOLATILE, JavaParser.MODULE, JavaParser.OPEN, JavaParser.REQUIRES, JavaParser.EXPORTS, JavaParser.OPENS, JavaParser.TO, JavaParser.USES, JavaParser.PROVIDES, JavaParser.WITH, JavaParser.TRANSITIVE, JavaParser.VAR, JavaParser.YIELD, JavaParser.RECORD, JavaParser.SEALED, JavaParser.PERMITS, JavaParser.NON_SEALED, JavaParser.AT, JavaParser.IDENTIFIER]:
+            if token in [1, 3, 5, 8, 9, 14, 16, 18, 20, 27, 28, 29, 30, 33, 34, 35, 37, 38, 39, 42, 46, 49, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 123, 128]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 888
                 self._errHandler.sync(self)
@@ -6098,7 +6103,7 @@ class JavaParser ( Parser ):
                 self.state = 891
                 self.annotationTypeElementRest()
                 pass
-            elif token in [JavaParser.SEMI]:
+            elif token in [84]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 892
                 self.match(JavaParser.SEMI)
@@ -6375,7 +6380,7 @@ class JavaParser ( Parser ):
             self.state = 929
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.DEFAULT:
+            if _la==12:
                 self.state = 928
                 self.defaultValue()
 
@@ -6523,7 +6528,7 @@ class JavaParser ( Parser ):
             self.state = 937
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.OPEN:
+            if _la==52:
                 self.state = 936
                 self.match(JavaParser.OPEN)
 
@@ -6589,7 +6594,7 @@ class JavaParser ( Parser ):
             self.state = 947
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << JavaParser.REQUIRES) | (1 << JavaParser.EXPORTS) | (1 << JavaParser.OPENS) | (1 << JavaParser.USES) | (1 << JavaParser.PROVIDES))) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 495395959010754560) != 0):
                 self.state = 944
                 self.moduleDirective()
                 self.state = 949
@@ -6675,7 +6680,7 @@ class JavaParser ( Parser ):
             self.state = 988
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.REQUIRES]:
+            if token in [53]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 952
                 self.match(JavaParser.REQUIRES)
@@ -6695,7 +6700,7 @@ class JavaParser ( Parser ):
                 self.state = 960
                 self.match(JavaParser.SEMI)
                 pass
-            elif token in [JavaParser.EXPORTS]:
+            elif token in [54]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 962
                 self.match(JavaParser.EXPORTS)
@@ -6704,7 +6709,7 @@ class JavaParser ( Parser ):
                 self.state = 966
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==JavaParser.TO:
+                if _la==56:
                     self.state = 964
                     self.match(JavaParser.TO)
                     self.state = 965
@@ -6714,7 +6719,7 @@ class JavaParser ( Parser ):
                 self.state = 968
                 self.match(JavaParser.SEMI)
                 pass
-            elif token in [JavaParser.OPENS]:
+            elif token in [55]:
                 self.enterOuterAlt(localctx, 3)
                 self.state = 970
                 self.match(JavaParser.OPENS)
@@ -6723,7 +6728,7 @@ class JavaParser ( Parser ):
                 self.state = 974
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==JavaParser.TO:
+                if _la==56:
                     self.state = 972
                     self.match(JavaParser.TO)
                     self.state = 973
@@ -6733,7 +6738,7 @@ class JavaParser ( Parser ):
                 self.state = 976
                 self.match(JavaParser.SEMI)
                 pass
-            elif token in [JavaParser.USES]:
+            elif token in [57]:
                 self.enterOuterAlt(localctx, 4)
                 self.state = 978
                 self.match(JavaParser.USES)
@@ -6742,7 +6747,7 @@ class JavaParser ( Parser ):
                 self.state = 980
                 self.match(JavaParser.SEMI)
                 pass
-            elif token in [JavaParser.PROVIDES]:
+            elif token in [58]:
                 self.enterOuterAlt(localctx, 5)
                 self.state = 982
                 self.match(JavaParser.PROVIDES)
@@ -6803,7 +6808,7 @@ class JavaParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 990
             _la = self._input.LA(1)
-            if not(_la==JavaParser.STATIC or _la==JavaParser.TRANSITIVE):
+            if not(_la==38 or _la==60):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -6878,7 +6883,7 @@ class JavaParser ( Parser ):
             self.state = 995
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.LT:
+            if _la==89:
                 self.state = 994
                 self.typeParameters()
 
@@ -6888,7 +6893,7 @@ class JavaParser ( Parser ):
             self.state = 1000
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.IMPLEMENTS:
+            if _la==24:
                 self.state = 998
                 self.match(JavaParser.IMPLEMENTS)
                 self.state = 999
@@ -6949,7 +6954,7 @@ class JavaParser ( Parser ):
             self.state = 1006
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & ((1 << (JavaParser.BOOLEAN - 3)) | (1 << (JavaParser.BYTE - 3)) | (1 << (JavaParser.CHAR - 3)) | (1 << (JavaParser.DOUBLE - 3)) | (1 << (JavaParser.FLOAT - 3)) | (1 << (JavaParser.INT - 3)) | (1 << (JavaParser.LONG - 3)) | (1 << (JavaParser.SHORT - 3)) | (1 << (JavaParser.MODULE - 3)) | (1 << (JavaParser.OPEN - 3)) | (1 << (JavaParser.REQUIRES - 3)) | (1 << (JavaParser.EXPORTS - 3)) | (1 << (JavaParser.OPENS - 3)) | (1 << (JavaParser.TO - 3)) | (1 << (JavaParser.USES - 3)) | (1 << (JavaParser.PROVIDES - 3)) | (1 << (JavaParser.WITH - 3)) | (1 << (JavaParser.TRANSITIVE - 3)) | (1 << (JavaParser.VAR - 3)) | (1 << (JavaParser.YIELD - 3)) | (1 << (JavaParser.RECORD - 3)) | (1 << (JavaParser.SEALED - 3)) | (1 << (JavaParser.PERMITS - 3)))) != 0) or _la==JavaParser.AT or _la==JavaParser.IDENTIFIER:
+            if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & 9223090579141953573) != 0) or _la==123 or _la==128:
                 self.state = 1005
                 self.recordComponentList()
 
@@ -7011,7 +7016,7 @@ class JavaParser ( Parser ):
             self.state = 1015
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==JavaParser.COMMA:
+            while _la==85:
                 self.state = 1011
                 self.match(JavaParser.COMMA)
                 self.state = 1012
@@ -7130,7 +7135,7 @@ class JavaParser ( Parser ):
             self.state = 1026
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & ((1 << (JavaParser.ABSTRACT - 1)) | (1 << (JavaParser.BOOLEAN - 1)) | (1 << (JavaParser.BYTE - 1)) | (1 << (JavaParser.CHAR - 1)) | (1 << (JavaParser.CLASS - 1)) | (1 << (JavaParser.DOUBLE - 1)) | (1 << (JavaParser.ENUM - 1)) | (1 << (JavaParser.FINAL - 1)) | (1 << (JavaParser.FLOAT - 1)) | (1 << (JavaParser.INT - 1)) | (1 << (JavaParser.INTERFACE - 1)) | (1 << (JavaParser.LONG - 1)) | (1 << (JavaParser.NATIVE - 1)) | (1 << (JavaParser.PRIVATE - 1)) | (1 << (JavaParser.PROTECTED - 1)) | (1 << (JavaParser.PUBLIC - 1)) | (1 << (JavaParser.SHORT - 1)) | (1 << (JavaParser.STATIC - 1)) | (1 << (JavaParser.STRICTFP - 1)) | (1 << (JavaParser.SYNCHRONIZED - 1)) | (1 << (JavaParser.TRANSIENT - 1)) | (1 << (JavaParser.VOID - 1)) | (1 << (JavaParser.VOLATILE - 1)) | (1 << (JavaParser.MODULE - 1)) | (1 << (JavaParser.OPEN - 1)) | (1 << (JavaParser.REQUIRES - 1)) | (1 << (JavaParser.EXPORTS - 1)) | (1 << (JavaParser.OPENS - 1)) | (1 << (JavaParser.TO - 1)) | (1 << (JavaParser.USES - 1)) | (1 << (JavaParser.PROVIDES - 1)) | (1 << (JavaParser.WITH - 1)) | (1 << (JavaParser.TRANSITIVE - 1)) | (1 << (JavaParser.VAR - 1)) | (1 << (JavaParser.YIELD - 1)) | (1 << (JavaParser.RECORD - 1)) | (1 << (JavaParser.SEALED - 1)))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (JavaParser.PERMITS - 65)) | (1 << (JavaParser.NON_SEALED - 65)) | (1 << (JavaParser.LBRACE - 65)) | (1 << (JavaParser.SEMI - 65)) | (1 << (JavaParser.LT - 65)) | (1 << (JavaParser.AT - 65)) | (1 << (JavaParser.IDENTIFIER - 65)))) != 0):
+            while ((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & -665791937994347) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & -8935141660685729789) != 0):
                 self.state = 1024
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,117,self._ctx)
@@ -7206,7 +7211,7 @@ class JavaParser ( Parser ):
             self.state = 1035
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while ((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & ((1 << (JavaParser.ABSTRACT - 1)) | (1 << (JavaParser.ASSERT - 1)) | (1 << (JavaParser.BOOLEAN - 1)) | (1 << (JavaParser.BREAK - 1)) | (1 << (JavaParser.BYTE - 1)) | (1 << (JavaParser.CHAR - 1)) | (1 << (JavaParser.CLASS - 1)) | (1 << (JavaParser.CONTINUE - 1)) | (1 << (JavaParser.DO - 1)) | (1 << (JavaParser.DOUBLE - 1)) | (1 << (JavaParser.FINAL - 1)) | (1 << (JavaParser.FLOAT - 1)) | (1 << (JavaParser.FOR - 1)) | (1 << (JavaParser.IF - 1)) | (1 << (JavaParser.INT - 1)) | (1 << (JavaParser.INTERFACE - 1)) | (1 << (JavaParser.LONG - 1)) | (1 << (JavaParser.NEW - 1)) | (1 << (JavaParser.PRIVATE - 1)) | (1 << (JavaParser.PROTECTED - 1)) | (1 << (JavaParser.PUBLIC - 1)) | (1 << (JavaParser.RETURN - 1)) | (1 << (JavaParser.SHORT - 1)) | (1 << (JavaParser.STATIC - 1)) | (1 << (JavaParser.STRICTFP - 1)) | (1 << (JavaParser.SUPER - 1)) | (1 << (JavaParser.SWITCH - 1)) | (1 << (JavaParser.SYNCHRONIZED - 1)) | (1 << (JavaParser.THIS - 1)) | (1 << (JavaParser.THROW - 1)) | (1 << (JavaParser.TRY - 1)) | (1 << (JavaParser.VOID - 1)) | (1 << (JavaParser.WHILE - 1)) | (1 << (JavaParser.MODULE - 1)) | (1 << (JavaParser.OPEN - 1)) | (1 << (JavaParser.REQUIRES - 1)) | (1 << (JavaParser.EXPORTS - 1)) | (1 << (JavaParser.OPENS - 1)) | (1 << (JavaParser.TO - 1)) | (1 << (JavaParser.USES - 1)) | (1 << (JavaParser.PROVIDES - 1)) | (1 << (JavaParser.WITH - 1)) | (1 << (JavaParser.TRANSITIVE - 1)) | (1 << (JavaParser.VAR - 1)) | (1 << (JavaParser.YIELD - 1)) | (1 << (JavaParser.RECORD - 1)) | (1 << (JavaParser.SEALED - 1)))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (JavaParser.PERMITS - 65)) | (1 << (JavaParser.NON_SEALED - 65)) | (1 << (JavaParser.DECIMAL_LITERAL - 65)) | (1 << (JavaParser.HEX_LITERAL - 65)) | (1 << (JavaParser.OCT_LITERAL - 65)) | (1 << (JavaParser.BINARY_LITERAL - 65)) | (1 << (JavaParser.FLOAT_LITERAL - 65)) | (1 << (JavaParser.HEX_FLOAT_LITERAL - 65)) | (1 << (JavaParser.BOOL_LITERAL - 65)) | (1 << (JavaParser.CHAR_LITERAL - 65)) | (1 << (JavaParser.STRING_LITERAL - 65)) | (1 << (JavaParser.TEXT_BLOCK - 65)) | (1 << (JavaParser.NULL_LITERAL - 65)) | (1 << (JavaParser.LPAREN - 65)) | (1 << (JavaParser.LBRACE - 65)) | (1 << (JavaParser.SEMI - 65)) | (1 << (JavaParser.LT - 65)) | (1 << (JavaParser.BANG - 65)) | (1 << (JavaParser.TILDE - 65)) | (1 << (JavaParser.INC - 65)) | (1 << (JavaParser.DEC - 65)) | (1 << (JavaParser.ADD - 65)) | (1 << (JavaParser.SUB - 65)) | (1 << (JavaParser.AT - 65)) | (1 << (JavaParser.IDENTIFIER - 65)))) != 0):
+            while ((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & -334254282492513) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & -8935141145188974593) != 0):
                 self.state = 1032
                 self.blockStatement()
                 self.state = 1037
@@ -7474,7 +7479,7 @@ class JavaParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 1063
             _la = self._input.LA(1)
-            if not(((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & ((1 << (JavaParser.MODULE - 51)) | (1 << (JavaParser.OPEN - 51)) | (1 << (JavaParser.REQUIRES - 51)) | (1 << (JavaParser.EXPORTS - 51)) | (1 << (JavaParser.OPENS - 51)) | (1 << (JavaParser.TO - 51)) | (1 << (JavaParser.USES - 51)) | (1 << (JavaParser.PROVIDES - 51)) | (1 << (JavaParser.WITH - 51)) | (1 << (JavaParser.TRANSITIVE - 51)) | (1 << (JavaParser.VAR - 51)) | (1 << (JavaParser.YIELD - 51)) | (1 << (JavaParser.RECORD - 51)) | (1 << (JavaParser.SEALED - 51)) | (1 << (JavaParser.PERMITS - 51)))) != 0) or _la==JavaParser.IDENTIFIER):
+            if not(((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & 32767) != 0) or _la==128):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -7560,7 +7565,7 @@ class JavaParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 1065
             _la = self._input.LA(1)
-            if not(((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & ((1 << (JavaParser.MODULE - 51)) | (1 << (JavaParser.OPEN - 51)) | (1 << (JavaParser.REQUIRES - 51)) | (1 << (JavaParser.EXPORTS - 51)) | (1 << (JavaParser.OPENS - 51)) | (1 << (JavaParser.TO - 51)) | (1 << (JavaParser.USES - 51)) | (1 << (JavaParser.PROVIDES - 51)) | (1 << (JavaParser.WITH - 51)) | (1 << (JavaParser.TRANSITIVE - 51)) | (1 << (JavaParser.RECORD - 51)) | (1 << (JavaParser.SEALED - 51)) | (1 << (JavaParser.PERMITS - 51)))) != 0) or _la==JavaParser.IDENTIFIER):
+            if not(((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & 29695) != 0) or _la==128):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -7634,15 +7639,15 @@ class JavaParser ( Parser ):
             self.state = 1076
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.CLASS]:
+            if token in [9]:
                 self.state = 1073
                 self.classDeclaration()
                 pass
-            elif token in [JavaParser.INTERFACE]:
+            elif token in [28]:
                 self.state = 1074
                 self.interfaceDeclaration()
                 pass
-            elif token in [JavaParser.RECORD]:
+            elif token in [63]:
                 self.state = 1075
                 self.recordDeclaration()
                 pass
@@ -7829,7 +7834,7 @@ class JavaParser ( Parser ):
                 self.state = 1083
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==JavaParser.COLON:
+                if _la==93:
                     self.state = 1081
                     self.match(JavaParser.COLON)
                     self.state = 1082
@@ -7907,7 +7912,7 @@ class JavaParser ( Parser ):
                 self.state = 1121
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [JavaParser.CATCH]:
+                if token in [7]:
                     self.state = 1113 
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
@@ -7917,19 +7922,19 @@ class JavaParser ( Parser ):
                         self.state = 1115 
                         self._errHandler.sync(self)
                         _la = self._input.LA(1)
-                        if not (_la==JavaParser.CATCH):
+                        if not (_la==7):
                             break
 
                     self.state = 1118
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==JavaParser.FINALLY:
+                    if _la==19:
                         self.state = 1117
                         self.finallyBlock()
 
 
                     pass
-                elif token in [JavaParser.FINALLY]:
+                elif token in [19]:
                     self.state = 1120
                     self.finallyBlock()
                     pass
@@ -7949,7 +7954,7 @@ class JavaParser ( Parser ):
                 self.state = 1129
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==JavaParser.CATCH:
+                while _la==7:
                     self.state = 1126
                     self.catchClause()
                     self.state = 1131
@@ -7959,7 +7964,7 @@ class JavaParser ( Parser ):
                 self.state = 1133
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==JavaParser.FINALLY:
+                if _la==19:
                     self.state = 1132
                     self.finallyBlock()
 
@@ -7988,7 +7993,7 @@ class JavaParser ( Parser ):
                 self.state = 1147
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==JavaParser.CASE or _la==JavaParser.DEFAULT:
+                while _la==6 or _la==12:
                     self.state = 1144
                     self.switchLabel()
                     self.state = 1149
@@ -8016,7 +8021,7 @@ class JavaParser ( Parser ):
                 self.state = 1158
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & ((1 << (JavaParser.BOOLEAN - 3)) | (1 << (JavaParser.BYTE - 3)) | (1 << (JavaParser.CHAR - 3)) | (1 << (JavaParser.DOUBLE - 3)) | (1 << (JavaParser.FLOAT - 3)) | (1 << (JavaParser.INT - 3)) | (1 << (JavaParser.LONG - 3)) | (1 << (JavaParser.NEW - 3)) | (1 << (JavaParser.SHORT - 3)) | (1 << (JavaParser.SUPER - 3)) | (1 << (JavaParser.SWITCH - 3)) | (1 << (JavaParser.THIS - 3)) | (1 << (JavaParser.VOID - 3)) | (1 << (JavaParser.MODULE - 3)) | (1 << (JavaParser.OPEN - 3)) | (1 << (JavaParser.REQUIRES - 3)) | (1 << (JavaParser.EXPORTS - 3)) | (1 << (JavaParser.OPENS - 3)) | (1 << (JavaParser.TO - 3)) | (1 << (JavaParser.USES - 3)) | (1 << (JavaParser.PROVIDES - 3)) | (1 << (JavaParser.WITH - 3)) | (1 << (JavaParser.TRANSITIVE - 3)) | (1 << (JavaParser.VAR - 3)) | (1 << (JavaParser.YIELD - 3)) | (1 << (JavaParser.RECORD - 3)) | (1 << (JavaParser.SEALED - 3)) | (1 << (JavaParser.PERMITS - 3)))) != 0) or ((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & ((1 << (JavaParser.DECIMAL_LITERAL - 67)) | (1 << (JavaParser.HEX_LITERAL - 67)) | (1 << (JavaParser.OCT_LITERAL - 67)) | (1 << (JavaParser.BINARY_LITERAL - 67)) | (1 << (JavaParser.FLOAT_LITERAL - 67)) | (1 << (JavaParser.HEX_FLOAT_LITERAL - 67)) | (1 << (JavaParser.BOOL_LITERAL - 67)) | (1 << (JavaParser.CHAR_LITERAL - 67)) | (1 << (JavaParser.STRING_LITERAL - 67)) | (1 << (JavaParser.TEXT_BLOCK - 67)) | (1 << (JavaParser.NULL_LITERAL - 67)) | (1 << (JavaParser.LPAREN - 67)) | (1 << (JavaParser.LT - 67)) | (1 << (JavaParser.BANG - 67)) | (1 << (JavaParser.TILDE - 67)) | (1 << (JavaParser.INC - 67)) | (1 << (JavaParser.DEC - 67)) | (1 << (JavaParser.ADD - 67)) | (1 << (JavaParser.SUB - 67)) | (1 << (JavaParser.AT - 67)) | (1 << (JavaParser.IDENTIFIER - 67)))) != 0):
+                if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & 9223127275610966053) != 0) or ((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & 2377900732130004991) != 0):
                     self.state = 1157
                     self.expression(0)
 
@@ -8042,7 +8047,7 @@ class JavaParser ( Parser ):
                 self.state = 1167
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & ((1 << (JavaParser.MODULE - 51)) | (1 << (JavaParser.OPEN - 51)) | (1 << (JavaParser.REQUIRES - 51)) | (1 << (JavaParser.EXPORTS - 51)) | (1 << (JavaParser.OPENS - 51)) | (1 << (JavaParser.TO - 51)) | (1 << (JavaParser.USES - 51)) | (1 << (JavaParser.PROVIDES - 51)) | (1 << (JavaParser.WITH - 51)) | (1 << (JavaParser.TRANSITIVE - 51)) | (1 << (JavaParser.VAR - 51)) | (1 << (JavaParser.YIELD - 51)) | (1 << (JavaParser.RECORD - 51)) | (1 << (JavaParser.SEALED - 51)) | (1 << (JavaParser.PERMITS - 51)))) != 0) or _la==JavaParser.IDENTIFIER:
+                if ((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & 32767) != 0) or _la==128:
                     self.state = 1166
                     self.identifier()
 
@@ -8058,7 +8063,7 @@ class JavaParser ( Parser ):
                 self.state = 1172
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & ((1 << (JavaParser.MODULE - 51)) | (1 << (JavaParser.OPEN - 51)) | (1 << (JavaParser.REQUIRES - 51)) | (1 << (JavaParser.EXPORTS - 51)) | (1 << (JavaParser.OPENS - 51)) | (1 << (JavaParser.TO - 51)) | (1 << (JavaParser.USES - 51)) | (1 << (JavaParser.PROVIDES - 51)) | (1 << (JavaParser.WITH - 51)) | (1 << (JavaParser.TRANSITIVE - 51)) | (1 << (JavaParser.VAR - 51)) | (1 << (JavaParser.YIELD - 51)) | (1 << (JavaParser.RECORD - 51)) | (1 << (JavaParser.SEALED - 51)) | (1 << (JavaParser.PERMITS - 51)))) != 0) or _la==JavaParser.IDENTIFIER:
+                if ((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & 32767) != 0) or _la==128:
                     self.state = 1171
                     self.identifier()
 
@@ -8258,7 +8263,7 @@ class JavaParser ( Parser ):
             self.state = 1211
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==JavaParser.BITOR:
+            while _la==107:
                 self.state = 1207
                 self.match(JavaParser.BITOR)
                 self.state = 1208
@@ -8371,7 +8376,7 @@ class JavaParser ( Parser ):
             self.state = 1220
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.SEMI:
+            if _la==84:
                 self.state = 1219
                 self.match(JavaParser.SEMI)
 
@@ -8617,7 +8622,7 @@ class JavaParser ( Parser ):
                 self.state = 1254 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==JavaParser.CASE or _la==JavaParser.DEFAULT):
+                if not (_la==6 or _la==12):
                     break
 
             self.state = 1257 
@@ -8629,7 +8634,7 @@ class JavaParser ( Parser ):
                 self.state = 1259 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & ((1 << (JavaParser.ABSTRACT - 1)) | (1 << (JavaParser.ASSERT - 1)) | (1 << (JavaParser.BOOLEAN - 1)) | (1 << (JavaParser.BREAK - 1)) | (1 << (JavaParser.BYTE - 1)) | (1 << (JavaParser.CHAR - 1)) | (1 << (JavaParser.CLASS - 1)) | (1 << (JavaParser.CONTINUE - 1)) | (1 << (JavaParser.DO - 1)) | (1 << (JavaParser.DOUBLE - 1)) | (1 << (JavaParser.FINAL - 1)) | (1 << (JavaParser.FLOAT - 1)) | (1 << (JavaParser.FOR - 1)) | (1 << (JavaParser.IF - 1)) | (1 << (JavaParser.INT - 1)) | (1 << (JavaParser.INTERFACE - 1)) | (1 << (JavaParser.LONG - 1)) | (1 << (JavaParser.NEW - 1)) | (1 << (JavaParser.PRIVATE - 1)) | (1 << (JavaParser.PROTECTED - 1)) | (1 << (JavaParser.PUBLIC - 1)) | (1 << (JavaParser.RETURN - 1)) | (1 << (JavaParser.SHORT - 1)) | (1 << (JavaParser.STATIC - 1)) | (1 << (JavaParser.STRICTFP - 1)) | (1 << (JavaParser.SUPER - 1)) | (1 << (JavaParser.SWITCH - 1)) | (1 << (JavaParser.SYNCHRONIZED - 1)) | (1 << (JavaParser.THIS - 1)) | (1 << (JavaParser.THROW - 1)) | (1 << (JavaParser.TRY - 1)) | (1 << (JavaParser.VOID - 1)) | (1 << (JavaParser.WHILE - 1)) | (1 << (JavaParser.MODULE - 1)) | (1 << (JavaParser.OPEN - 1)) | (1 << (JavaParser.REQUIRES - 1)) | (1 << (JavaParser.EXPORTS - 1)) | (1 << (JavaParser.OPENS - 1)) | (1 << (JavaParser.TO - 1)) | (1 << (JavaParser.USES - 1)) | (1 << (JavaParser.PROVIDES - 1)) | (1 << (JavaParser.WITH - 1)) | (1 << (JavaParser.TRANSITIVE - 1)) | (1 << (JavaParser.VAR - 1)) | (1 << (JavaParser.YIELD - 1)) | (1 << (JavaParser.RECORD - 1)) | (1 << (JavaParser.SEALED - 1)))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (JavaParser.PERMITS - 65)) | (1 << (JavaParser.NON_SEALED - 65)) | (1 << (JavaParser.DECIMAL_LITERAL - 65)) | (1 << (JavaParser.HEX_LITERAL - 65)) | (1 << (JavaParser.OCT_LITERAL - 65)) | (1 << (JavaParser.BINARY_LITERAL - 65)) | (1 << (JavaParser.FLOAT_LITERAL - 65)) | (1 << (JavaParser.HEX_FLOAT_LITERAL - 65)) | (1 << (JavaParser.BOOL_LITERAL - 65)) | (1 << (JavaParser.CHAR_LITERAL - 65)) | (1 << (JavaParser.STRING_LITERAL - 65)) | (1 << (JavaParser.TEXT_BLOCK - 65)) | (1 << (JavaParser.NULL_LITERAL - 65)) | (1 << (JavaParser.LPAREN - 65)) | (1 << (JavaParser.LBRACE - 65)) | (1 << (JavaParser.SEMI - 65)) | (1 << (JavaParser.LT - 65)) | (1 << (JavaParser.BANG - 65)) | (1 << (JavaParser.TILDE - 65)) | (1 << (JavaParser.INC - 65)) | (1 << (JavaParser.DEC - 65)) | (1 << (JavaParser.ADD - 65)) | (1 << (JavaParser.SUB - 65)) | (1 << (JavaParser.AT - 65)) | (1 << (JavaParser.IDENTIFIER - 65)))) != 0)):
+                if not (((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & -334254282492513) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & -8935141145188974593) != 0)):
                     break
 
         except RecognitionException as re:
@@ -8697,7 +8702,7 @@ class JavaParser ( Parser ):
             self.state = 1272
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.CASE]:
+            if token in [6]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1261
                 self.match(JavaParser.CASE)
@@ -8725,7 +8730,7 @@ class JavaParser ( Parser ):
                 self.state = 1269
                 self.match(JavaParser.COLON)
                 pass
-            elif token in [JavaParser.DEFAULT]:
+            elif token in [12]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1270
                 self.match(JavaParser.DEFAULT)
@@ -8808,7 +8813,7 @@ class JavaParser ( Parser ):
                 self.state = 1276
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & ((1 << (JavaParser.BOOLEAN - 3)) | (1 << (JavaParser.BYTE - 3)) | (1 << (JavaParser.CHAR - 3)) | (1 << (JavaParser.DOUBLE - 3)) | (1 << (JavaParser.FINAL - 3)) | (1 << (JavaParser.FLOAT - 3)) | (1 << (JavaParser.INT - 3)) | (1 << (JavaParser.LONG - 3)) | (1 << (JavaParser.NEW - 3)) | (1 << (JavaParser.SHORT - 3)) | (1 << (JavaParser.SUPER - 3)) | (1 << (JavaParser.SWITCH - 3)) | (1 << (JavaParser.THIS - 3)) | (1 << (JavaParser.VOID - 3)) | (1 << (JavaParser.MODULE - 3)) | (1 << (JavaParser.OPEN - 3)) | (1 << (JavaParser.REQUIRES - 3)) | (1 << (JavaParser.EXPORTS - 3)) | (1 << (JavaParser.OPENS - 3)) | (1 << (JavaParser.TO - 3)) | (1 << (JavaParser.USES - 3)) | (1 << (JavaParser.PROVIDES - 3)) | (1 << (JavaParser.WITH - 3)) | (1 << (JavaParser.TRANSITIVE - 3)) | (1 << (JavaParser.VAR - 3)) | (1 << (JavaParser.YIELD - 3)) | (1 << (JavaParser.RECORD - 3)) | (1 << (JavaParser.SEALED - 3)) | (1 << (JavaParser.PERMITS - 3)))) != 0) or ((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & ((1 << (JavaParser.DECIMAL_LITERAL - 67)) | (1 << (JavaParser.HEX_LITERAL - 67)) | (1 << (JavaParser.OCT_LITERAL - 67)) | (1 << (JavaParser.BINARY_LITERAL - 67)) | (1 << (JavaParser.FLOAT_LITERAL - 67)) | (1 << (JavaParser.HEX_FLOAT_LITERAL - 67)) | (1 << (JavaParser.BOOL_LITERAL - 67)) | (1 << (JavaParser.CHAR_LITERAL - 67)) | (1 << (JavaParser.STRING_LITERAL - 67)) | (1 << (JavaParser.TEXT_BLOCK - 67)) | (1 << (JavaParser.NULL_LITERAL - 67)) | (1 << (JavaParser.LPAREN - 67)) | (1 << (JavaParser.LT - 67)) | (1 << (JavaParser.BANG - 67)) | (1 << (JavaParser.TILDE - 67)) | (1 << (JavaParser.INC - 67)) | (1 << (JavaParser.DEC - 67)) | (1 << (JavaParser.ADD - 67)) | (1 << (JavaParser.SUB - 67)) | (1 << (JavaParser.AT - 67)) | (1 << (JavaParser.IDENTIFIER - 67)))) != 0):
+                if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & 9223127275610998821) != 0) or ((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & 2377900732130004991) != 0):
                     self.state = 1275
                     self.forInit()
 
@@ -8818,7 +8823,7 @@ class JavaParser ( Parser ):
                 self.state = 1280
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & ((1 << (JavaParser.BOOLEAN - 3)) | (1 << (JavaParser.BYTE - 3)) | (1 << (JavaParser.CHAR - 3)) | (1 << (JavaParser.DOUBLE - 3)) | (1 << (JavaParser.FLOAT - 3)) | (1 << (JavaParser.INT - 3)) | (1 << (JavaParser.LONG - 3)) | (1 << (JavaParser.NEW - 3)) | (1 << (JavaParser.SHORT - 3)) | (1 << (JavaParser.SUPER - 3)) | (1 << (JavaParser.SWITCH - 3)) | (1 << (JavaParser.THIS - 3)) | (1 << (JavaParser.VOID - 3)) | (1 << (JavaParser.MODULE - 3)) | (1 << (JavaParser.OPEN - 3)) | (1 << (JavaParser.REQUIRES - 3)) | (1 << (JavaParser.EXPORTS - 3)) | (1 << (JavaParser.OPENS - 3)) | (1 << (JavaParser.TO - 3)) | (1 << (JavaParser.USES - 3)) | (1 << (JavaParser.PROVIDES - 3)) | (1 << (JavaParser.WITH - 3)) | (1 << (JavaParser.TRANSITIVE - 3)) | (1 << (JavaParser.VAR - 3)) | (1 << (JavaParser.YIELD - 3)) | (1 << (JavaParser.RECORD - 3)) | (1 << (JavaParser.SEALED - 3)) | (1 << (JavaParser.PERMITS - 3)))) != 0) or ((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & ((1 << (JavaParser.DECIMAL_LITERAL - 67)) | (1 << (JavaParser.HEX_LITERAL - 67)) | (1 << (JavaParser.OCT_LITERAL - 67)) | (1 << (JavaParser.BINARY_LITERAL - 67)) | (1 << (JavaParser.FLOAT_LITERAL - 67)) | (1 << (JavaParser.HEX_FLOAT_LITERAL - 67)) | (1 << (JavaParser.BOOL_LITERAL - 67)) | (1 << (JavaParser.CHAR_LITERAL - 67)) | (1 << (JavaParser.STRING_LITERAL - 67)) | (1 << (JavaParser.TEXT_BLOCK - 67)) | (1 << (JavaParser.NULL_LITERAL - 67)) | (1 << (JavaParser.LPAREN - 67)) | (1 << (JavaParser.LT - 67)) | (1 << (JavaParser.BANG - 67)) | (1 << (JavaParser.TILDE - 67)) | (1 << (JavaParser.INC - 67)) | (1 << (JavaParser.DEC - 67)) | (1 << (JavaParser.ADD - 67)) | (1 << (JavaParser.SUB - 67)) | (1 << (JavaParser.AT - 67)) | (1 << (JavaParser.IDENTIFIER - 67)))) != 0):
+                if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & 9223127275610966053) != 0) or ((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & 2377900732130004991) != 0):
                     self.state = 1279
                     self.expression(0)
 
@@ -8828,7 +8833,7 @@ class JavaParser ( Parser ):
                 self.state = 1284
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & ((1 << (JavaParser.BOOLEAN - 3)) | (1 << (JavaParser.BYTE - 3)) | (1 << (JavaParser.CHAR - 3)) | (1 << (JavaParser.DOUBLE - 3)) | (1 << (JavaParser.FLOAT - 3)) | (1 << (JavaParser.INT - 3)) | (1 << (JavaParser.LONG - 3)) | (1 << (JavaParser.NEW - 3)) | (1 << (JavaParser.SHORT - 3)) | (1 << (JavaParser.SUPER - 3)) | (1 << (JavaParser.SWITCH - 3)) | (1 << (JavaParser.THIS - 3)) | (1 << (JavaParser.VOID - 3)) | (1 << (JavaParser.MODULE - 3)) | (1 << (JavaParser.OPEN - 3)) | (1 << (JavaParser.REQUIRES - 3)) | (1 << (JavaParser.EXPORTS - 3)) | (1 << (JavaParser.OPENS - 3)) | (1 << (JavaParser.TO - 3)) | (1 << (JavaParser.USES - 3)) | (1 << (JavaParser.PROVIDES - 3)) | (1 << (JavaParser.WITH - 3)) | (1 << (JavaParser.TRANSITIVE - 3)) | (1 << (JavaParser.VAR - 3)) | (1 << (JavaParser.YIELD - 3)) | (1 << (JavaParser.RECORD - 3)) | (1 << (JavaParser.SEALED - 3)) | (1 << (JavaParser.PERMITS - 3)))) != 0) or ((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & ((1 << (JavaParser.DECIMAL_LITERAL - 67)) | (1 << (JavaParser.HEX_LITERAL - 67)) | (1 << (JavaParser.OCT_LITERAL - 67)) | (1 << (JavaParser.BINARY_LITERAL - 67)) | (1 << (JavaParser.FLOAT_LITERAL - 67)) | (1 << (JavaParser.HEX_FLOAT_LITERAL - 67)) | (1 << (JavaParser.BOOL_LITERAL - 67)) | (1 << (JavaParser.CHAR_LITERAL - 67)) | (1 << (JavaParser.STRING_LITERAL - 67)) | (1 << (JavaParser.TEXT_BLOCK - 67)) | (1 << (JavaParser.NULL_LITERAL - 67)) | (1 << (JavaParser.LPAREN - 67)) | (1 << (JavaParser.LT - 67)) | (1 << (JavaParser.BANG - 67)) | (1 << (JavaParser.TILDE - 67)) | (1 << (JavaParser.INC - 67)) | (1 << (JavaParser.DEC - 67)) | (1 << (JavaParser.ADD - 67)) | (1 << (JavaParser.SUB - 67)) | (1 << (JavaParser.AT - 67)) | (1 << (JavaParser.IDENTIFIER - 67)))) != 0):
+                if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & 9223127275610966053) != 0) or ((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & 2377900732130004991) != 0):
                     self.state = 1283
                     localctx.forUpdate = self.expressionList()
 
@@ -9094,7 +9099,7 @@ class JavaParser ( Parser ):
             self.state = 1315
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==JavaParser.COMMA:
+            while _la==85:
                 self.state = 1311
                 self.match(JavaParser.COMMA)
                 self.state = 1312
@@ -9156,15 +9161,15 @@ class JavaParser ( Parser ):
             self.state = 1321
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.MODULE, JavaParser.OPEN, JavaParser.REQUIRES, JavaParser.EXPORTS, JavaParser.OPENS, JavaParser.TO, JavaParser.USES, JavaParser.PROVIDES, JavaParser.WITH, JavaParser.TRANSITIVE, JavaParser.VAR, JavaParser.YIELD, JavaParser.RECORD, JavaParser.SEALED, JavaParser.PERMITS, JavaParser.IDENTIFIER]:
+            if token in [51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 128]:
                 self.state = 1318
                 self.identifier()
                 pass
-            elif token in [JavaParser.THIS]:
+            elif token in [43]:
                 self.state = 1319
                 self.match(JavaParser.THIS)
                 pass
-            elif token in [JavaParser.SUPER]:
+            elif token in [40]:
                 self.state = 1320
                 self.match(JavaParser.SUPER)
                 pass
@@ -9450,11 +9455,11 @@ class JavaParser ( Parser ):
                 self.state = 1335
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [JavaParser.MODULE, JavaParser.OPEN, JavaParser.REQUIRES, JavaParser.EXPORTS, JavaParser.OPENS, JavaParser.TO, JavaParser.USES, JavaParser.PROVIDES, JavaParser.WITH, JavaParser.TRANSITIVE, JavaParser.VAR, JavaParser.YIELD, JavaParser.RECORD, JavaParser.SEALED, JavaParser.PERMITS, JavaParser.LT, JavaParser.IDENTIFIER]:
+                if token in [51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 89, 128]:
                     self.state = 1331
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==JavaParser.LT:
+                    if _la==89:
                         self.state = 1330
                         self.typeArguments()
 
@@ -9462,7 +9467,7 @@ class JavaParser ( Parser ):
                     self.state = 1333
                     self.identifier()
                     pass
-                elif token in [JavaParser.NEW]:
+                elif token in [31]:
                     self.state = 1334
                     self.match(JavaParser.NEW)
                     pass
@@ -9479,7 +9484,7 @@ class JavaParser ( Parser ):
                 self.state = 1340
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==JavaParser.LT:
+                if _la==89:
                     self.state = 1339
                     self.typeArguments()
 
@@ -9497,7 +9502,7 @@ class JavaParser ( Parser ):
                 self.state = 1345
                 localctx.prefix = self._input.LT(1)
                 _la = self._input.LA(1)
-                if not(((((_la - 90)) & ~0x3f) == 0 and ((1 << (_la - 90)) & ((1 << (JavaParser.BANG - 90)) | (1 << (JavaParser.TILDE - 90)) | (1 << (JavaParser.INC - 90)) | (1 << (JavaParser.DEC - 90)) | (1 << (JavaParser.ADD - 90)) | (1 << (JavaParser.SUB - 90)))) != 0)):
+                if not(((((_la - 90)) & ~0x3f) == 0 and ((1 << (_la - 90)) & 15363) != 0)):
                     localctx.prefix = self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -9525,7 +9530,7 @@ class JavaParser ( Parser ):
                 self.state = 1359
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==JavaParser.BITAND:
+                while _la==106:
                     self.state = 1355
                     self.match(JavaParser.BITAND)
                     self.state = 1356
@@ -9575,7 +9580,7 @@ class JavaParser ( Parser ):
                         self.state = 1371
                         localctx.bop = self._input.LT(1)
                         _la = self._input.LA(1)
-                        if not(((((_la - 104)) & ~0x3f) == 0 and ((1 << (_la - 104)) & ((1 << (JavaParser.MUL - 104)) | (1 << (JavaParser.DIV - 104)) | (1 << (JavaParser.MOD - 104)))) != 0)):
+                        if not(((((_la - 104)) & ~0x3f) == 0 and ((1 << (_la - 104)) & 35) != 0)):
                             localctx.bop = self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
@@ -9594,7 +9599,7 @@ class JavaParser ( Parser ):
                         self.state = 1374
                         localctx.bop = self._input.LT(1)
                         _la = self._input.LA(1)
-                        if not(_la==JavaParser.ADD or _la==JavaParser.SUB):
+                        if not(_la==102 or _la==103):
                             localctx.bop = self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
@@ -9651,7 +9656,7 @@ class JavaParser ( Parser ):
                         self.state = 1388
                         localctx.bop = self._input.LT(1)
                         _la = self._input.LA(1)
-                        if not(((((_la - 88)) & ~0x3f) == 0 and ((1 << (_la - 88)) & ((1 << (JavaParser.GT - 88)) | (1 << (JavaParser.LT - 88)) | (1 << (JavaParser.LE - 88)) | (1 << (JavaParser.GE - 88)))) != 0)):
+                        if not(((((_la - 88)) & ~0x3f) == 0 and ((1 << (_la - 88)) & 387) != 0)):
                             localctx.bop = self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
@@ -9670,7 +9675,7 @@ class JavaParser ( Parser ):
                         self.state = 1391
                         localctx.bop = self._input.LT(1)
                         _la = self._input.LA(1)
-                        if not(_la==JavaParser.EQUAL or _la==JavaParser.NOTEQUAL):
+                        if not(_la==94 or _la==97):
                             localctx.bop = self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
@@ -9771,7 +9776,7 @@ class JavaParser ( Parser ):
                         self.state = 1415
                         localctx.bop = self._input.LT(1)
                         _la = self._input.LA(1)
-                        if not(((((_la - 87)) & ~0x3f) == 0 and ((1 << (_la - 87)) & ((1 << (JavaParser.ASSIGN - 87)) | (1 << (JavaParser.ADD_ASSIGN - 87)) | (1 << (JavaParser.SUB_ASSIGN - 87)) | (1 << (JavaParser.MUL_ASSIGN - 87)) | (1 << (JavaParser.DIV_ASSIGN - 87)) | (1 << (JavaParser.AND_ASSIGN - 87)) | (1 << (JavaParser.OR_ASSIGN - 87)) | (1 << (JavaParser.XOR_ASSIGN - 87)) | (1 << (JavaParser.MOD_ASSIGN - 87)) | (1 << (JavaParser.LSHIFT_ASSIGN - 87)) | (1 << (JavaParser.RSHIFT_ASSIGN - 87)) | (1 << (JavaParser.URSHIFT_ASSIGN - 87)))) != 0)):
+                        if not(((((_la - 87)) & ~0x3f) == 0 and ((1 << (_la - 87)) & 17171480577) != 0)):
                             localctx.bop = self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
@@ -9828,7 +9833,7 @@ class JavaParser ( Parser ):
                             self.state = 1429
                             self._errHandler.sync(self)
                             _la = self._input.LA(1)
-                            if _la==JavaParser.LT:
+                            if _la==89:
                                 self.state = 1428
                                 self.nonWildcardTypeArguments()
 
@@ -9864,7 +9869,7 @@ class JavaParser ( Parser ):
                         self.state = 1440
                         self._errHandler.sync(self)
                         _la = self._input.LA(1)
-                        if _la==JavaParser.LT:
+                        if _la==89:
                             self.state = 1439
                             self.typeArguments()
 
@@ -9883,7 +9888,7 @@ class JavaParser ( Parser ):
                         self.state = 1444
                         localctx.postfix = self._input.LT(1)
                         _la = self._input.LA(1)
-                        if not(_la==JavaParser.INC or _la==JavaParser.DEC):
+                        if not(_la==100 or _la==101):
                             localctx.postfix = self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
@@ -10136,7 +10141,7 @@ class JavaParser ( Parser ):
                 self.state = 1478
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & ((1 << (JavaParser.BOOLEAN - 3)) | (1 << (JavaParser.BYTE - 3)) | (1 << (JavaParser.CHAR - 3)) | (1 << (JavaParser.DOUBLE - 3)) | (1 << (JavaParser.FINAL - 3)) | (1 << (JavaParser.FLOAT - 3)) | (1 << (JavaParser.INT - 3)) | (1 << (JavaParser.LONG - 3)) | (1 << (JavaParser.SHORT - 3)) | (1 << (JavaParser.MODULE - 3)) | (1 << (JavaParser.OPEN - 3)) | (1 << (JavaParser.REQUIRES - 3)) | (1 << (JavaParser.EXPORTS - 3)) | (1 << (JavaParser.OPENS - 3)) | (1 << (JavaParser.TO - 3)) | (1 << (JavaParser.USES - 3)) | (1 << (JavaParser.PROVIDES - 3)) | (1 << (JavaParser.WITH - 3)) | (1 << (JavaParser.TRANSITIVE - 3)) | (1 << (JavaParser.VAR - 3)) | (1 << (JavaParser.YIELD - 3)) | (1 << (JavaParser.RECORD - 3)) | (1 << (JavaParser.SEALED - 3)) | (1 << (JavaParser.PERMITS - 3)))) != 0) or _la==JavaParser.AT or _la==JavaParser.IDENTIFIER:
+                if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & 9223090579141986341) != 0) or _la==123 or _la==128:
                     self.state = 1477
                     self.formalParameterList()
 
@@ -10154,7 +10159,7 @@ class JavaParser ( Parser ):
                 self.state = 1487
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==JavaParser.COMMA:
+                while _la==85:
                     self.state = 1483
                     self.match(JavaParser.COMMA)
                     self.state = 1484
@@ -10174,7 +10179,7 @@ class JavaParser ( Parser ):
                 self.state = 1494
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if ((((_la - 18)) & ~0x3f) == 0 and ((1 << (_la - 18)) & ((1 << (JavaParser.FINAL - 18)) | (1 << (JavaParser.MODULE - 18)) | (1 << (JavaParser.OPEN - 18)) | (1 << (JavaParser.REQUIRES - 18)) | (1 << (JavaParser.EXPORTS - 18)) | (1 << (JavaParser.OPENS - 18)) | (1 << (JavaParser.TO - 18)) | (1 << (JavaParser.USES - 18)) | (1 << (JavaParser.PROVIDES - 18)) | (1 << (JavaParser.WITH - 18)) | (1 << (JavaParser.TRANSITIVE - 18)) | (1 << (JavaParser.VAR - 18)) | (1 << (JavaParser.YIELD - 18)) | (1 << (JavaParser.RECORD - 18)) | (1 << (JavaParser.SEALED - 18)) | (1 << (JavaParser.PERMITS - 18)))) != 0) or _la==JavaParser.AT or _la==JavaParser.IDENTIFIER:
+                if ((((_la - 18)) & ~0x3f) == 0 and ((1 << (_la - 18)) & 281466386776065) != 0) or _la==123 or _la==128:
                     self.state = 1493
                     self.lambdaLVTIList()
 
@@ -10230,12 +10235,12 @@ class JavaParser ( Parser ):
             self.state = 1501
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.BOOLEAN, JavaParser.BYTE, JavaParser.CHAR, JavaParser.DOUBLE, JavaParser.FLOAT, JavaParser.INT, JavaParser.LONG, JavaParser.NEW, JavaParser.SHORT, JavaParser.SUPER, JavaParser.SWITCH, JavaParser.THIS, JavaParser.VOID, JavaParser.MODULE, JavaParser.OPEN, JavaParser.REQUIRES, JavaParser.EXPORTS, JavaParser.OPENS, JavaParser.TO, JavaParser.USES, JavaParser.PROVIDES, JavaParser.WITH, JavaParser.TRANSITIVE, JavaParser.VAR, JavaParser.YIELD, JavaParser.RECORD, JavaParser.SEALED, JavaParser.PERMITS, JavaParser.DECIMAL_LITERAL, JavaParser.HEX_LITERAL, JavaParser.OCT_LITERAL, JavaParser.BINARY_LITERAL, JavaParser.FLOAT_LITERAL, JavaParser.HEX_FLOAT_LITERAL, JavaParser.BOOL_LITERAL, JavaParser.CHAR_LITERAL, JavaParser.STRING_LITERAL, JavaParser.TEXT_BLOCK, JavaParser.NULL_LITERAL, JavaParser.LPAREN, JavaParser.LT, JavaParser.BANG, JavaParser.TILDE, JavaParser.INC, JavaParser.DEC, JavaParser.ADD, JavaParser.SUB, JavaParser.AT, JavaParser.IDENTIFIER]:
+            if token in [3, 5, 8, 14, 20, 27, 29, 31, 37, 40, 41, 43, 48, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 89, 90, 91, 100, 101, 102, 103, 123, 128]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1499
                 self.expression(0)
                 pass
-            elif token in [JavaParser.LBRACE]:
+            elif token in [80]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1500
                 self.block()
@@ -10378,11 +10383,11 @@ class JavaParser ( Parser ):
                 self.state = 1519
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [JavaParser.SUPER, JavaParser.MODULE, JavaParser.OPEN, JavaParser.REQUIRES, JavaParser.EXPORTS, JavaParser.OPENS, JavaParser.TO, JavaParser.USES, JavaParser.PROVIDES, JavaParser.WITH, JavaParser.TRANSITIVE, JavaParser.VAR, JavaParser.YIELD, JavaParser.RECORD, JavaParser.SEALED, JavaParser.PERMITS, JavaParser.IDENTIFIER]:
+                if token in [40, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 128]:
                     self.state = 1516
                     self.explicitGenericInvocationSuffix()
                     pass
-                elif token in [JavaParser.THIS]:
+                elif token in [43]:
                     self.state = 1517
                     self.match(JavaParser.THIS)
                     self.state = 1518
@@ -10460,7 +10465,7 @@ class JavaParser ( Parser ):
             self.state = 1529
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==JavaParser.CASE or _la==JavaParser.DEFAULT:
+            while _la==6 or _la==12:
                 self.state = 1526
                 self.switchLabeledRule()
                 self.state = 1531
@@ -10535,7 +10540,7 @@ class JavaParser ( Parser ):
             self.state = 1545
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.CASE]:
+            if token in [6]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1534
                 self.match(JavaParser.CASE)
@@ -10560,7 +10565,7 @@ class JavaParser ( Parser ):
 
                 self.state = 1540
                 _la = self._input.LA(1)
-                if not(_la==JavaParser.COLON or _la==JavaParser.ARROW):
+                if not(_la==93 or _la==121):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -10568,13 +10573,13 @@ class JavaParser ( Parser ):
                 self.state = 1541
                 self.switchRuleOutcome()
                 pass
-            elif token in [JavaParser.DEFAULT]:
+            elif token in [12]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1542
                 self.match(JavaParser.DEFAULT)
                 self.state = 1543
                 _la = self._input.LA(1)
-                if not(_la==JavaParser.COLON or _la==JavaParser.ARROW):
+                if not(_la==93 or _la==121):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -10671,7 +10676,7 @@ class JavaParser ( Parser ):
             self.state = 1573
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.LPAREN]:
+            if token in [78]:
                 self.state = 1548
                 self.match(JavaParser.LPAREN)
                 self.state = 1549
@@ -10679,7 +10684,7 @@ class JavaParser ( Parser ):
                 self.state = 1550
                 self.match(JavaParser.RPAREN)
                 pass
-            elif token in [JavaParser.BOOLEAN, JavaParser.BYTE, JavaParser.CHAR, JavaParser.DOUBLE, JavaParser.FINAL, JavaParser.FLOAT, JavaParser.INT, JavaParser.LONG, JavaParser.SHORT, JavaParser.MODULE, JavaParser.OPEN, JavaParser.REQUIRES, JavaParser.EXPORTS, JavaParser.OPENS, JavaParser.TO, JavaParser.USES, JavaParser.PROVIDES, JavaParser.WITH, JavaParser.TRANSITIVE, JavaParser.VAR, JavaParser.YIELD, JavaParser.RECORD, JavaParser.SEALED, JavaParser.PERMITS, JavaParser.AT, JavaParser.IDENTIFIER]:
+            elif token in [3, 5, 8, 14, 18, 20, 27, 29, 37, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 123, 128]:
                 self.state = 1555
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,184,self._ctx)
@@ -10807,7 +10812,7 @@ class JavaParser ( Parser ):
                 self.state = 1587
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while ((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & ((1 << (JavaParser.ABSTRACT - 1)) | (1 << (JavaParser.ASSERT - 1)) | (1 << (JavaParser.BOOLEAN - 1)) | (1 << (JavaParser.BREAK - 1)) | (1 << (JavaParser.BYTE - 1)) | (1 << (JavaParser.CHAR - 1)) | (1 << (JavaParser.CLASS - 1)) | (1 << (JavaParser.CONTINUE - 1)) | (1 << (JavaParser.DO - 1)) | (1 << (JavaParser.DOUBLE - 1)) | (1 << (JavaParser.FINAL - 1)) | (1 << (JavaParser.FLOAT - 1)) | (1 << (JavaParser.FOR - 1)) | (1 << (JavaParser.IF - 1)) | (1 << (JavaParser.INT - 1)) | (1 << (JavaParser.INTERFACE - 1)) | (1 << (JavaParser.LONG - 1)) | (1 << (JavaParser.NEW - 1)) | (1 << (JavaParser.PRIVATE - 1)) | (1 << (JavaParser.PROTECTED - 1)) | (1 << (JavaParser.PUBLIC - 1)) | (1 << (JavaParser.RETURN - 1)) | (1 << (JavaParser.SHORT - 1)) | (1 << (JavaParser.STATIC - 1)) | (1 << (JavaParser.STRICTFP - 1)) | (1 << (JavaParser.SUPER - 1)) | (1 << (JavaParser.SWITCH - 1)) | (1 << (JavaParser.SYNCHRONIZED - 1)) | (1 << (JavaParser.THIS - 1)) | (1 << (JavaParser.THROW - 1)) | (1 << (JavaParser.TRY - 1)) | (1 << (JavaParser.VOID - 1)) | (1 << (JavaParser.WHILE - 1)) | (1 << (JavaParser.MODULE - 1)) | (1 << (JavaParser.OPEN - 1)) | (1 << (JavaParser.REQUIRES - 1)) | (1 << (JavaParser.EXPORTS - 1)) | (1 << (JavaParser.OPENS - 1)) | (1 << (JavaParser.TO - 1)) | (1 << (JavaParser.USES - 1)) | (1 << (JavaParser.PROVIDES - 1)) | (1 << (JavaParser.WITH - 1)) | (1 << (JavaParser.TRANSITIVE - 1)) | (1 << (JavaParser.VAR - 1)) | (1 << (JavaParser.YIELD - 1)) | (1 << (JavaParser.RECORD - 1)) | (1 << (JavaParser.SEALED - 1)))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (JavaParser.PERMITS - 65)) | (1 << (JavaParser.NON_SEALED - 65)) | (1 << (JavaParser.DECIMAL_LITERAL - 65)) | (1 << (JavaParser.HEX_LITERAL - 65)) | (1 << (JavaParser.OCT_LITERAL - 65)) | (1 << (JavaParser.BINARY_LITERAL - 65)) | (1 << (JavaParser.FLOAT_LITERAL - 65)) | (1 << (JavaParser.HEX_FLOAT_LITERAL - 65)) | (1 << (JavaParser.BOOL_LITERAL - 65)) | (1 << (JavaParser.CHAR_LITERAL - 65)) | (1 << (JavaParser.STRING_LITERAL - 65)) | (1 << (JavaParser.TEXT_BLOCK - 65)) | (1 << (JavaParser.NULL_LITERAL - 65)) | (1 << (JavaParser.LPAREN - 65)) | (1 << (JavaParser.LBRACE - 65)) | (1 << (JavaParser.SEMI - 65)) | (1 << (JavaParser.LT - 65)) | (1 << (JavaParser.BANG - 65)) | (1 << (JavaParser.TILDE - 65)) | (1 << (JavaParser.INC - 65)) | (1 << (JavaParser.DEC - 65)) | (1 << (JavaParser.ADD - 65)) | (1 << (JavaParser.SUB - 65)) | (1 << (JavaParser.AT - 65)) | (1 << (JavaParser.IDENTIFIER - 65)))) != 0):
+                while ((((_la - 1)) & ~0x3f) == 0 and ((1 << (_la - 1)) & -334254282492513) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & -8935141145188974593) != 0):
                     self.state = 1584
                     self.blockStatement()
                     self.state = 1589
@@ -10902,7 +10907,7 @@ class JavaParser ( Parser ):
             self.state = 1605
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.LT:
+            if _la==89:
                 self.state = 1604
                 self.typeArguments()
 
@@ -10967,7 +10972,7 @@ class JavaParser ( Parser ):
                 self.state = 1608
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==JavaParser.LT:
+                if _la==89:
                     self.state = 1607
                     self.nonWildcardTypeArguments()
 
@@ -11050,14 +11055,14 @@ class JavaParser ( Parser ):
             self.state = 1633
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.MODULE, JavaParser.OPEN, JavaParser.REQUIRES, JavaParser.EXPORTS, JavaParser.OPENS, JavaParser.TO, JavaParser.USES, JavaParser.PROVIDES, JavaParser.WITH, JavaParser.TRANSITIVE, JavaParser.VAR, JavaParser.YIELD, JavaParser.RECORD, JavaParser.SEALED, JavaParser.PERMITS, JavaParser.IDENTIFIER]:
+            if token in [51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 128]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1618
                 self.identifier()
                 self.state = 1620
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==JavaParser.LT:
+                if _la==89:
                     self.state = 1619
                     self.typeArgumentsOrDiamond()
 
@@ -11065,7 +11070,7 @@ class JavaParser ( Parser ):
                 self.state = 1629
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==JavaParser.DOT:
+                while _la==86:
                     self.state = 1622
                     self.match(JavaParser.DOT)
                     self.state = 1623
@@ -11073,7 +11078,7 @@ class JavaParser ( Parser ):
                     self.state = 1625
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if _la==JavaParser.LT:
+                    if _la==89:
                         self.state = 1624
                         self.typeArgumentsOrDiamond()
 
@@ -11083,7 +11088,7 @@ class JavaParser ( Parser ):
                     _la = self._input.LA(1)
 
                 pass
-            elif token in [JavaParser.BOOLEAN, JavaParser.BYTE, JavaParser.CHAR, JavaParser.DOUBLE, JavaParser.FLOAT, JavaParser.INT, JavaParser.LONG, JavaParser.SHORT]:
+            elif token in [3, 5, 8, 14, 20, 27, 29, 37]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1632
                 self.primitiveType()
@@ -11145,7 +11150,7 @@ class JavaParser ( Parser ):
             self.state = 1637
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==JavaParser.LT:
+            if _la==89:
                 self.state = 1636
                 self.nonWildcardTypeArgumentsOrDiamond()
 
@@ -11227,7 +11232,7 @@ class JavaParser ( Parser ):
                     self.state = 1645 
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if not (_la==JavaParser.LBRACK):
+                    if not (_la==82):
                         break
 
                 self.state = 1647
@@ -11605,7 +11610,7 @@ class JavaParser ( Parser ):
             self.state = 1691
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==JavaParser.COMMA:
+            while _la==85:
                 self.state = 1687
                 self.match(JavaParser.COMMA)
                 self.state = 1688
@@ -11692,11 +11697,11 @@ class JavaParser ( Parser ):
             self.state = 1702
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.MODULE, JavaParser.OPEN, JavaParser.REQUIRES, JavaParser.EXPORTS, JavaParser.OPENS, JavaParser.TO, JavaParser.USES, JavaParser.PROVIDES, JavaParser.WITH, JavaParser.TRANSITIVE, JavaParser.VAR, JavaParser.YIELD, JavaParser.RECORD, JavaParser.SEALED, JavaParser.PERMITS, JavaParser.IDENTIFIER]:
+            if token in [51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 128]:
                 self.state = 1700
                 self.classOrInterfaceType()
                 pass
-            elif token in [JavaParser.BOOLEAN, JavaParser.BYTE, JavaParser.CHAR, JavaParser.DOUBLE, JavaParser.FLOAT, JavaParser.INT, JavaParser.LONG, JavaParser.SHORT]:
+            elif token in [3, 5, 8, 14, 20, 27, 29, 37]:
                 self.state = 1701
                 self.primitiveType()
                 pass
@@ -11711,7 +11716,7 @@ class JavaParser ( Parser ):
                     self.state = 1707
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    while ((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & ((1 << (JavaParser.MODULE - 51)) | (1 << (JavaParser.OPEN - 51)) | (1 << (JavaParser.REQUIRES - 51)) | (1 << (JavaParser.EXPORTS - 51)) | (1 << (JavaParser.OPENS - 51)) | (1 << (JavaParser.TO - 51)) | (1 << (JavaParser.USES - 51)) | (1 << (JavaParser.PROVIDES - 51)) | (1 << (JavaParser.WITH - 51)) | (1 << (JavaParser.TRANSITIVE - 51)) | (1 << (JavaParser.VAR - 51)) | (1 << (JavaParser.YIELD - 51)) | (1 << (JavaParser.RECORD - 51)) | (1 << (JavaParser.SEALED - 51)) | (1 << (JavaParser.PERMITS - 51)))) != 0) or _la==JavaParser.AT or _la==JavaParser.IDENTIFIER:
+                    while ((((_la - 51)) & ~0x3f) == 0 and ((1 << (_la - 51)) & 32767) != 0) or _la==123 or _la==128:
                         self.state = 1704
                         self.annotation()
                         self.state = 1709
@@ -11789,7 +11794,7 @@ class JavaParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 1717
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << JavaParser.BOOLEAN) | (1 << JavaParser.BYTE) | (1 << JavaParser.CHAR) | (1 << JavaParser.DOUBLE) | (1 << JavaParser.FLOAT) | (1 << JavaParser.INT) | (1 << JavaParser.LONG) | (1 << JavaParser.SHORT))) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 138111107368) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -11857,7 +11862,7 @@ class JavaParser ( Parser ):
             self.state = 1725
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==JavaParser.COMMA:
+            while _la==85:
                 self.state = 1721
                 self.match(JavaParser.COMMA)
                 self.state = 1722
@@ -11922,19 +11927,19 @@ class JavaParser ( Parser ):
             self.state = 1739
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.LPAREN]:
+            if token in [78]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1730
                 self.arguments()
                 pass
-            elif token in [JavaParser.DOT]:
+            elif token in [86]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1731
                 self.match(JavaParser.DOT)
                 self.state = 1733
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==JavaParser.LT:
+                if _la==89:
                     self.state = 1732
                     self.typeArguments()
 
@@ -12006,14 +12011,14 @@ class JavaParser ( Parser ):
             self.state = 1746
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [JavaParser.SUPER]:
+            if token in [40]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 1741
                 self.match(JavaParser.SUPER)
                 self.state = 1742
                 self.superSuffix()
                 pass
-            elif token in [JavaParser.MODULE, JavaParser.OPEN, JavaParser.REQUIRES, JavaParser.EXPORTS, JavaParser.OPENS, JavaParser.TO, JavaParser.USES, JavaParser.PROVIDES, JavaParser.WITH, JavaParser.TRANSITIVE, JavaParser.VAR, JavaParser.YIELD, JavaParser.RECORD, JavaParser.SEALED, JavaParser.PERMITS, JavaParser.IDENTIFIER]:
+            elif token in [51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 128]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 1743
                 self.identifier()
@@ -12075,7 +12080,7 @@ class JavaParser ( Parser ):
             self.state = 1750
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & ((1 << (JavaParser.BOOLEAN - 3)) | (1 << (JavaParser.BYTE - 3)) | (1 << (JavaParser.CHAR - 3)) | (1 << (JavaParser.DOUBLE - 3)) | (1 << (JavaParser.FLOAT - 3)) | (1 << (JavaParser.INT - 3)) | (1 << (JavaParser.LONG - 3)) | (1 << (JavaParser.NEW - 3)) | (1 << (JavaParser.SHORT - 3)) | (1 << (JavaParser.SUPER - 3)) | (1 << (JavaParser.SWITCH - 3)) | (1 << (JavaParser.THIS - 3)) | (1 << (JavaParser.VOID - 3)) | (1 << (JavaParser.MODULE - 3)) | (1 << (JavaParser.OPEN - 3)) | (1 << (JavaParser.REQUIRES - 3)) | (1 << (JavaParser.EXPORTS - 3)) | (1 << (JavaParser.OPENS - 3)) | (1 << (JavaParser.TO - 3)) | (1 << (JavaParser.USES - 3)) | (1 << (JavaParser.PROVIDES - 3)) | (1 << (JavaParser.WITH - 3)) | (1 << (JavaParser.TRANSITIVE - 3)) | (1 << (JavaParser.VAR - 3)) | (1 << (JavaParser.YIELD - 3)) | (1 << (JavaParser.RECORD - 3)) | (1 << (JavaParser.SEALED - 3)) | (1 << (JavaParser.PERMITS - 3)))) != 0) or ((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & ((1 << (JavaParser.DECIMAL_LITERAL - 67)) | (1 << (JavaParser.HEX_LITERAL - 67)) | (1 << (JavaParser.OCT_LITERAL - 67)) | (1 << (JavaParser.BINARY_LITERAL - 67)) | (1 << (JavaParser.FLOAT_LITERAL - 67)) | (1 << (JavaParser.HEX_FLOAT_LITERAL - 67)) | (1 << (JavaParser.BOOL_LITERAL - 67)) | (1 << (JavaParser.CHAR_LITERAL - 67)) | (1 << (JavaParser.STRING_LITERAL - 67)) | (1 << (JavaParser.TEXT_BLOCK - 67)) | (1 << (JavaParser.NULL_LITERAL - 67)) | (1 << (JavaParser.LPAREN - 67)) | (1 << (JavaParser.LT - 67)) | (1 << (JavaParser.BANG - 67)) | (1 << (JavaParser.TILDE - 67)) | (1 << (JavaParser.INC - 67)) | (1 << (JavaParser.DEC - 67)) | (1 << (JavaParser.ADD - 67)) | (1 << (JavaParser.SUB - 67)) | (1 << (JavaParser.AT - 67)) | (1 << (JavaParser.IDENTIFIER - 67)))) != 0):
+            if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & 9223127275610966053) != 0) or ((((_la - 67)) & ~0x3f) == 0 and ((1 << (_la - 67)) & 2377900732130004991) != 0):
                 self.state = 1749
                 self.expressionList()
 
