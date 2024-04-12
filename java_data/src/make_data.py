@@ -27,6 +27,8 @@ class ExtractFunc(JavaParserListener):
                                   ctx.stop.column + len(ctx.stop.text))
 
     def enterMethodDeclaration(self, ctx):
+        if ctx.typeTypeOrVoid() == "void":
+            return
         self.func_name = ctx.identifier().getText()
         body = ctx.methodBody().block()
         if not body:
@@ -132,14 +134,27 @@ def modified_mask_function(java_code: str) -> Optional[ASample]:
                    func_body=func_body)
 
 
-def make_dataset(java_file_urls_storage_url: str, checkpoint: str="") -> pd.DataFrame:
+def make_dataset(java_file_urls_storage_url: str, 
+                 repos_directory: str = "/var/data/lvdthieu/repos/maven_projects/", 
+                 checkpoint: str="") -> pd.DataFrame:
+    """Make dataset
+
+    Args:
+        java_file_urls_storage_url (str): url to file that contain java file urls
+        repos_directory (str): path to diretory of repositories. Default to "/var/data/lvdthieu/repos/maven_projects/"
+        checkpoint (str, optional): where to store checkpoint of process. Defaults to "".
+
+    Returns:
+        pd.DataFrame: Dataset
+    """
     rows = []
     with open(java_file_urls_storage_url, "r") as f:
-        java_file_urls = list(map(lambda url: url.strip(), f.readlines()))
+        java_file_urls = list(map(lambda url: url.replace(repos_directory, ""), f.read().split('\n')))
     
     for java_file_url in tqdm(java_file_urls):
-        project_name = java_file_url[37:].split('/')[0]
-        relative_path = '/'.join(java_file_url[37:].split('/')[1:])
+
+        project_name = java_file_url.split('/')[0]
+        relative_path = '/'.join(java_file_url.split('/')[1:])
         with codecs.open(java_file_url, "r", encoding="utf-8", errors="ignore") as f:
             try:
                 java_code = f.read()

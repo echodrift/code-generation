@@ -49,17 +49,17 @@ class ExtractSignatureAndVar(JavaParserListener):
         return self.class_comp
 
 
-def extract_signature_and_var(java_code: str) -> str:
+def extract_signature_and_var(java_code: str) -> Optional[str]:
     """Extract signature and variables in a class
 
     Args:
         java_code (str): Java code
 
     Returns:
-        str: Signature and variables 
+        Optional[str]: Signature and variables 
     """
     if not java_code:
-        return ""
+        return None
     try:
         input_stream = InputStream(java_code)
         lexer = JavaLexer(input_stream)
@@ -74,16 +74,17 @@ def extract_signature_and_var(java_code: str) -> str:
         class_comps = listener.get_class_comp()
         return json.dumps(class_comps)
     except:
-        return ""
+        return None
 
-def get_parent_class(row, storage_url: str):
-    """Get parent class in a class
+def get_parent_class(row: pd.Series, storage_url: str) -> Optional[str]:
+    """Return parent class code
+
     Args:
-        row (pd.DataFrame): Dataset
-        storage_url (str): Storage url  
+        row (pd.Series): 
+        storage_url (str): Parsed project storage
 
     Returns:
-        str: Parent class
+        Optional[str]: If class in row have parent class return it or None in contrast
     """
     parsed_project_path = "{}/parsed_{}.json".format(storage_url, row["proj_name"])
     with open(parsed_project_path, "r") as f:
@@ -94,18 +95,18 @@ def get_parent_class(row, storage_url: str):
             if cls["classInfos"]["extendedClassQualifiedName"] not in ["", "java.lang.Object"]:
                 parent_class = cls["classInfos"]["extendedClassQualifiedName"]
             else:
-                parent_class = ""
+                parent_class = None
             break
     else:
-        parent_class = ""
+        parent_class = None
     
-    if parent_class == "":
-        return ""
+    if not parent_class:
+        return None
     else:
         for cls in class_info:
             if (cls["classInfos"]["classQualifiedName"] == parent_class):
                 return cls["classInfos"]["sourceCode"]
-        return ""
+        return None
     
 
 def get_parent_class_code(df: pd.DataFrame, storage_url: str) -> pd.DataFrame:

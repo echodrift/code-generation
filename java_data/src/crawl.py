@@ -27,7 +27,7 @@ class Crawler:
             List[RepoMetadata]: Github repositories metadata
         """
         all_elements: List[RepoMetadata] = []
-        for page in tqdm(range(1, 11)):
+        for page in tqdm(range(0, 3)):
             print("Current page:", page)
             url = f"https://api.github.com/search/repositories?q=language:java&sort=star&order=desc&per_page=100&page={page}"
             response = requests.get(url, headers=HEADERS)
