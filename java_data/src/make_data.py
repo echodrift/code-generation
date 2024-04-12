@@ -6,10 +6,12 @@ from typing import List, NamedTuple, Optional, Tuple
 
 import pandas as pd
 from antlr4 import *
-from src.java.java8.JavaLexer import JavaLexer
-from src.java.java8.JavaParser import JavaParser
-from src.java.java8.JavaParserListener import JavaParserListener
+from java.java8.JavaLexer import JavaLexer
+from java.java8.JavaParser import JavaParser
+from java.java8.JavaParserListener import JavaParserListener
 from tqdm import tqdm
+from subprocess import run
+import multiprocessing as mp
 
 ASample = NamedTuple(
     "ASample",
@@ -50,6 +52,7 @@ class ExtractFunc(JavaParserListener):
         )
 
     def enterMethodDeclaration(self, ctx):
+        # If method is void method ignore it
         if ctx.typeTypeOrVoid() == "void":
             return
         self.func_name = ctx.identifier().getText()
@@ -186,9 +189,40 @@ def modified_mask_function(java_code: str) -> Optional[ASample]:
     )
 
 
+def transform(java_file_url: str, repos_directory: str = "/var/data/lvdthieu/repos/"):
+    project_name = java_file_url.replace(repos_directory, "").split("/")[0]
+    relative_path = "/".join(java_file_url.replace(repos_directory, "").split("/")[1:])
+    with codecs.open(java_file_url, "r", encoding="utf-8", errors="ignore") as f:
+        try:
+            java_code = f.read()
+            # sample = mask_function(java_code)
+            sample = modified_mask_function(java_code)
+            if sample:
+                return {"proj_name": project_name,
+                        "relative_path": relative_path,
+                        "class_name": sample.class_name,
+                        "func_name": sample.func_name,
+                        "masked_class": sample.masked_class,
+                        "func_body": sample.func_body}
+            else:
+                return {"proj_name": project_name,
+                        "relative_path": relative_path,
+                        "class_name": None,
+                        "func_name": None,
+                        "masked_class": None,
+                        "func_body": None}
+        except:
+            return {"proj_name": None,
+                    "relative_path": None,
+                    "class_name": None,
+                    "func_name": None,
+                    "masked_class": None,
+                    "func_body": None}
+    
+
 def make_dataset(
-    java_file_urls_storage_url: str,
-    repos_directory: str = "/var/data/lvdthieu/repos/maven_projects/",
+    java_file_urls: str,
+    repos_directory: str,
     checkpoint: str = "",
 ) -> pd.DataFrame:
     """Make dataset
@@ -201,37 +235,34 @@ def make_dataset(
     Returns:
         pd.DataFrame: Dataset
     """
-    rows = []
-    with open(java_file_urls_storage_url, "r") as f:
-        java_file_urls = list(
-            map(lambda url: url.replace(repos_directory, ""), f.read().split("\n"))
-        )
-
-    for java_file_url in tqdm(java_file_urls):
-
-        project_name = java_file_url.split("/")[0]
-        relative_path = "/".join(java_file_url.split("/")[1:])
-        with codecs.open(java_file_url, "r", encoding="utf-8", errors="ignore") as f:
-            try:
-                java_code = f.read()
-                # sample = mask_function(java_code)
-                sample = modified_mask_function(java_code)
-                if sample:
-                    rows.append(
-                        {
-                            "proj_name": project_name,
-                            "relative_path": relative_path,
-                            "class_name": sample.class_name,
-                            "func_name": sample.func_name,
-                            "masked_class": sample.masked_class,
-                            "func_body": sample.func_body,
-                        }
-                    )
-            except:
-                pass
-        if checkpoint:
-            if rows and len(rows) % 1000 == 0:
-                pd.DataFrame(rows).to_parquet(checkpoint, "fastparquet")
+    with mp.Pool(processes=10) as pool:
+        rows = list(tqdm(pool.imap(transform, java_file_urls), total=len(java_file_urls)))
+    # rows = []
+    
+    # for java_file_url in tqdm(java_file_urls):
+    #     project_name = java_file_url.replace(repos_directory, "").split("/")[0]
+    #     relative_path = "/".join(java_file_url.replace(repos_directory, "").split("/")[1:])
+    #     with codecs.open(java_file_url, "r", encoding="utf-8", errors="ignore") as f:
+    #         try:
+    #             java_code = f.read()
+    #             # sample = mask_function(java_code)
+    #             sample = modified_mask_function(java_code)
+    #             if sample:
+    #                 rows.append(
+    #                     {
+    #                         "proj_name": project_name,
+    #                         "relative_path": relative_path,
+    #                         "class_name": sample.class_name,
+    #                         "func_name": sample.func_name,
+    #                         "masked_class": sample.masked_class,
+    #                         "func_body": sample.func_body,
+    #                     }
+    #                 )
+    #         except:
+    #             pass
+    #     if checkpoint:
+    #         if rows and len(rows) % 1000 == 0:
+    #             pd.DataFrame(rows).to_parquet(checkpoint, "fastparquet")
     return pd.DataFrame(rows)
 
 
@@ -244,14 +275,27 @@ def post_processing(dataset: pd.DataFrame) -> pd.DataFrame:
     return dataset
 
 
+def collect_java_file_urls(repos_directory: str) -> List[str]:
+    cmd = f"""
+    cd {repos_directory}
+    find "$(cd ..; pwd)" -name *.java 
+    """
+    output = run(cmd, shell=True, capture_output=True, text=True).stdout
+    java_file_urls = output.split('\n')[:-1]
+    return java_file_urls
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", dest="input")
     parser.add_argument("-o", "--output", dest="output")
     parser.add_argument("-c", "--check", dest="checkpoint")
     args = parser.parse_args()
+
+    java_file_urls = collect_java_file_urls(repos_directory=args.input)
+
     df = post_processing(
-        make_dataset(java_file_urls_storage_url=args.input, checkpoint=args.checkpoint)
+        make_dataset(java_file_urls=java_file_urls, repos_directory=args.input, checkpoint=args.checkpoint)
     )
     df.to_parquet(args.output, "fastparquet")
 

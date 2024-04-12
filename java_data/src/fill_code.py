@@ -2,7 +2,7 @@ import argparse
 import codecs
 
 import pandas as pd
-from src.make_data import get_functions, get_location
+from make_data import get_functions, get_location
 from tqdm import tqdm
 
 

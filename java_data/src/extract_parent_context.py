@@ -5,10 +5,10 @@ from typing import Dict, List, Optional
 
 import pandas as pd
 from antlr4 import *
-from src.java.java8.JavaLexer import JavaLexer
-from src.java.java8.JavaParser import JavaParser
-from src.java.java8.JavaParserListener import JavaParserListener
-from src.make_data import Location, get_location
+from java.java8.JavaLexer import JavaLexer
+from java.java8.JavaParser import JavaParser
+from java.java8.JavaParserListener import JavaParserListener
+from make_data import Location, get_location
 from tqdm import tqdm
 
 
