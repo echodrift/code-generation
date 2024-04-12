@@ -1,4 +1,4 @@
-import parser, { parse } from "@solidity-parser/parser";
+import parser from "@solidity-parser/parser";
 import parquetjs from "@dsnp/parquetjs"
 import tqdm from "tqdm"
 import fs from "fs"

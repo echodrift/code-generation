@@ -1,15 +1,16 @@
 import argparse
 import json
 from collections import defaultdict
+from typing import Dict, List, Optional
 
 import pandas as pd
 from antlr4 import *
-from java.java8.JavaLexer import JavaLexer
-from java.java8.JavaParser import JavaParser
-from java.java8.JavaParserListener import JavaParserListener
-from make_data import Location, get_location
+from src.java.java8.JavaLexer import JavaLexer
+from src.java.java8.JavaParser import JavaParser
+from src.java.java8.JavaParserListener import JavaParserListener
+from src.make_data import Location, get_location
 from tqdm import tqdm
-from typing import Optional
+
 
 class ExtractSignatureAndVar(JavaParserListener):
     """Extract signature and variables in a class"""
@@ -30,20 +31,39 @@ class ExtractSignatureAndVar(JavaParserListener):
     def enterMethodDeclaration(self, ctx):
         self.func_name = ctx.identifier().getText()
         body = ctx.methodBody().block()
-        func_start_idx, func_end_idx = get_location(self.java_code, Location(ctx.start.line, ctx.start.column,
-                                                    ctx.stop.line, ctx.stop.column + len(ctx.stop.text)))
+        func_start_idx, func_end_idx = get_location(
+            self.java_code,
+            Location(
+                ctx.start.line,
+                ctx.start.column,
+                ctx.stop.line,
+                ctx.stop.column + len(ctx.stop.text),
+            ),
+        )
         if body:
-            func_body_start_idx, _ = get_location(self.java_code, Location(body.start.line, body.start.column, 
-                                                        body.stop.line, body.stop.column + len(body.stop.text)))
-            self.class_comp[self.class_name].append(self.java_code[func_start_idx : func_body_start_idx] + "{<BODY>}")
+            func_body_start_idx, _ = get_location(
+                self.java_code,
+                Location(
+                    body.start.line,
+                    body.start.column,
+                    body.stop.line,
+                    body.stop.column + len(body.stop.text),
+                ),
+            )
+            self.class_comp[self.class_name].append(
+                self.java_code[func_start_idx:func_body_start_idx] + "{<BODY>}"
+            )
         else:
-            self.class_comp[self.class_name].append(self.java_code[func_start_idx : func_end_idx])
-        
-    
+            self.class_comp[self.class_name].append(
+                self.java_code[func_start_idx:func_end_idx]
+            )
+
     def enterFieldDeclaration(self, ctx):
         variable_name = ctx.variableDeclarators().getText()
         variable_type = ctx.typeType().getText()
-        self.class_comp[self.class_name].append("%s %s;" % (variable_type, variable_name))
+        self.class_comp[self.class_name].append(
+            "%s %s;" % (variable_type, variable_name)
+        )
 
     def get_class_comp(self):
         return self.class_comp
@@ -56,7 +76,7 @@ def extract_signature_and_var(java_code: str) -> Optional[str]:
         java_code (str): Java code
 
     Returns:
-        Optional[str]: Signature and variables 
+        Optional[str]: Signature and variables
     """
     if not java_code:
         return None
@@ -76,11 +96,30 @@ def extract_signature_and_var(java_code: str) -> Optional[str]:
     except:
         return None
 
-def get_parent_class(row: pd.Series, storage_url: str) -> Optional[str]:
+
+def get_code(classQualifiedName: str, class_info: Dict) -> Optional[str]:
+    """Return class code
+
+    Args:
+        classQualifiedName (str): Class qualified name
+        class_info (Dict): Class info
+
+    Returns:
+        Optional[str]: Class code
+    """
+    if not classQualifiedName:
+        return None
+    for cls in class_info:
+        if cls["classInfos"]["classQualifiedName"] == classQualifiedName:
+            return cls["classInfos"]["sourceCode"]
+    return None
+
+
+def get_parent_class_code(row: pd.Series, storage_url: str) -> Optional[str]:
     """Return parent class code
 
     Args:
-        row (pd.Series): 
+        row (pd.Series):
         storage_url (str): Parsed project storage
 
     Returns:
@@ -90,36 +129,99 @@ def get_parent_class(row: pd.Series, storage_url: str) -> Optional[str]:
     with open(parsed_project_path, "r") as f:
         class_info = json.load(f)
     for cls in class_info:
-        if (cls["classInfos"]["filePath"].replace(cls["projectPath"] + '/', '') == row["relative_path"] and
-            cls["classInfos"]["className"] == row["class_name"]):
-            if cls["classInfos"]["extendedClassQualifiedName"] not in ["", "java.lang.Object"]:
+        cls_relative_path = cls["classInfos"]["filePath"].replace(
+            cls["projectPath"] + "/", ""
+        )
+        if (
+            cls_relative_path == row["relative_path"]
+            and cls["classInfos"]["className"] == row["class_name"]
+        ):
+            if cls["classInfos"]["extendedClassQualifiedName"] not in [
+                "",
+                "java.lang.Object",
+            ]:
                 parent_class = cls["classInfos"]["extendedClassQualifiedName"]
             else:
                 parent_class = None
             break
     else:
         parent_class = None
-    
-    if not parent_class:
-        return None
-    else:
+
+    parent_class_code = get_code(parent_class, class_info)
+    return parent_class_code
+
+
+def extended_classes(
+    class_qualified_name: str, class_info: Dict
+) -> Optional[List[str]]:
+    """Return extended classes
+
+    Args:
+        qualified_class_name (str): Qualified class name
+
+    Returns:
+        Optional[List[str]]: Extended classes
+    """
+    extended_classes = []
+    while class_qualified_name:
         for cls in class_info:
-            if (cls["classInfos"]["classQualifiedName"] == parent_class):
-                return cls["classInfos"]["sourceCode"]
-        return None
+            if cls["classInfos"]["classQualifiedName"] == class_qualified_name:
+                if cls["classInfos"]["extendedClassQualifiedName"] not in [
+                    "",
+                    "java.lang.Object",
+                ]:
+                    class_qualified_name = cls["classInfos"][
+                        "extendedClassQualifiedName"
+                    ]
+                    extended_classes.append(class_qualified_name)
+                else:
+                    class_qualified_name = None
+                break
+        else:
+            break
+    return extended_classes
+
+
+def modified_get_parent_class(row: pd.Series, storage_url: str) -> Optional[str]:
+    """Get parent and ancestor class code
     
+    Args:
+        row (pd.Series): Row
+        storage_url (str): Storage url
+
+    Returns:
+        Optional[str]: Parent class code
+    """
+    parsed_project_path = "{}/parsed_{}.json".format(storage_url, row["proj_name"])
+    with open(parsed_project_path, "r") as f:
+        class_info = json.load(f)
+    for cls in class_info:
+        if (
+            cls["classInfos"]["filePath"].replace(cls["projectPath"] + "/", "")
+            == row["relative_path"]
+            and cls["classInfos"]["className"] == row["class_name"]
+        ):
+            class_qualified_name = cls["classInfos"]["classQualifiedName"]
+            break
+    else:
+        class_qualified_name = None
+    extended_classes = extended_classes(class_qualified_name, class_info)
+    return '\n'.join(list(map(lambda x: get_code(x, class_info), extended_classes)))
+
 
 def get_parent_class_code(df: pd.DataFrame, storage_url: str) -> pd.DataFrame:
     """Get parent class code
     Args:
         df (pd.DataFrame): Dataset
-        storage_url (str): Storage url  
+        storage_url (str): Storage url
 
     Returns:
         pd.DataFrame: Dataset with parent class code (if exist)
     """
     tqdm.pandas()
-    df["parent_class_code"] = df.progress_apply(lambda row: get_parent_class(row, storage_url), axis=1)
+    df["parent_class_code"] = df.progress_apply(
+        lambda row: get_parent_class_code(row, storage_url), axis=1
+    )
     return df
 
 
@@ -132,17 +234,26 @@ def get_parent_signature_and_var(df: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: Dataset with parent signature and variables
     """
     tqdm.pandas()
-    df["inherit_elements"] = df["parent_class_code"].progress_apply(extract_signature_and_var)
+    df["inherit_elements"] = df["parent_class_code"].progress_apply(
+        extract_signature_and_var
+    )
     return df
 
 
 def main():
     args = argparse.ArgumentParser()
     args.add_argument("-i", "--input", dest="input")
-    args.add_argument("-t", "--type", dest="input_type", help="Input type select from [jsonl, parquet, csv]")
+    args.add_argument(
+        "-t",
+        "--type",
+        dest="input_type",
+        help="Input type select from [jsonl, parquet, csv]",
+    )
     args.add_argument("-o", "--output", dest="output")
     args.add_argument("-c", "--checkpoint", dest="checkpoint")
-    args.add_argument("-d", "--dir", dest="dir", help="Directoriy of parsed projects (json files)")
+    args.add_argument(
+        "-d", "--dir", dest="dir", help="Directoriy of parsed projects (json files)"
+    )
     args = args.parse_args()
     match args.input_type:
         case "jsonl":
@@ -156,7 +267,6 @@ def main():
     df = get_parent_signature_and_var(df=df)
     df.to_parquet(args.output, "fastparquet")
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     main()
-
-
