@@ -53,8 +53,8 @@ class ExtractFunc(JavaParserListener):
 
     def enterMethodDeclaration(self, ctx):
         # If method is void method ignore it
-        if ctx.typeTypeOrVoid().getText() == "void":
-            return
+        # if ctx.typeTypeOrVoid().getText() == "void":
+        #     return
         self.func_name = ctx.identifier().getText()
         body = ctx.methodBody().block()
         if not body:
