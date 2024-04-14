@@ -53,7 +53,7 @@ class ExtractFunc(JavaParserListener):
 
     def enterMethodDeclaration(self, ctx):
         # If method is void method ignore it
-        if ctx.typeTypeOrVoid() == "void":
+        if ctx.typeTypeOrVoid().getText() == "void":
             return
         self.func_name = ctx.identifier().getText()
         body = ctx.methodBody().block()
@@ -189,7 +189,7 @@ def modified_mask_function(java_code: str) -> Optional[ASample]:
     )
 
 
-def transform(java_file_url: str, repos_directory: str = "/var/data/lvdthieu/repos/"):
+def transform(java_file_url: str, repos_directory: str = "/var/data/lvdthieu/repos/maven_projects/"):
     project_name = java_file_url.replace(repos_directory, "").split("/")[0]
     relative_path = "/".join(java_file_url.replace(repos_directory, "").split("/")[1:])
     with codecs.open(java_file_url, "r", encoding="utf-8", errors="ignore") as f:
@@ -278,7 +278,7 @@ def post_processing(dataset: pd.DataFrame) -> pd.DataFrame:
 def collect_java_file_urls(repos_directory: str) -> List[str]:
     cmd = f"""
     cd {repos_directory}
-    find "$(cd ..; pwd)" -name *.java 
+    find ~+ -type f -name *.java 
     """
     output = run(cmd, shell=True, capture_output=True, text=True).stdout
     java_file_urls = output.split('\n')[:-1]
@@ -293,12 +293,16 @@ def main():
     args = parser.parse_args()
 
     java_file_urls = collect_java_file_urls(repos_directory=args.input)
-
-    df = post_processing(
-        make_dataset(java_file_urls=java_file_urls, repos_directory=args.input, checkpoint=args.checkpoint)
-    )
+    df = make_dataset(java_file_urls=java_file_urls, repos_directory=args.input, checkpoint=args.checkpoint)
+    # df = post_processing(
+        
+    # )
     df.to_parquet(args.output, "fastparquet")
 
 
 if __name__ == "__main__":
     main()
+    # with open("/var/data/lvdthieu/code-generation/java_data/AJavaFile.java", "r") as f:
+    #     java_code = f.read()
+    # print(get_functions(java_code))
+    # get_functions(java_code=java_code)

@@ -182,7 +182,7 @@ def extended_classes(
     return extended_classes
 
 
-def modified_get_parent_class(row: pd.Series, storage_url: str) -> Optional[str]:
+def modified_get_parent_class_code(row: pd.Series, storage_url: str) -> Optional[str]:
     """Get parent and ancestor class code
     
     Args:
@@ -209,7 +209,7 @@ def modified_get_parent_class(row: pd.Series, storage_url: str) -> Optional[str]
     return '\n'.join(list(map(lambda x: get_code(x, class_info), extended_classes)))
 
 
-def get_parent_class_code(df: pd.DataFrame, storage_url: str) -> pd.DataFrame:
+def add_parent_class_code(df: pd.DataFrame, storage_url: str) -> pd.DataFrame:
     """Get parent class code
     Args:
         df (pd.DataFrame): Dataset
@@ -220,7 +220,7 @@ def get_parent_class_code(df: pd.DataFrame, storage_url: str) -> pd.DataFrame:
     """
     tqdm.pandas()
     df["parent_class_code"] = df.progress_apply(
-        lambda row: get_parent_class_code(row, storage_url), axis=1
+        lambda row: modified_get_parent_class_code(row, storage_url), axis=1
     )
     return df
 
@@ -262,7 +262,7 @@ def main():
             df = pd.read_parquet(args.input, "fastparquet")
         case "csv":
             df = pd.read_csv(args.input)
-    df = get_parent_class_code(df=df, storage_url=args.dir)
+    df = add_parent_class_code(df=df, storage_url=args.dir)
     df.to_parquet(args.checkpoint, "fastparquet")
     df = get_parent_signature_and_var(df=df)
     df.to_parquet(args.output, "fastparquet")

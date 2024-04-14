@@ -11,7 +11,6 @@ HEADERS = {
     'Authorization': '<GITHUB_TOKEN>', 
     'Accept': 'application/vnd.github.v3+json'
 }
-REPO_METADATA_STORAGE_URL = "repos.json"
 
 class RepoMetadata:
     pass
@@ -28,8 +27,7 @@ class Crawler:
         """
         all_elements: List[RepoMetadata] = []
         for page in tqdm(range(0, 3)):
-            print("Current page:", page)
-            url = f"https://api.github.com/search/repositories?q=language:java&sort=star&order=desc&per_page=100&page={page}"
+            url = f"https://api.github.com/search/repositories?q=language:java+pushed:>2023-10-01&sort=star&order=desc&per_page=100&page={page}"
             response = requests.get(url, headers=HEADERS)
             if response.status_code != 200:
                 print(response.status_code)
@@ -83,7 +81,7 @@ class Crawler:
             repo_storage_url (str): File url to store
         """
         for repo_url in tqdm(repo_urls):
-            owner, repo = repo_url.split('/')[:-2]
+            owner, repo = repo_url.split('/')[-2:]
             cmd = \
             f"""
             if [ ! -d "{repo_storage_url}/{owner}_{repo}" ]
@@ -98,14 +96,14 @@ class Crawler:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--dir", dest="dir", default="/data/hieuvd/lvdthieu")
+    parser.add_argument("-ri", dest="repos_info")
+    parser.add_argument("-d", "--dir", dest="dir")
     args = parser.parse_args()
     # Crawl repo metadata and store into a file
     crawler = Crawler()
     repo_metadata = crawler.search_repo()
-    crawler.store_repo_metadata(repo_metadata, REPO_METADATA_STORAGE_URL)
+    crawler.store_repo_metadata(repo_metadata, args.repos_info)
     repo_urls = crawler.get_repo_html_url(repo_metadata)
-    
     # Clone repo
     crawler.clone_repo(repo_urls, args.dir)
 
