@@ -24,5 +24,9 @@
     "argparse": "^2.0.1",
     "string-similarity": "^4.0.4",
     "tqdm": "^2.0.3"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.2"
   }
 }

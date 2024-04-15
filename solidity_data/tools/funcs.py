@@ -4,7 +4,7 @@ import os
 import random
 import traceback
 from collections import namedtuple
-from typing import List, Optional, Tuple, TypeVar
+from typing import List, Optional, Tuple
 
 import pandas as pd
 from tqdm import tqdm
@@ -15,11 +15,11 @@ class ParsedObject:
 
 
 SOL_FILES = pd.read_parquet(
-    "/home/hieuvd/lvdthieu/CodeGen/solidity_data/data/solfile/all_file_v2.parquet",
+    "/var/data/lvdthieu/code-generation/solidity_data/data/data/solfile/all_file.parquet",
     engine="fastparquet",
 )
 CONTRACTS = pd.read_parquet(
-    "/home/hieuvd/lvdthieu/CodeGen/solidity_data/data/contracts/contracts_118k_no_ast.parquet",
+    "/var/data/lvdthieu/code-generation/solidity_data/data/data/contracts/contracts_118k_no_ast.parquet",
     engine="fastparquet"
 )
 ContractInfo = namedtuple("ContractInfo", "source_idx contract_name contract_source contract_ast count")
@@ -214,7 +214,7 @@ def fill_contract(row, sol_files: pd.DataFrame) -> str:
         str: Filled contract
     """
     filled_contract = row["masked_contract"].replace(
-        "<FILL_FUNCTION_BODY>", row["deepseek_output"] + '\n'
+        "<FILL_FUNCTION_BODY>", row["gemma_output"] + '\n'
     )
     source = row["file_source"].replace("\r\n", "\n")
     sourceUnit = json.loads(sol_files.loc[row["file_source_idx"], "ast"])

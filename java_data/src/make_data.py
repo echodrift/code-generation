@@ -189,7 +189,7 @@ def modified_mask_function(java_code: str) -> Optional[ASample]:
     )
 
 
-def transform(java_file_url: str, repos_directory: str = "/var/data/lvdthieu/repos/maven_projects/"):
+def transform(java_file_url: str, repos_directory: str = "/var/data/lvdthieu/repos/new-projects/"):
     project_name = java_file_url.replace(repos_directory, "").split("/")[0]
     relative_path = "/".join(java_file_url.replace(repos_directory, "").split("/")[1:])
     with codecs.open(java_file_url, "r", encoding="utf-8", errors="ignore") as f:

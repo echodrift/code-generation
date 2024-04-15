@@ -16,7 +16,7 @@ then
     fi
     echo "Make raw test done"
     python "$DIR/../tools/funcs.py" --func test_suite --input "$INPUT_DIR/raw_test.parquet" --output "$INPUT_DIR/test_suite.parquet"
-    if [ $? -ne 0]
+    if [ $? -ne 0 ]
     then 
         exit 2
     fi
@@ -24,7 +24,7 @@ then
     i=1
     while [ $i -le $CONCURRENCY ]; do
         if [ ! -d "$COMPILER/hardhat$i" ]; then
-            cp -r "$COMPILER/hardhat $COMPILER/hardhat$i"
+            cp -r "$COMPILER/hardhat" "$COMPILER/hardhat$i"
             if [ $? -ne 0 ]
             then 
                 exit 3
@@ -61,7 +61,7 @@ then
     echo "Sharding done"
     i=1
     while [ $i -le $CONCURRENCY ]; do
-        screen -dmS hardhat$i bash -c "python compile.py -i $DIR/data/batch$i.parquet -hh hardhat$i -o $DIR/out/result$i.parquet"
+        screen -dmS hardhat$i bash -c "python $DIR/compile.py -i $DIR/data/batch$i.parquet -hh hardhat$i -o $DIR/out/result$i.parquet"
         i=$(( i + 1))
     done
 else 
