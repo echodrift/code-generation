@@ -279,7 +279,7 @@ def get_inherit_element(input: str, output: str):
     df = pd.read_parquet(input, engine="fastparquet")
     # df.drop(columns=["source_idx"], inplace=True)
     
-    all_file = pd.read_parquet("/home/hieuvd/lvdthieu/CodeGen/data/solfile/all_file_v2.parquet", engine="fastparquet")
+    all_file = pd.read_parquet(SOL_FILES_V2, engine="fastparquet")
     df["origin"], df["ast"]= zip(*df["file_source_idx"].apply(lambda idx: (all_file.loc[idx, "source_code"], all_file.loc[idx, "ast"])))
 
 

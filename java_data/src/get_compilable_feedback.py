@@ -9,11 +9,6 @@ from typing import Dict, List, NamedTuple
 import pandas as pd
 from tqdm import tqdm
 
-HEADERS = {
-    'Authorization': '<GITHUB_TOKEN>', 
-    'Accept': 'application/vnd.github.v3+json'
-}
-MVN = "/home/hieuvd/apache-maven-3.6.3/bin/mvn"
 
 CompilerFeedback = NamedTuple("CompilerFeedback", [("project_name", str), ("feedback", str)])
 FileInfo = NamedTuple("FileInfo", [("project_name", str), ("relative_path", str)])
@@ -129,8 +124,9 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--dir", dest="dir")
     parser.add_argument("-t", "--tmp", dest="tmp")
     parser.add_argument("--col", dest="col")
+    parser.add_argument("--mvn", dest="mvn")
     args = parser.parse_args()
-    
+    MVN = args.mvn
     df = pd.read_parquet(args.input, "fastparquet")
     CompilableChecker(df, args.col, args.dir, args.tmp, args.output).get_compilable_feedback()
 
