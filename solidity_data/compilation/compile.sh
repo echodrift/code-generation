@@ -2,20 +2,20 @@
 DIR=$(realpath $(dirname $0))
 COMPILER="$DIR/compilers"
 INPUT=$1
-OUTPUT=$2
-CONCURRENCY=$3
-PHASE=$4
-INPUT_DIR=$(realpath $(dirname $1))
+COL=$2
+OUTPUT=$3
+CONCURRENCY=$4
+PHASE=$5
 
 if [ "$PHASE" = "compile" ] 
 then
-    python "$DIR/../tools/funcs.py" --func raw_test --input "$INPUT" --output "$INPUT_DIR/raw_test.parquet"
+    python "$DIR/../tools/funcs.py" --func raw_test --input "$INPUT" --output "$DIR/tmp/raw_test.parquet"
     if [ $? -ne 0 ]
     then 
         exit 1
     fi
     echo "Make raw test done"
-    python "$DIR/../tools/funcs.py" --func test_suite --input "$INPUT_DIR/raw_test.parquet" --output "$INPUT_DIR/test_suite.parquet"
+    python "$DIR/../tools/funcs.py" --func test_suite --input "$DIR/tmp/raw_test.parquet" --output "$DIR/tmp/test_suite.parquet" --col $COL
     if [ $? -ne 0 ]
     then 
         exit 2
@@ -24,7 +24,7 @@ then
     i=1
     while [ $i -le $CONCURRENCY ]; do
         if [ ! -d "$COMPILER/hardhat$i" ]; then
-            cp -r "$COMPILER/hardhat" "$COMPILER/hardhat$i"
+            cp -rf "$COMPILER/hardhat" "$COMPILER/hardhat$i"
             if [ $? -ne 0 ]
             then 
                 exit 3
@@ -53,7 +53,7 @@ then
         i=$((i + 1))
     done
     echo "Create folder done"
-    python "$DIR/../tools/funcs.py" --func sharding --input "$INPUT_DIR/test_suite.parquet" --concurrency $CONCURRENCY --output "$DIR/data"
+    python "$DIR/../tools/funcs.py" --func sharding --input "$DIR/tmp/test_suite.parquet" --concurrency $CONCURRENCY --output "$DIR/data"
     if [ $? -ne 0 ]
     then    
         exit 4
@@ -67,23 +67,16 @@ then
 else 
     if [ "$PHASE" = "merge" ] 
     then
-        if [ ! -d $OUTPUT ]
-        then
-            mkdir $OUTPUT
-        fi
-
-        python "$DIR/../tools/funcs.py" --func merging --input "$DIR/out" --concurrency $CONCURRENCY --output "$OUTPUT/result.parquet" 
+        python "$DIR/../tools/funcs.py" --func merging --input "$DIR/out" --concurrency $CONCURRENCY --output "$OUTPUT" 
         if [ $? -ne 0 ]
         then
             exit 5
         fi
         echo "Merging done"
-        # python "$DIR/../tools/funcs.py" --func extract_error --input "$OUTPUT/result.parquet" --output "$COMPILE_INFO/$RESULT_FOLDER/deepseek_compile_error.parquet
-        # echo "Extract errors done"
     else
-        if [ "$PHASE" == "cr" ]
+        if [ "$PHASE" = "cr" ]
         then
-            python $DIR/../tools/funcs.py --func cr --input "$OUTPUT/result.parquet"
+            python $DIR/../tools/funcs.py --func cr --input "$OUTPUT"
             if [ $? -ne 0 ]
             then
                 exit 6

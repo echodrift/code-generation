@@ -15,11 +15,11 @@ class ParsedObject:
 
 
 SOL_FILES = pd.read_parquet(
-    "/var/data/lvdthieu/code-generation/solidity_data/data/data/solfile/all_file.parquet",
+    "/var/data/lvdthieu/code-generation/solidity_data/data/data/files.parquet",
     engine="fastparquet",
 )
 CONTRACTS = pd.read_parquet(
-    "/var/data/lvdthieu/code-generation/solidity_data/data/data/contracts/contracts_118k_no_ast.parquet",
+    "/var/data/lvdthieu/code-generation/solidity_data/data/data/contracts.parquet",
     engine="fastparquet"
 )
 ContractInfo = namedtuple("ContractInfo", "source_idx contract_name contract_source contract_ast count")
@@ -204,7 +204,7 @@ def modified_get_location(solidity_code: str, loc: Location) -> Tuple[int, int]:
     return start_idx, end_idx
 
 
-def fill_contract(row, sol_files: pd.DataFrame) -> str:
+def fill_contract(row, sol_files: pd.DataFrame, column: str) -> str:
     """This function aims to create complete version of smart contract with output from LLMs 
 
     Args:
@@ -214,7 +214,7 @@ def fill_contract(row, sol_files: pd.DataFrame) -> str:
         str: Filled contract
     """
     filled_contract = row["masked_contract"].replace(
-        "<FILL_FUNCTION_BODY>", row["gemma_output"] + '\n'
+        "<FILL_FUNCTION_BODY>", row[column] + '\n'
     )
     source = row["file_source"].replace("\r\n", "\n")
     sourceUnit = json.loads(sol_files.loc[row["file_source_idx"], "ast"])
@@ -233,7 +233,7 @@ def fill_contract(row, sol_files: pd.DataFrame) -> str:
             return filled_source
 
 
-def make_test_suite(source: str, dest: str):
+def make_test_suite(source: str, dest: str, column: str):
     """Add fill_source columns to source dataset and save it to dest location
 
     Args:
@@ -241,7 +241,7 @@ def make_test_suite(source: str, dest: str):
         dest (str): Destination location to save processed result
     """
     df = pd.read_parquet(source, engine="fastparquet")
-    df["source_code"] = df.apply(lambda row: fill_contract(row, sol_files=SOL_FILES), axis=1)
+    df["source_code"] = df.apply(lambda row: fill_contract(row, sol_files=SOL_FILES, column=column), axis=1)
     df.to_parquet(dest, engine="fastparquet")
 
 
@@ -542,6 +542,7 @@ def modified_mask_function(row) -> Optional[ASample]:
             f.write(f"{traceback.format_exc()}\n" + "-" * 200)
         return (None, None, None, None, None, None, None, None)
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--func", dest="func")
@@ -562,10 +563,10 @@ if __name__ == "__main__":
                 lambda source: remove_comment(source)
             )
             df.to_parquet(args.output, engine="fastparquet")
-        case "test_suite":
-            make_test_suite(args.input, args.output)
         case "raw_test":
             make_raw_test_suite(args.input, args.output, SOL_FILES)
+        case "test_suite":
+            make_test_suite(args.input, args.output, args.col)
         case "cr":
             get_compilable_rate(args.input)
         case "inherit_element":
