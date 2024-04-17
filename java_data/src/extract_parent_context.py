@@ -112,7 +112,7 @@ def get_code(classQualifiedName: str, class_info: Dict) -> Optional[str]:
     for cls in class_info:
         if cls["classInfos"]["classQualifiedName"] == classQualifiedName:
             return cls["classInfos"]["sourceCode"]
-    return None
+    return ""
 
 
 def get_parent_class_code(row: pd.Series, storage_url: str) -> Optional[str]:
@@ -151,7 +151,7 @@ def get_parent_class_code(row: pd.Series, storage_url: str) -> Optional[str]:
     return parent_class_code
 
 
-def extended_classes(
+def get_extended_classes(
     class_qualified_name: str, class_info: Dict
 ) -> Optional[List[str]]:
     """Return extended classes
@@ -166,10 +166,8 @@ def extended_classes(
     while class_qualified_name:
         for cls in class_info:
             if cls["classInfos"]["classQualifiedName"] == class_qualified_name:
-                if cls["classInfos"]["extendedClassQualifiedName"] not in [
-                    "",
-                    "java.lang.Object",
-                ]:
+                if (cls["classInfos"]["extendedClassQualifiedName"] and  
+                    cls["classInfos"]["extendedClassQualifiedName"]not in ["","java.lang.Object"]):
                     class_qualified_name = cls["classInfos"][
                         "extendedClassQualifiedName"
                     ]
@@ -205,8 +203,8 @@ def modified_get_parent_class_code(row: pd.Series, storage_url: str) -> Optional
             break
     else:
         class_qualified_name = None
-    extended_classes = extended_classes(class_qualified_name, class_info)
-    return '\n'.join(list(map(lambda x: get_code(x, class_info), extended_classes)))
+    extended_classes = get_extended_classes(class_qualified_name, class_info)
+    return '\n'.join(list(map(lambda x: get_code(x, class_info), extended_classes))) if extended_classes else None
 
 
 def add_parent_class_code(df: pd.DataFrame, storage_url: str) -> pd.DataFrame:

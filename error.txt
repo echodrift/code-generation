@@ -1,0 +1,1 @@
+/var/data/lvdthieu/tmp/dropwizard_metrics/metrics/metrics-servlets/src/test/java/com/codahale/metrics/servlets/PingServletTest.java

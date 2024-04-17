@@ -18,6 +18,7 @@ SOL_FILES = pd.read_parquet(
     "/var/data/lvdthieu/code-generation/solidity_data/data/data/files.parquet",
     engine="fastparquet",
 )
+SOL_FILES_V2=""
 CONTRACTS = pd.read_parquet(
     "/var/data/lvdthieu/code-generation/solidity_data/data/data/contracts.parquet",
     engine="fastparquet"

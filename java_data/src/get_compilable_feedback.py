@@ -122,12 +122,19 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--input", dest="input")
     parser.add_argument("-o", "--output", dest="output")
     parser.add_argument("-d", "--dir", dest="dir")
-    parser.add_argument("-t", "--tmp", dest="tmp")
+    parser.add_argument("--tmp", dest="tmp")
     parser.add_argument("--col", dest="col")
     parser.add_argument("--mvn", dest="mvn")
+    parser.add_argument("--type", dest="type")
     args = parser.parse_args()
     MVN = args.mvn
-    df = pd.read_parquet(args.input, "fastparquet")
+    match args.type:
+        case "jsonl":
+            df = pd.read_json(args.input, lines=True)
+        case "parquet":
+            df = pd.read_parquet(args.input, "fastparquet")
+        case "csv":
+            df = pd.read_csv(args.input)
     CompilableChecker(df, args.col, args.dir, args.tmp, args.output).get_compilable_feedback()
 
 

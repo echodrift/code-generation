@@ -1,7 +1,7 @@
 #!bin/bash
 PARSER=$1
 PROJ_NAMES=$2
-DATA_INP=$3
+DATA_INP=$3 
 DATA_OUT=$4
 while read PROJ_NAME
 do  
