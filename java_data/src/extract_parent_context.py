@@ -97,7 +97,7 @@ def extract_signature_and_var(java_code: str) -> Optional[str]:
         return None
 
 
-def get_code(classQualifiedName: str, class_info: Dict) -> Optional[str]:
+def get_code(classQualifiedName: str, class_info: Dict) -> str:
     """Return class code
 
     Args:
@@ -108,7 +108,7 @@ def get_code(classQualifiedName: str, class_info: Dict) -> Optional[str]:
         Optional[str]: Class code
     """
     if not classQualifiedName:
-        return None
+        return ""
     for cls in class_info:
         if cls["classInfos"]["classQualifiedName"] == classQualifiedName:
             return cls["classInfos"]["sourceCode"]
@@ -166,11 +166,8 @@ def get_extended_classes(
     while class_qualified_name:
         for cls in class_info:
             if cls["classInfos"]["classQualifiedName"] == class_qualified_name:
-                if (cls["classInfos"]["extendedClassQualifiedName"] and  
-                    cls["classInfos"]["extendedClassQualifiedName"]not in ["","java.lang.Object"]):
-                    class_qualified_name = cls["classInfos"][
-                        "extendedClassQualifiedName"
-                    ]
+                if (cls["classInfos"]["extendedClassQualifiedName"]not in ["","java.lang.Object"]):
+                    class_qualified_name = cls["classInfos"]["extendedClassQualifiedName"]
                     extended_classes.append(class_qualified_name)
                 else:
                     class_qualified_name = None
@@ -193,6 +190,7 @@ def modified_get_parent_class_code(row: pd.Series, storage_url: str) -> Optional
     parsed_project_path = "{}/parsed_{}.json".format(storage_url, row["proj_name"])
     with open(parsed_project_path, "r") as f:
         class_info = json.load(f)
+    
     for cls in class_info:
         if (
             cls["classInfos"]["filePath"].replace(cls["projectPath"] + "/", "")
@@ -204,7 +202,11 @@ def modified_get_parent_class_code(row: pd.Series, storage_url: str) -> Optional
     else:
         class_qualified_name = None
     extended_classes = get_extended_classes(class_qualified_name, class_info)
-    return '\n'.join(list(map(lambda x: get_code(x, class_info), extended_classes))) if extended_classes else None
+    code = '\n'.join(list(map(lambda x: get_code(x, class_info), extended_classes))) if extended_classes else None
+    if not code or code == "":
+        return None
+    else:
+        return code
 
 
 def add_parent_class_code(df: pd.DataFrame, storage_url: str) -> pd.DataFrame:
@@ -264,7 +266,7 @@ def main():
     df.to_parquet(args.checkpoint, "fastparquet")
     df = get_parent_signature_and_var(df=df)
     df.to_parquet(args.output, "fastparquet")
-
+    # df.to_json(args.output, lines=True, orient="records")  #####
 
 if __name__ == "__main__":
     main()
