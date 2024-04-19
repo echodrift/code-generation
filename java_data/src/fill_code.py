@@ -60,7 +60,7 @@ def fill_generated_code_to_file(
     """
     tqdm.pandas()
     generated_func_dataset["filled_file_" + generated_func_column] = (
-        generated_func_dataset.progress_apply(fill_file, axis=1)
+        generated_func_dataset.progress_apply(lambda row: fill_file(row, generated_func_column, project_storage_url), axis=1)
     )
     return generated_func_dataset
 
@@ -71,8 +71,16 @@ def main():
     args.add_argument("-o", "--output", dest="output")
     args.add_argument("-c", "--col", dest="col")
     args.add_argument("-d", "--dir", dest="dir")
+    args.add_argument("-t", "--type", dest="type")
     args = args.parse_args()
-    df = pd.read_parquet(args.input, "fastparquet")
+    match args.type:
+        case "jsonl":
+            df = pd.read_json(args.input, lines=True)
+        case "parquet":
+            df = pd.read_parquet(args.input, "fastparquet")
+        case "csv":
+            df = pd.read_csv(args.input)
+    print(args.col)
     new_df = fill_generated_code_to_file(
         generated_func_dataset=df,
         generated_func_column=args.col,

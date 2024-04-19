@@ -73,12 +73,13 @@ class CompilableChecker:
             Dict[FileInfo, ErrorInfo]: Error info
         """
         error_files: Dict[FileInfo, ErrorInfo] = {}
-        err_pattern = r'^\[ERROR\] (.+?):\[(?P<line>\d+),(?P<col>\d+)\] (?P<err>.+)$'
+        err_pattern = r'^\[ERROR\] (?P<file>.+?):\[(?P<line>\d+),(?P<col>\d+)\] (?P<err>.+)$'
         for project_name, feedback  in compile_info:
             errors = set(re.findall(err_pattern, feedback, re.MULTILINE))
             for error in errors:
-                relative_path = error[0].split(project_name)[1][1:]
-                file_error = f"""(Line: {error["line"]}, Column: {error["col"]}, Error: {error["err"]})\n"""
+                file, line, col, err = error
+                relative_path = file.split(project_name)[1][1:]
+                file_error = f"""Line: {line}, Column: {col}, Error: {err})\n"""
                 error_files[FileInfo(project_name, relative_path)] = ErrorInfo(file_error)
         return error_files
     
@@ -100,8 +101,8 @@ class CompilableChecker:
             compile_info.append(CompilerFeedback(project, data.stdout))
         error_files = self.extract_error(compile_info)
         def get_compile_info(row):
-            error = error_files[(row["proj_name"], row["relative_path"])]
-            return error if error else "<COMPILED_SUCCESSFULLY>"
+            error = error_files.get((row["proj_name"], row["relative_path"]), None)
+            return error.error_info if error else "<COMPILED_SUCCESSFULLY>"
         df["compile_info_" + self.column_to_check] = df.apply(get_compile_info, axis=1)
         return df
     
