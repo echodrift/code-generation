@@ -2,7 +2,7 @@ import argparse
 import codecs
 import random
 import re
-from typing import List, NamedTuple, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import pandas as pd
 from antlr4 import *
@@ -12,29 +12,31 @@ from java.java8.JavaParserListener import JavaParserListener
 from tqdm import tqdm
 from subprocess import run
 import multiprocessing as mp
+from itertools import repeat
+from dataclasses import dataclass
 
-ASample = NamedTuple(
-    "ASample",
-    [
-        ("class_name", str),
-        ("func_name", str),
-        ("masked_class", str),
-        ("func_body", str),
-    ],
-)
-Location = NamedTuple(
-    "Location",
-    [("start_line", int), ("start_col", int), ("end_line", int), ("end_col", int)],
-)
-Function = NamedTuple(
-    "Function",
-    [
-        ("class_name", str),
-        ("class_loc", Location),
-        ("func_name", str),
-        ("func_body_loc", Location),
-    ],
-)
+@dataclass
+class ASample:
+    class_name: str
+    func_name: str
+    masked_class: str
+    func_body: str
+
+
+@dataclass
+class Location:
+    start_line: int
+    start_col: int
+    end_line: int
+    end_col: int
+
+
+@dataclass
+class Function:
+    class_name: str
+    class_loc: Location
+    func_name: str
+    func_body_loc: Location
 
 
 class ExtractFunc(JavaParserListener):
@@ -77,7 +79,7 @@ class ExtractFunc(JavaParserListener):
         except:
             pass
 
-    def get_function(self):
+    def get_functions(self):
         return self.functions
 
 
@@ -107,7 +109,7 @@ def get_functions(java_code: str) -> Optional[List[Function]]:
         # Walk the parse tree
         walker = ParseTreeWalker()
         walker.walk(listener, tree)
-        functions = listener.get_function()
+        functions = listener.get_functions()
     except:
         return None
     return functions
@@ -147,7 +149,8 @@ def modified_mask_function(java_code: str) -> Optional[ASample]:
     if not functions:
         return None
 
-    # Randomly select a function
+    # Weighted random a function based on function body length
+    # the more function long, the more probability it would be chose
     def get_len(java_code: str, loc: Location) -> int:
         start_idx, end_idx = get_location(java_code, loc)
         return end_idx - start_idx
@@ -164,7 +167,6 @@ def modified_mask_function(java_code: str) -> Optional[ASample]:
 
     total = sum(weights)
     cumulative_weights = [weight / total for weight in weights]
-
     random_function = random.choices(functions, weights=cumulative_weights, k=1)[0]
 
     # Extract function body
@@ -189,7 +191,7 @@ def modified_mask_function(java_code: str) -> Optional[ASample]:
     )
 
 
-def transform(java_file_url: str, repos_directory: str = "/var/data/lvdthieu/repos/new-projects/"):
+def make_a_sample(java_file_url: str, repos_directory: str):
     project_name = java_file_url.replace(repos_directory, "").split("/")[0]
     relative_path = "/".join(java_file_url.replace(repos_directory, "").split("/")[1:])
     with codecs.open(java_file_url, "r", encoding="utf-8", errors="ignore") as f:
@@ -223,22 +225,23 @@ def transform(java_file_url: str, repos_directory: str = "/var/data/lvdthieu/rep
 def make_dataset(
     java_file_urls: str,
     repos_directory: str,
-    checkpoint: str = "",
+    num_process: int = 10
 ) -> pd.DataFrame:
     """Make dataset
 
     Args:
-        java_file_urls_storage_url (str): url to file that contain java file urls
-        repos_directory (str): path to diretory of repositories. Default to "/var/data/lvdthieu/repos/maven_projects/"
-        checkpoint (str, optional): where to store checkpoint of process. Defaults to "".
+        java_file_urls (str): java file urls
+        repos_directory (str): path to diretory of repositories
+        num_process (int): number of concurrent processes. Default: 10.
 
     Returns:
         pd.DataFrame: Dataset
     """
-    with mp.Pool(processes=10) as pool:
-        rows = list(tqdm(pool.imap(transform, java_file_urls), total=len(java_file_urls)))
+    iteration = len(java_file_urls)
+    arguments = zip(java_file_urls, repeat(repos_directory, iteration))
+    with mp.Pool(processes=num_process) as pool:
+        rows = list(tqdm(pool.imap(make_a_sample, arguments), total=iteration))
     # rows = []
-    
     # for java_file_url in tqdm(java_file_urls):
     #     project_name = java_file_url.replace(repos_directory, "").split("/")[0]
     #     relative_path = "/".join(java_file_url.replace(repos_directory, "").split("/")[1:])
@@ -281,22 +284,18 @@ def collect_java_file_urls(repos_directory: str) -> List[str]:
     find ~+ -type f -name *.java 
     """
     output = run(cmd, shell=True, capture_output=True, text=True).stdout
-    java_file_urls = output.split('\n')[:-1]
+    java_file_urls = output.split('\n')[:-1]  # Remove the last element because it is the empty line for spacing in terminal 
     return java_file_urls
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--input", dest="input")
-    parser.add_argument("-o", "--output", dest="output")
-    parser.add_argument("-c", "--check", dest="checkpoint")
+    parser.add_argument("--input", dest="input")
+    parser.add_argument("--output", dest="output")
+    parser.add_argument("--workers", dest="workers")
     args = parser.parse_args()
-
     java_file_urls = collect_java_file_urls(repos_directory=args.input)
-    df = make_dataset(java_file_urls=java_file_urls, repos_directory=args.input, checkpoint=args.checkpoint)
-    # df = post_processing(
-        
-    # )
+    df = make_dataset(java_file_urls=java_file_urls, repos_directory=args.input, num_process=args.workers)
     df.to_parquet(args.output, "fastparquet")
 
 
@@ -304,5 +303,7 @@ if __name__ == "__main__":
     main()
     # with open("/var/data/lvdthieu/code-generation/java_data/AJavaFile.java", "r") as f:
     #     java_code = f.read()
+    # print(java_code)
+    # print("-" * 100)
     # print(get_functions(java_code))
-    # get_functions(java_code=java_code)
+ 

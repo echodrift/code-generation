@@ -67,11 +67,11 @@ def fill_generated_code_to_file(
 
 def main():
     args = argparse.ArgumentParser()
-    args.add_argument("-i", "--input", dest="input")
-    args.add_argument("-o", "--output", dest="output")
-    args.add_argument("-c", "--col", dest="col")
-    args.add_argument("-d", "--dir", dest="dir")
-    args.add_argument("-t", "--type", dest="type")
+    args.add_argument("--input", dest="input")
+    args.add_argument("--input-type", dest="type")
+    args.add_argument("--output", dest="output")
+    args.add_argument("--col", dest="col")
+    args.add_argument("--dir", dest="dir")
     args = args.parse_args()
     match args.type:
         case "jsonl":
@@ -80,7 +80,6 @@ def main():
             df = pd.read_parquet(args.input, "fastparquet")
         case "csv":
             df = pd.read_csv(args.input)
-    print(args.col)
     new_df = fill_generated_code_to_file(
         generated_func_dataset=df,
         generated_func_column=args.col,
