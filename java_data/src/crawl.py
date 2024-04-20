@@ -29,7 +29,7 @@ class Crawler:
             List[RepoMetadata]: Github repositories metadata
         """
         all_elements: List[RepoMetadata] = []
-        for page in tqdm(range(0, self.num_pages)):
+        for page in tqdm(range(0, self.num_pages), desc="Crawling pages"):
             url = f"https://api.github.com/search/repositories?q=language:java+pushed:>2023-10-01&sort=star&order=desc&per_page=100&page={page}"
             response = requests.get(url, headers=HEADERS)
             if response.status_code != 200:
@@ -83,7 +83,7 @@ class Crawler:
             repo_urls (List[str]): Github repositories html url
             repo_storage_url (str): File url to store
         """
-        for repo_url in tqdm(repo_urls):
+        for repo_url in tqdm(repo_urls, desc="Cloning repositories"):
             owner, repo = repo_url.split('/')[-2:]
             cmd = \
             f"""

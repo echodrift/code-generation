@@ -240,7 +240,7 @@ def make_dataset(
     iteration = len(java_file_urls)
     arguments = zip(java_file_urls, repeat(repos_directory, iteration))
     with mp.Pool(processes=num_process) as pool:
-        rows = list(tqdm(pool.imap(make_a_sample, arguments), total=iteration))
+        rows = list(tqdm(pool.imap(make_a_sample, arguments), total=iteration, desc="Making data"))
     # rows = []
     # for java_file_url in tqdm(java_file_urls):
     #     project_name = java_file_url.replace(repos_directory, "").split("/")[0]

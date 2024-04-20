@@ -52,10 +52,10 @@ class CompilableChecker:
     def copy_project_to_tmp_dir(self):
         """Copy project to temporary directory
         """
-        for project in tqdm(self.projects, desc="Copying project"):
+        for project in tqdm(self.projects, desc="Copying projects"):
             path_to_project = "{}/{}".format(self.proj_storage_dir, project)
             # if not os.path.exists("{}/{}".format(self.tmp_dir, project)):
-            run(f"cp -rf {path_to_project} {self.tmp_dir}", shell=True)
+            run(f"cp -Rf {path_to_project} {self.tmp_dir}", shell=True)
     
     def _fill_file(self, row) -> Optional[str]:
         """Fill generated code to file
@@ -105,7 +105,7 @@ class CompilableChecker:
                     raise LookupError("There is an error while filling file {}".format(path_to_file))
                 else:
                     with open(path_to_file, "w") as f:
-                        f.write(row[self.column_to_check])
+                        f.write(filled_file)
             except LookupError as e:
                 self.logger.error(e)
             except:
