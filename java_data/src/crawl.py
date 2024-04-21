@@ -4,6 +4,7 @@ from collections import Counter
 from subprocess import run
 from typing import List
 from tqdm import tqdm
+from dataclasses import dataclass
 
 import requests
 
@@ -12,12 +13,14 @@ HEADERS = {
     'Accept': 'application/vnd.github.v3+json'
 }
 
+
+@dataclass
 class RepoMetadata:
     pass
 
 class Crawler:
-    def __init__(self):
-        pass
+    def __init__(self, num_pages):
+        self.num_pages = num_pages
 
     def search_repo(self) -> List[RepoMetadata]:
         """Search top 1000 java repositories
@@ -26,7 +29,7 @@ class Crawler:
             List[RepoMetadata]: Github repositories metadata
         """
         all_elements: List[RepoMetadata] = []
-        for page in tqdm(range(0, 3)):
+        for page in tqdm(range(0, self.num_pages), desc="Crawling pages"):
             url = f"https://api.github.com/search/repositories?q=language:java+pushed:>2023-10-01&sort=star&order=desc&per_page=100&page={page}"
             response = requests.get(url, headers=HEADERS)
             if response.status_code != 200:
@@ -80,7 +83,7 @@ class Crawler:
             repo_urls (List[str]): Github repositories html url
             repo_storage_url (str): File url to store
         """
-        for repo_url in tqdm(repo_urls):
+        for repo_url in tqdm(repo_urls, desc="Cloning repositories"):
             owner, repo = repo_url.split('/')[-2:]
             cmd = \
             f"""
@@ -96,11 +99,12 @@ class Crawler:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-ri", dest="repos_info")
-    parser.add_argument("-d", "--dir", dest="dir")
+    parser.add_argument("--num-pages", dest="num_pages")
+    parser.add_argument("--repo-info", dest="repos_info")
+    parser.add_argument("--dir", dest="dir")
     args = parser.parse_args()
     # Crawl repo metadata and store into a file
-    crawler = Crawler()
+    crawler = Crawler(num_pages=args.num_pages)
     repo_metadata = crawler.search_repo()
     crawler.store_repo_metadata(repo_metadata, args.repos_info)
     repo_urls = crawler.get_repo_html_url(repo_metadata)

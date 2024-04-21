@@ -1,7 +1,7 @@
 #!/bin/bash
-PROJECT_STORAGE_DIR=$1  # /data/hieuvd/lvdthieu/maven_projects
-MVN=$2  # /home/hieuvd/apache-maven-3.6.3/bin/mvn
-COMPILABLE=$3  # /data/hieuvd/lvdthieu/compilable.txt
+PROJECT_STORAGE_DIR=$1  
+MVN=$2  
+COMPILABLE=$3  
 UNCOMPILABLE=$4  
 for PROJECT in "$PROJECT_STORAGE_DIR"/*
 do  
