@@ -29,14 +29,13 @@ class ExtractSignatureAndVar(JavaParserListener):
         self.class_name = ctx.identifier().getText()
 
     def enterMethodDeclaration(self, ctx):
-        
         self.func_name = ctx.identifier().getText()
         body = ctx.methodBody().block()
         func_start_idx, func_end_idx = get_location(
             self.java_code,
             Location(
                 ctx.start.line,
-                ctx.start.column,
+                ctx.start.column,   
                 ctx.stop.line,
                 ctx.stop.column + len(ctx.stop.text),
             ),
@@ -81,21 +80,21 @@ def extract_signature_and_var(java_code: str) -> Optional[str]:
     """
     if not java_code:
         return None
-    try:
-        input_stream = InputStream(java_code)
-        lexer = JavaLexer(input_stream)
-        token_stream = CommonTokenStream(lexer)
-        parser = JavaParser(token_stream)
-        tree = parser.compilationUnit()
-        # Create listener
-        listener = ExtractSignatureAndVar(java_code)
-        # Walk the parse tree
-        walker = ParseTreeWalker()
-        walker.walk(listener, tree)
-        class_comps = listener.get_class_comp()
-        return json.dumps(class_comps)
-    except:
-        return None
+    # try:
+    input_stream = InputStream(java_code)
+    lexer = JavaLexer(input_stream)
+    token_stream = CommonTokenStream(lexer)
+    parser = JavaParser(token_stream)
+    tree = parser.compilationUnit()
+    # Create listener
+    listener = ExtractSignatureAndVar(java_code)
+    # Walk the parse tree
+    walker = ParseTreeWalker()
+    walker.walk(listener, tree)
+    class_comps = listener.get_class_comp()
+    return json.dumps(class_comps)
+    # except:
+    #     return None
 
 
 def get_code(classQualifiedName: str, class_info: Dict) -> str:
@@ -203,11 +202,14 @@ def modified_get_parent_class_code(row: pd.Series, storage_url: str) -> Optional
     else:
         class_qualified_name = None
     extended_classes = get_extended_classes(class_qualified_name, class_info)
-    code = '\n'.join(list(map(lambda x: get_code(x, class_info), extended_classes))) if extended_classes else None
-    if not code or code == "":
-        return None
+    if not extended_classes:
+        return None, None
     else:
-        return code
+        code = '\n'.join(list(map(lambda x: get_code(x, class_info), extended_classes))) 
+        if not code or code == "":
+            return '\n'.join(extended_classes), None
+        else:
+            return '\n'.join(extended_classes), code
 
 
 def add_parent_class_code(df: pd.DataFrame, storage_url: str) -> pd.DataFrame:
@@ -219,9 +221,9 @@ def add_parent_class_code(df: pd.DataFrame, storage_url: str) -> pd.DataFrame:
     Returns:
         pd.DataFrame: Dataset with parent class code (if exist)
     """
-    tqdm.pandas()
-    df["parent_class_code"] = df.progress_apply(
-        lambda row: modified_get_parent_class_code(row, storage_url), axis=1
+    tqdm.pandas(desc="Adding parent class code")
+    df[["extended_classes", "parent_class_code"]] = df.progress_apply(
+        lambda row: modified_get_parent_class_code(row, storage_url), axis="columns", result_type="expand"
     )
     return df
 
@@ -234,7 +236,7 @@ def get_parent_signature_and_var(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: Dataset with parent signature and variables
     """
-    tqdm.pandas()
+    tqdm.pandas(desc="Adding inherit elements")
     df["inherit_elements"] = df["parent_class_code"].progress_apply(
         extract_signature_and_var
     )
@@ -243,18 +245,11 @@ def get_parent_signature_and_var(df: pd.DataFrame) -> pd.DataFrame:
 
 def main():
     args = argparse.ArgumentParser()
-    args.add_argument("-i", "--input", dest="input")
-    args.add_argument(
-        "-t",
-        "--type",
-        dest="input_type",
-        help="Input type select from [jsonl, parquet, csv]",
-    )
-    args.add_argument("-o", "--output", dest="output")
-    args.add_argument("-c", "--checkpoint", dest="checkpoint")
-    args.add_argument(
-        "-d", "--dir", dest="dir", help="Directoriy of parsed projects (json files)"
-    )
+    args.add_argument("--input", dest="input")
+    args.add_argument("--input-type", dest="input_type")
+    args.add_argument("--output", dest="output")
+    args.add_argument("--checkpoint", dest="checkpoint")
+    args.add_argument("--dir", dest="dir")
     args = args.parse_args()
     match args.input_type:
         case "jsonl":
@@ -263,11 +258,14 @@ def main():
             df = pd.read_parquet(args.input, "fastparquet")
         case "csv":
             df = pd.read_csv(args.input)
+    df = df.loc[:500]   # Temporary add
+    print("Read dataset done")
     df = add_parent_class_code(df=df, storage_url=args.dir)
+    print("Add parent class code done")
     df.to_parquet(args.checkpoint, "fastparquet")
     df = get_parent_signature_and_var(df=df)
+    print("Add inherit elements done")
     df.to_parquet(args.output, "fastparquet")
-    # df.to_json(args.output, lines=True, orient="records")  #####
 
 if __name__ == "__main__":
     main()

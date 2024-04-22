@@ -1,4 +1,4 @@
-from src.java.java8.JavaLexer import JavaLexer
+from java.java8.JavaLexer import JavaLexer
 from antlr4 import *
 import pandas as pd
 import numpy as np
@@ -81,7 +81,7 @@ def jsonl2parquet(src: str, dst: str):
     df.to_parquet(dst, "fastparquet")
 
 
-from src.extract_parent_context import extract_signature_and_var
+from extract_parent_context import extract_signature_and_var
 
 java_code = """
 public class Test {
@@ -101,4 +101,4 @@ public class Test2 {
 }
 """
 
-extract_signature_and_var(java_code)
+print(extract_signature_and_var(java_code))
