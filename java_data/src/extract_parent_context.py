@@ -29,6 +29,7 @@ class ExtractSignatureAndVar(JavaParserListener):
         self.class_name = ctx.identifier().getText()
 
     def enterMethodDeclaration(self, ctx):
+        
         self.func_name = ctx.identifier().getText()
         body = ctx.methodBody().block()
         func_start_idx, func_end_idx = get_location(
@@ -51,7 +52,7 @@ class ExtractSignatureAndVar(JavaParserListener):
                 ),
             )
             self.class_comp[self.class_name].append(
-                self.java_code[func_start_idx:func_body_start_idx] + "{<BODY>}"
+                self.java_code[func_start_idx:func_body_start_idx] + "{}"
             )
         else:
             self.class_comp[self.class_name].append(

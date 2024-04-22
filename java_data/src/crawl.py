@@ -29,7 +29,7 @@ class Crawler:
             List[RepoMetadata]: Github repositories metadata
         """
         all_elements: List[RepoMetadata] = []
-        for page in tqdm(range(0, self.num_pages), desc="Crawling pages"):
+        for page in tqdm(range(3, self.num_pages), desc="Crawling pages"):  # Temporary change 0 -> 3
             url = f"https://api.github.com/search/repositories?q=language:java+pushed:>2023-10-01&sort=star&order=desc&per_page=100&page={page}"
             response = requests.get(url, headers=HEADERS)
             if response.status_code != 200:
@@ -104,7 +104,7 @@ def main():
     parser.add_argument("--dir", dest="dir")
     args = parser.parse_args()
     # Crawl repo metadata and store into a file
-    crawler = Crawler(num_pages=args.num_pages)
+    crawler = Crawler(num_pages=int(args.num_pages))
     repo_metadata = crawler.search_repo()
     crawler.store_repo_metadata(repo_metadata, args.repos_info)
     repo_urls = crawler.get_repo_html_url(repo_metadata)
