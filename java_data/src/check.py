@@ -3,6 +3,10 @@ from antlr4 import *
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from subprocess import run
+import glob
+import os
+
 
 def count_java_tokens_antlr4(code):
     lexer = JavaLexer(InputStream(code))
@@ -101,4 +105,75 @@ public class Test2 {
 }
 """
 
-print(extract_signature_and_var(java_code))
+# print(extract_signature_and_var(java_code))
+def checker(repo_storage: str, ext: str):
+    class_files = []
+    for path, dir, files in os.walk(repo_storage):
+        for name in files:
+            if "$" not in name:
+                class_files.append("{}/{}".format(path,name))
+    class_files = list(filter(lambda file_path: "target/classes" in file_path, class_files))
+    print(len(class_files))
+    java_files = [lambda class_file: class_file.replace("target/classes", "src/main/java").replace(".class", ".java"), class_files]
+    print(*java_files[:5], sep='\n')
+    correct_java_files = []
+    for java_file in java_files:
+        try:
+            if os.path.exists(java_file):
+                correct_java_files.append(java_file)
+        except Exception as e:
+            print(e.message)
+            print(java_file)
+            break
+    print(len(correct_java_files))
+    print(*correct_java_files[:10], sep='\n')
+        
+
+def check_dup():
+    new_projects = os.listdir("/var/data/lvdthieu/repos/new-projects")
+    new_projects = [p.split('/')[-1] for p in new_projects]
+    with open("/var/data/lvdthieu/projects.txt", "r") as f:
+        old_projects = f.read().split('\n')[:-1]
+    print(new_projects[:5])
+    print("-" * 100)
+    print(old_projects[:-5])
+    print("-"* 100)
+    for p in new_projects:
+        if p in old_projects:
+            print(p)
+
+
+def rm_dup():
+    new_projects = os.listdir("/var/data/lvdthieu/repos/new-projects")
+    with open("/var/data/lvdthieu/projects.txt", "r") as f:
+        old_projects = f.read().split('\n')[:-1]
+    for p in new_projects:
+        if p in old_projects:
+            cmd=f"""
+            cd /var/data/lvdthieu/repos/new-projects            
+            rm -rf {p}
+            """
+            run(cmd, shell=True)
+            print(f"Deleted {p}")
+
+
+def get_java_file():
+    os.chdir("/var/data/lvdthieu/repos/new-projects")
+    all_files = []
+    for p in os.listdir():
+        cmd = f"""
+        find {p} -name *.java
+        """
+        data = run(cmd, shell=True, text=True, capture_output=True)
+        if data.stdout:
+            files = data.stdout.split('\n')
+            print(f"{p}: {len(files)}")
+            all_files.extend(files)
+    print("# files:", len(all_files))
+    df = pd.DataFrame({"java_files": all_files})
+    df.to_parquet("/var/data/lvdthieu/java-files.parquet", "fastparquet")
+
+if __name__ == "__main__":
+    # processed_project = "/var/data/lvdthieu/repos/processed-projects"
+    # checker(processed_project, ".class")
+    get_java_file()
