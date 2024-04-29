@@ -4,9 +4,9 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from subprocess import run
-import glob
+from collections import Counter
 import os
-
+from tqdm import tqdm
 
 def count_java_tokens_antlr4(code):
     lexer = JavaLexer(InputStream(code))
@@ -158,7 +158,7 @@ def rm_dup():
 
 
 def get_java_file():
-    os.chdir("/var/data/lvdthieu/repos/new-projects")
+    os.chdir("/var/data/lvdthieu/repos/processed-projects")
     all_files = []
     for p in os.listdir():
         cmd = f"""
@@ -173,7 +173,70 @@ def get_java_file():
     df = pd.DataFrame({"java_files": all_files})
     df.to_parquet("/var/data/lvdthieu/java-files.parquet", "fastparquet")
 
+def filter1():
+    df = pd.read_parquet("/var/data/lvdthieu/java-files.parquet", "fastparquet")
+    df = df[~df["java_files"].str.contains("test")]
+    df.to_parquet("/var/data/lvdthieu/old.parquet", "fastparquet")
+
+def filter2():
+    df = pd.read_parquet("/var/data/lvdthieu/old.parquet", "fastparquet")
+    df = df[df["java_files"].str.contains("src/main/java")]
+    df.to_parquet("/var/data/lvdthieu/old1.parquet", "fastparquet")
+
+def filter3():
+    """Remove java file without correspoding class file because it means that the file is not compiled
+    """
+    df = pd.read_parquet("/var/data/lvdthieu/old1.parquet")
+    valid_java_files = []
+    for file in tqdm(df["java_files"].tolist(), desc="Filtering"):
+        class_path = file.replace("/src/main/java", "/target/classes").replace(".java", ".class")
+        if os.path.exists(f"/var/data/lvdthieu/repos/processed-projects/{class_path}"):
+            valid_java_files.append(file)
+    print(len(valid_java_files))
+    new_df = pd.DataFrame({"java_files": valid_java_files})
+    new_df.to_parquet("/var/data/lvdthieu/old2.parquet", "fastparquet")
+    new_df = new_df.sample(n=100, random_state=0)
+    new_df.to_csv("/var/data/lvdthieu/java-files-check-v2.csv")
+
+
+def restruct():
+    """Restruct dataset of java file for dividing information into fields
+    """
+    df = pd.read_parquet("/var/data/lvdthieu/old2.parquet", "fastparquet")
+    tqdm.pandas(desc="Splitting")
+    def func(url):
+        parts = url.split('/')
+        project_name = parts[0]
+        relative_path = '/'.join(parts[1:])
+        return project_name, relative_path
+    
+    df["proj_name"], df["relative_path"] = zip(*df["java_files"].progress_apply(func))
+    print(df.info())
+    print("-"* 100)
+    print(df.describe())
+    df.to_parquet("/var/data/lvdthieu/old3.parquet", "fastparquet")
+
+
+def normalize():
+    df = pd.read_parquet("/var/data/lvdthieu/old3.parquet", "fastparquet")
+    cnt = Counter(df["proj_name"].tolist())
+    new = pd.DataFrame({"java_files": [], "proj_name": [], "relative_path": []})
+    for p in cnt:
+        print(p)
+        if cnt[p] <= 1256:
+            new = pd.concat([new, df[df["proj_name"] == p]], axis="index")
+        else:
+            tmp = df[df["proj_name"] == p]
+            tmp = tmp.sample(n=1256)
+            new = pd.concat([new, tmp], axis="index")
+    new.to_parquet("/var/data/lvdthieu/old4.parquet", "fastparquet")
+
 if __name__ == "__main__":
     # processed_project = "/var/data/lvdthieu/repos/processed-projects"
     # checker(processed_project, ".class")
-    get_java_file()
+    # get_java_file()
+    # filter1()
+    # filter2()
+    # filter3()
+    # restruct()
+    normalize()

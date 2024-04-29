@@ -191,9 +191,8 @@ def modified_mask_function(java_code: str) -> Optional[ASample]:
     )
 
 
-def make_a_sample(java_file_url: str, repos_directory: str):
-    project_name = java_file_url.replace(repos_directory, "").split("/")[0]
-    relative_path = "/".join(java_file_url.replace(repos_directory, "").split("/")[1:])
+def make_a_sample(argument: Tuple[str, str, str]):
+    java_file_url, project_name, relative_path = argument
     with codecs.open(java_file_url, "r", encoding="utf-8", errors="ignore") as f:
         try:
             java_code = f.read()
@@ -223,7 +222,7 @@ def make_a_sample(java_file_url: str, repos_directory: str):
     
 
 def make_dataset(
-    java_file_urls: str,
+    java_files: pd.DataFrame,
     repos_directory: str,
     num_process: int = 10
 ) -> pd.DataFrame:
@@ -237,35 +236,13 @@ def make_dataset(
     Returns:
         pd.DataFrame: Dataset
     """
-    iteration = len(java_file_urls)
-    arguments = zip(java_file_urls, repeat(repos_directory, iteration))
+    iteration = len(java_files)
+    tqdm.pandas(desc="Making absolute url")
+    java_files["absolute_url"] = java_files["java_files"].progress_apply(lambda file: f"{repos_directory}/{file}")
+
+    arguments = list(zip(java_files["absolute_url"], java_files["proj_name"], java_files["relative_path"]))
     with mp.Pool(processes=num_process) as pool:
         rows = list(tqdm(pool.imap(make_a_sample, arguments), total=iteration, desc="Making data"))
-    # rows = []
-    # for java_file_url in tqdm(java_file_urls):
-    #     project_name = java_file_url.replace(repos_directory, "").split("/")[0]
-    #     relative_path = "/".join(java_file_url.replace(repos_directory, "").split("/")[1:])
-    #     with codecs.open(java_file_url, "r", encoding="utf-8", errors="ignore") as f:
-    #         try:
-    #             java_code = f.read()
-    #             # sample = mask_function(java_code)
-    #             sample = modified_mask_function(java_code)
-    #             if sample:
-    #                 rows.append(
-    #                     {
-    #                         "proj_name": project_name,
-    #                         "relative_path": relative_path,
-    #                         "class_name": sample.class_name,
-    #                         "func_name": sample.func_name,
-    #                         "masked_class": sample.masked_class,
-    #                         "func_body": sample.func_body,
-    #                     }
-    #                 )
-    #         except:
-    #             pass
-    #     if checkpoint:
-    #         if rows and len(rows) % 1000 == 0:
-    #             pd.DataFrame(rows).to_parquet(checkpoint, "fastparquet")
     return pd.DataFrame(rows)
 
 
@@ -291,11 +268,13 @@ def collect_java_file_urls(repos_directory: str) -> List[str]:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", dest="input")
+    parser.add_argument("--dir", dest="dir")
     parser.add_argument("--output", dest="output")
     parser.add_argument("--workers", dest="workers")
     args = parser.parse_args()
-    java_file_urls = collect_java_file_urls(repos_directory=args.input)
-    df = make_dataset(java_file_urls=java_file_urls, repos_directory=args.input, num_process=args.workers)
+    java_files = pd.read_parquet(args.input)
+    java_files.reset_index(drop=True, inplace=True)
+    df = make_dataset(java_files=java_files, repos_directory=args.dir, num_process=int(args.workers))
     df.to_parquet(args.output, "fastparquet")
 
 
