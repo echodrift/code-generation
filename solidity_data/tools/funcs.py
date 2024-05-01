@@ -48,7 +48,7 @@ def merging(input_dir: str, concurrency: int, output: str):
         output (str): File location to store result
     """
     dfs = []
-    for i in range(1, concurrency + 1):
+    for i in tqdm(range(1, concurrency + 1), desc="Merging"):
         dfs.append(
             pd.read_parquet(
                 os.path.join(input_dir, f"result{i}.parquet"), engine="fastparquet"
@@ -75,7 +75,7 @@ def sharding(input: str, concurrency: int, output_dir: str):
 
     # files_source["source_idx"] = files_source.index
 
-    for i in range(1, concurrency):
+    for i in tqdm(range(1, concurrency), desc="Sharding"):
         files_source.iloc[(i - 1) * chunk : i * chunk].to_parquet(
             os.path.join(output_dir, f"batch{i}.parquet"),
             engine="fastparquet",
@@ -242,7 +242,8 @@ def make_test_suite(source: str, dest: str, column: str):
         dest (str): Destination location to save processed result
     """
     df = pd.read_parquet(source, engine="fastparquet")
-    df["source_code"] = df.apply(lambda row: fill_contract(row, sol_files=SOL_FILES, column=column), axis=1)
+    tqdm.pandas(desc="Filling contract")
+    df["source_code"] = df.progress_apply(lambda row: fill_contract(row, sol_files=SOL_FILES, column=column), axis=1)
     df.to_parquet(dest, engine="fastparquet")
 
 
@@ -254,12 +255,14 @@ def make_raw_test_suite(input: str, output: str, sol_files: pd.DataFrame):
         output (str): File path to write new data version
     """
     test = pd.read_json(path_or_buf=input, lines=True)
+    tqdm.pandas(desc="Getting file source index")
     test["file_source_idx"] = (
         test["source_idx"]
-        .apply(lambda idx: CONTRACTS.loc[idx, "source_idx"])
+        .progress_apply(lambda idx: CONTRACTS.loc[idx, "source_idx"])
         .astype("int64")
     )
-    test["file_source"] = test["file_source_idx"].apply(
+    tqdm.pandas(desc="Getting file source code")
+    test["file_source"] = test["file_source_idx"].progress_apply(
         lambda idx: sol_files.loc[idx, "source_code"]
     )
     test.drop(

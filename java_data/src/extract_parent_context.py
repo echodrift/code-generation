@@ -92,7 +92,7 @@ def extract_signature_and_var(java_code: str) -> Optional[str]:
     walker = ParseTreeWalker()
     walker.walk(listener, tree)
     class_comps = listener.get_class_comp()
-    return json.dumps(class_comps)
+    return ','.join(class_comps)
     # except:
     #     return None
 
@@ -108,11 +108,11 @@ def get_code(classQualifiedName: str, class_info: Dict) -> str:
         Optional[str]: Class code
     """
     if not classQualifiedName:
-        return ""
+        return None
     for cls in class_info:
         if cls["classInfos"]["classQualifiedName"] == classQualifiedName:
             return cls["classInfos"]["sourceCode"]
-    return ""
+    return None
 
 
 def get_parent_class_code(row: pd.Series, storage_url: str) -> Optional[str]:
