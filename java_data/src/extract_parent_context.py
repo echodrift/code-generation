@@ -80,21 +80,21 @@ def extract_signature_and_var(java_code: str) -> Optional[str]:
     """
     if not java_code:
         return None
-    # try:
-    input_stream = InputStream(java_code)
-    lexer = JavaLexer(input_stream)
-    token_stream = CommonTokenStream(lexer)
-    parser = JavaParser(token_stream)
-    tree = parser.compilationUnit()
-    # Create listener
-    listener = ExtractSignatureAndVar(java_code)
-    # Walk the parse tree
-    walker = ParseTreeWalker()
-    walker.walk(listener, tree)
-    class_comps = listener.get_class_comp()
-    return ','.join(class_comps)
-    # except:
-    #     return None
+    try:
+        input_stream = InputStream(java_code)
+        lexer = JavaLexer(input_stream)
+        token_stream = CommonTokenStream(lexer)
+        parser = JavaParser(token_stream)
+        tree = parser.compilationUnit()
+        # Create listener
+        listener = ExtractSignatureAndVar(java_code)
+        # Walk the parse tree
+        walker = ParseTreeWalker()
+        walker.walk(listener, tree)
+        class_comps = listener.get_class_comp()
+        return ','.join(class_comps)
+    except:
+        return None
 
 
 def get_code(classQualifiedName: str, class_info: Dict) -> str:
@@ -151,9 +151,7 @@ def get_parent_class_code(row: pd.Series, storage_url: str) -> Optional[str]:
     return parent_class_code
 
 
-def get_extended_classes(
-    class_qualified_name: str, class_info: Dict
-) -> Optional[List[str]]:
+def get_extended_classes(class_qualified_name: str, class_info: Dict) -> Optional[List[str]]:
     """Return extended classes
 
     Args:

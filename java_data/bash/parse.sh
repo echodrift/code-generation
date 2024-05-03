@@ -1,8 +1,9 @@
 #!bin/bash
-PARSER=$1
-PROJ_NAMES=$2
-DATA_INP=$3 
-DATA_OUT=$4
+PARSER="/var/data/lvdthieu/code-generation/java_data/parser"
+PROJ_NAMES="/var/data/lvdthieu/projects_name.txt"
+DATA_INP="/var/data/lvdthieu/code-generation/java_data/data/projects"
+DATA_OUT="/var/data/lvdthieu/code-generation/java_data/data/parsed"
+
 while read PROJ_NAME
 do  
     command=""
@@ -13,8 +14,8 @@ do
     command+="&& java -cp ".:$PARSER/lib/Flute.jar" Main "
     command+="${DATA_INP}/project_${PROJ_NAME}.json "
     command+="${DATA_OUT}/parsed_${PROJ_NAME}.json"
-    echo $command
-    # screen -dmS ${PROJ_NAME} bash -c "$command"
+    # echo $command
+    screen -dmS ${PROJ_NAME} bash -c "$command"
     if [ $? -eq 0 ]
     then
         echo "Make a screen for $PROJ_NAME"

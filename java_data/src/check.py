@@ -173,15 +173,18 @@ def get_java_file():
     df = pd.DataFrame({"java_files": all_files})
     df.to_parquet("/var/data/lvdthieu/java-files.parquet", "fastparquet")
 
+
 def filter1():
     df = pd.read_parquet("/var/data/lvdthieu/java-files.parquet", "fastparquet")
     df = df[~df["java_files"].str.contains("test")]
     df.to_parquet("/var/data/lvdthieu/old.parquet", "fastparquet")
 
+
 def filter2():
     df = pd.read_parquet("/var/data/lvdthieu/old.parquet", "fastparquet")
     df = df[df["java_files"].str.contains("src/main/java")]
     df.to_parquet("/var/data/lvdthieu/old1.parquet", "fastparquet")
+
 
 def filter3():
     """Remove java file without correspoding class file because it means that the file is not compiled
@@ -231,6 +234,18 @@ def normalize():
             new = pd.concat([new, tmp], axis="index")
     new.to_parquet("/var/data/lvdthieu/old4.parquet", "fastparquet")
 
+
+def split_projects(input_path, storage_url):
+    import json
+    with open(input_path, "r") as f:
+        projects = json.load(f)
+    print(len(projects))
+    for project in projects:
+        project_name = project.split('/')[-1]
+        with open(f"{storage_url}/{project_name}.json", "w") as f:
+            json.dump({project: projects[project]}, f)
+
+
 if __name__ == "__main__":
     # processed_project = "/var/data/lvdthieu/repos/processed-projects"
     # checker(processed_project, ".class")
@@ -239,4 +254,5 @@ if __name__ == "__main__":
     # filter2()
     # filter3()
     # restruct()
-    normalize()
+    # normalize()
+    split_projects("/var/data/lvdthieu/projects-v1.json", "/var/data/lvdthieu/code-generation/java_data/data/parsed")
