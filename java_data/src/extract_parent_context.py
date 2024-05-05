@@ -203,7 +203,7 @@ def modified_get_parent_class_code(row: pd.Series, storage_url: str) -> Optional
     if not extended_classes:
         return None, None
     else:
-        code = '\n'.join(list(map(lambda x: get_code(x, class_info), extended_classes))) 
+        code = '\n'.join(list(map(lambda x: get_code(x, class_info) if get_code(x, class_info) else "", extended_classes))) 
         if not code or code == "":
             return '\n'.join(extended_classes), None
         else:
@@ -256,14 +256,14 @@ def main():
             df = pd.read_parquet(args.input, "fastparquet")
         case "csv":
             df = pd.read_csv(args.input)
-    df = df.loc[:500]   # Temporary add
+    df = df.loc[501:1000]   # Temporary add
     print("Read dataset done")
     df = add_parent_class_code(df=df, storage_url=args.dir)
     print("Add parent class code done")
-    df.to_parquet(args.checkpoint, "fastparquet")
+    # df.to_parquet(args.checkpoint, "fastparquet")
     df = get_parent_signature_and_var(df=df)
     print("Add inherit elements done")
-    df.to_parquet(args.output, "fastparquet")
-
+    # df.to_parquet(args.output, "fastparquet")
+    df.to_csv(args.output)
 if __name__ == "__main__":
     main()
