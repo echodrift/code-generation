@@ -9,3 +9,4 @@
 
 # Config
 - Store jar files and randoop 4.3.3 in lib folder
+- Make sure that all dependencies of project is in target/dependency folder, using: ```mvn dependency:copy-dependencies```
