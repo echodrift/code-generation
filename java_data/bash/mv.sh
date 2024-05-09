@@ -1,6 +1,0 @@
-SOURCES=$1
-DEST_DIR=$2
-while read PROJECT_PATH
-do
-    mv "$PROJECT_PATH" $DEST_DIR
-done < $SOURCES
