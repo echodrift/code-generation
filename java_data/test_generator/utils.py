@@ -10,7 +10,9 @@ from tqdm import tqdm
 parser = ArgumentParser()
 parser.add_argument("--input", dest="input")
 parser.add_argument("--base-dir", dest="base_dir")
-parser.add_argument("--task", dest="task")
+parser.add_argument(
+    "--task", dest="task", choices=["config-maven", "extract-method-qualified-name"]
+)
 parser.add_argument("--parser", dest="parser")
 parser.add_argument("--num-batch", dest="num_batch", type=int)
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -49,7 +51,8 @@ def extract_method_qualified_name(
         "." f":'{parser}/target/dependency/*'" f":{parser}/src/main/resources/Flute.jar"
     )
     # Run parser
-    for i in range(num_batch):
+    # for i in range(num_batch):
+    for i in [0, 1, 5, 8]:
         cmd = (
             f'screen -dmS batch{i} bash -c "'
             f"cd {parser}/target/classes "
@@ -60,10 +63,29 @@ def extract_method_qualified_name(
             f"{BASE_DIR}/out/batch{i}.csv "
             "'<method_qualified_names>'\""
         )
-        # print(cmd)
-        # break
+        print(cmd)
+        break
         run(cmd, shell=True)
         print(f"Created screen batch{i}")
+
+
+def modified_extract_method_qualified_name(
+    dataset: pd.DataFrame, parser: str, base_dir: str
+):
+    dataset.to_csv(f"{BASE_DIR}/data/dataset.csv", index=False)
+    class_path = (
+        "." f":'{parser}/target/dependency/*'" f":{parser}/src/main/resources/Flute.jar"
+    )
+    cmd = (
+        f"cd {parser}/target/classes "
+        f"&& java -cp {class_path} "
+        "Main "
+        f"{BASE_DIR}/data/dataset.csv "
+        f"{base_dir} "
+        f"{BASE_DIR}/out/output.csv "
+        "'<method_qualified_names>'"
+    )
+    run(cmd, shell=True)
 
 
 def main(args):
@@ -73,7 +95,8 @@ def main(args):
         maven_config(path_to_mvn_dirs)
 
     elif args.task == "extract-method-qualified-name":
-        extract_method_qualified_name(df, args.num_batch, args.parser, args.base_dir)
+        # extract_method_qualified_name(df, args.num_batch, args.parser, args.base_dir)
+        modified_extract_method_qualified_name(df, args.parser, args.base_dir)
 
 
 if __name__ == "__main__":

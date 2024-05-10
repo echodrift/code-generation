@@ -1,7 +1,11 @@
 import argparse
 import codecs
+import multiprocessing as mp
 import random
 import re
+from dataclasses import dataclass
+from itertools import repeat
+from subprocess import run
 from typing import List, Optional, Tuple
 
 import pandas as pd
@@ -10,10 +14,7 @@ from java.java8.JavaLexer import JavaLexer
 from java.java8.JavaParser import JavaParser
 from java.java8.JavaParserListener import JavaParserListener
 from tqdm import tqdm
-from subprocess import run
-import multiprocessing as mp
-from itertools import repeat
-from dataclasses import dataclass
+
 
 @dataclass
 class ASample:
@@ -199,32 +200,36 @@ def make_a_sample(argument: Tuple[str, str, str]):
             # sample = mask_function(java_code)
             sample = modified_mask_function(java_code)
             if sample:
-                return {"proj_name": project_name,
-                        "relative_path": relative_path,
-                        "class_name": sample.class_name,
-                        "func_name": sample.func_name,
-                        "masked_class": sample.masked_class,
-                        "func_body": sample.func_body}
+                return {
+                    "proj_name": project_name,
+                    "relative_path": relative_path,
+                    "class_name": sample.class_name,
+                    "func_name": sample.func_name,
+                    "masked_class": sample.masked_class,
+                    "func_body": sample.func_body,
+                }
             else:
-                return {"proj_name": project_name,
-                        "relative_path": relative_path,
-                        "class_name": None,
-                        "func_name": None,
-                        "masked_class": None,
-                        "func_body": None}
-        except:
-            return {"proj_name": None,
-                    "relative_path": None,
+                return {
+                    "proj_name": project_name,
+                    "relative_path": relative_path,
                     "class_name": None,
                     "func_name": None,
                     "masked_class": None,
-                    "func_body": None}
-    
+                    "func_body": None,
+                }
+        except:
+            return {
+                "proj_name": None,
+                "relative_path": None,
+                "class_name": None,
+                "func_name": None,
+                "masked_class": None,
+                "func_body": None,
+            }
+
 
 def make_dataset(
-    java_files: pd.DataFrame,
-    repos_directory: str,
-    num_process: int = 10
+    java_files: pd.DataFrame, repos_directory: str, num_process: int = 10
 ) -> pd.DataFrame:
     """Make dataset
 
@@ -238,11 +243,23 @@ def make_dataset(
     """
     iteration = len(java_files)
     tqdm.pandas(desc="Making absolute url")
-    java_files["absolute_url"] = java_files["java_files"].progress_apply(lambda file: f"{repos_directory}/{file}")
+    java_files["absolute_url"] = java_files["java_files"].progress_apply(
+        lambda file: f"{repos_directory}/{file}"
+    )
 
-    arguments = list(zip(java_files["absolute_url"], java_files["proj_name"], java_files["relative_path"]))
+    arguments = list(
+        zip(
+            java_files["absolute_url"],
+            java_files["proj_name"],
+            java_files["relative_path"],
+        )
+    )
     with mp.Pool(processes=num_process) as pool:
-        rows = list(tqdm(pool.imap(make_a_sample, arguments), total=iteration, desc="Making data"))
+        rows = list(
+            tqdm(
+                pool.imap(make_a_sample, arguments), total=iteration, desc="Making data"
+            )
+        )
     return pd.DataFrame(rows)
 
 
@@ -261,7 +278,9 @@ def collect_java_file_urls(repos_directory: str) -> List[str]:
     find ~+ -type f -name *.java 
     """
     output = run(cmd, shell=True, capture_output=True, text=True).stdout
-    java_file_urls = output.split('\n')[:-1]  # Remove the last element because it is the empty line for spacing in terminal 
+    java_file_urls = output.split("\n")[
+        :-1
+    ]  # Remove the last element because it is the empty line for spacing in terminal
     return java_file_urls
 
 
@@ -274,7 +293,9 @@ def main():
     args = parser.parse_args()
     java_files = pd.read_parquet(args.input)
     java_files.reset_index(drop=True, inplace=True)
-    df = make_dataset(java_files=java_files, repos_directory=args.dir, num_process=int(args.workers))
+    df = make_dataset(
+        java_files=java_files, repos_directory=args.dir, num_process=int(args.workers)
+    )
     df.to_parquet(args.output, "fastparquet")
 
 
@@ -285,4 +306,3 @@ if __name__ == "__main__":
     # print(java_code)
     # print("-" * 100)
     # print(get_functions(java_code))
- 

@@ -1,3 +1,4 @@
 [submodule "java_data/java-parser"]
 	path = java_data/java-parser
 	url = git@github.com:3rcode/java-parser.git
+	branch = main
