@@ -1,8 +1,9 @@
 import logging
+import multiprocessing as mp
 import os
 from argparse import ArgumentParser
 from subprocess import run
-from typing import List
+from typing import List, Tuple
 
 import pandas as pd
 from tqdm import tqdm
@@ -29,56 +30,73 @@ def search_jar_in_project(project_url: str) -> List[str]:
     return all_jars
 
 
+def generate_test_case_a_file(args: Tuple[str, str, str]) -> bool:
+    base_dir, proj_name, relative_path, randoop_class_path, time_limit, output_limit = (
+        args
+    )
+    # if row["proj_name"] == "soot-oss_soot":  # Temporary add
+    relative_path_to_pom = relative_path.split("/src/main/java/")[0]
+    path_to_pom = f"{base_dir}/{proj_name}/{relative_path_to_pom}"
+    qualified_name = (
+        relative_path.split("src/main/java/")[1].replace(".java", "").replace("/", ".")
+    )
+    all_local_jars = search_jar_in_project(f"{base_dir}/{proj_name}")
+    # print(*all_local_jars, sep='\n')
+    class_path = (
+        "."
+        f":{path_to_pom}/target/classes"
+        # f":{path_to_pom}/target/dependency/*"
+        f":{':'.join(all_local_jars)}"
+        f":{randoop_class_path}"
+    )
+    cmd = (
+        f"cd {path_to_pom} "
+        f"&& java -classpath {class_path} randoop.main.Main gentests "
+        f"--testclass {qualified_name} "
+        # f"--methodlist={path_to_pom}/methodlist.txt "
+        f"--time-limit {time_limit} "
+        f"--output-limit {output_limit}"
+    )
+    # print(cmd)
+    try:
+        run(cmd, shell=True)
+    except Exception:
+        return False
+        # logging.info(
+        #     f"Can not gentest for {row['proj_name']}/{row['relative_path']}"
+        # )
+    return True
+
+
 def generate_test_cases(
     dataset: pd.DataFrame, base_dir: str, time_limit: int, output_limit: int
-) -> pd.DataFrame:
+) -> pd.Series:
     randoop_class_path = f"{BASE_DIR}/lib/randoop-4.3.3/randoop-all-4.3.3.jar"
-    success = [True] * len(dataset)
-
-    for idx, row in tqdm(
-        dataset.iterrows(), desc="Generating test", total=len(dataset)
-    ):
-        # if row["proj_name"] == "soot-oss_soot":  # Temporary add
-        relative_path_to_pom = row["relative_path"].split("/src/main/java/")[0]
-        path_to_pom = f"{base_dir}/{row['proj_name']}/{relative_path_to_pom}"
-        qualified_name = (
-            row["relative_path"]
-            .split("src/main/java/")[1]
-            .replace(".java", "")
-            .replace("/", ".")
-        )
-        all_local_jars = search_jar_in_project(f"{base_dir}/{row['proj_name']}")
-        # print(*all_local_jars, sep='\n')
-        class_path = (
-            "."
-            f":{path_to_pom}/target/classes"
-            # f":{path_to_pom}/target/dependency/*"
-            f":{':'.join(all_local_jars)}"
-            f":{randoop_class_path}"
-        )
-        cmd = (
-            f"cd {path_to_pom} "
-            f"&& java -classpath {class_path} randoop.main.Main gentests "
-            f"--testclass {qualified_name} "
-            # f"--methodlist={path_to_pom}/methodlist.txt "
-            f"--time-limit {time_limit} "
-            f"--output-limit {output_limit}"
-        )
-        # print(cmd)
-        try:
-            run(cmd, shell=True)
-        except Exception:
-            success[idx] = False
-            logging.info(
-                f"Can not gentest for {row['proj_name']}/{row['relative_path']}"
+    iteration = len(dataset)
+    arguments = zip(
+        [base_dir] * iteration,
+        dataset["proj_name"],
+        dataset["relative_path"],
+        [randoop_class_path] * iteration,
+        [time_limit] * iteration,
+        [output_limit] * iteration,
+    )
+    with mp.Pool(processes=mp.cpu_count() - 1) as pool:
+        rows = list(
+            tqdm(
+                pool.imap(generate_test_case_a_file, arguments),
+                total=iteration,
+                desc="Generating test",
             )
-    dataset["generated_test"] = success
+        )
+    dataset["generated_test"] = rows
+
     return dataset
 
 
 def main(args):
     df = pd.read_parquet(args.input)
-    df = df.sample(n=5, random_state=0)
+    # df = df.sample(n=100, random_state=0)
     generate_status = generate_test_cases(
         df, args.base_dir, args.time_limit, args.output_limit
     )
