@@ -11,12 +11,17 @@ import pandas as pd
 from tqdm import tqdm
 import logging
 
+class CompilerFeedback(NamedTuple):
+    project_name: str
+    feedback: str
 
-CompilerFeedback = NamedTuple("CompilerFeedback", [("project_name", str), ("feedback", str)])
+class FileInfo(NamedTuple):
+    project_name: str
+    relative_path: str
 
-FileInfo = NamedTuple("FileInfo", [("project_name", str), ("relative_path", str)])
 
-ErrorInfo = NamedTuple("ErrorInfo", [("error_info", str)])
+class ErrorInfo(NamedTuple):
+    error_info: str
 
 
 def timing(f):

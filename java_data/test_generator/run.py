@@ -31,14 +31,21 @@ def search_jar_in_project(project_url: str) -> List[str]:
 
 
 def generate_test_case_a_file(args: Tuple[str, str, str]) -> bool:
-    base_dir, proj_name, relative_path, randoop_class_path, time_limit, output_limit = (
-        args
-    )
+    (
+        base_dir,
+        proj_name,
+        relative_path,
+        randoop_class_path,
+        time_limit,
+        output_limit,
+    ) = args
     # if row["proj_name"] == "soot-oss_soot":  # Temporary add
     relative_path_to_pom = relative_path.split("/src/main/java/")[0]
     path_to_pom = f"{base_dir}/{proj_name}/{relative_path_to_pom}"
     qualified_name = (
-        relative_path.split("src/main/java/")[1].replace(".java", "").replace("/", ".")
+        relative_path.split("src/main/java/")[1]
+        .replace(".java", "")
+        .replace("/", ".")
     )
     all_local_jars = search_jar_in_project(f"{base_dir}/{proj_name}")
     # print(*all_local_jars, sep='\n')
@@ -51,7 +58,7 @@ def generate_test_case_a_file(args: Tuple[str, str, str]) -> bool:
     )
     cmd = (
         f"cd {path_to_pom} "
-        f"&& java -classpath {class_path} randoop.main.Main gentests "
+        f"&& timeout 20 java -classpath {class_path} randoop.main.Main gentests "
         f"--testclass {qualified_name} "
         # f"--methodlist={path_to_pom}/methodlist.txt "
         f"--time-limit {time_limit} "
@@ -71,36 +78,57 @@ def generate_test_case_a_file(args: Tuple[str, str, str]) -> bool:
 def generate_test_cases(
     dataset: pd.DataFrame, base_dir: str, time_limit: int, output_limit: int
 ) -> pd.Series:
+
     randoop_class_path = f"{BASE_DIR}/lib/randoop-4.3.3/randoop-all-4.3.3.jar"
-    iteration = len(dataset)
-    arguments = zip(
-        [base_dir] * iteration,
-        dataset["proj_name"],
-        dataset["relative_path"],
-        [randoop_class_path] * iteration,
-        [time_limit] * iteration,
-        [output_limit] * iteration,
-    )
-    with mp.Pool(processes=mp.cpu_count() - 1) as pool:
-        rows = list(
-            tqdm(
-                pool.imap(generate_test_case_a_file, arguments),
-                total=iteration,
-                desc="Generating test",
+    # iteration = len(dataset)
+    # arguments = zip(
+    #     [base_dir] * iteration,
+    #     dataset["proj_name"],
+    #     dataset["relative_path"],
+    #     [randoop_class_path] * iteration,
+    #     [time_limit] * iteration,
+    #     [output_limit] * iteration,
+    # )
+    # with mp.Pool(processes=10) as pool:
+    #     rows = list(
+    #         tqdm(
+    #             pool.imap(generate_test_case_a_file, arguments),
+    #             total=iteration,
+    #             desc="Generating test",
+    #         )
+    #     )
+    generate_status = []
+    for _, row in tqdm(
+        dataset.iterrows(), desc="Generating test", total=len(dataset)
+    ):
+        try:
+            generate_status.append(
+                generate_test_case_a_file(
+                    (
+                        base_dir,
+                        row["proj_name"],
+                        row["relative_path"],
+                        randoop_class_path,
+                        time_limit,
+                        output_limit,
+                    )
+                )
             )
-        )
-    dataset["generated_test"] = rows
+        except:
+            generate_status.append(False)
+    
+    dataset["generated_test"] = generate_status
 
     return dataset
 
 
 def main(args):
     df = pd.read_parquet(args.input)
-    # df = df.sample(n=100, random_state=0)
+    df = df.loc[20000:]
     generate_status = generate_test_cases(
         df, args.base_dir, args.time_limit, args.output_limit
     )
-    generate_status.to_parquet("/var/data/lvdthieu/generate_status.parquet")
+    generate_status.to_parquet("/var/data/lvdthieu/generate_status_5.parquet")
     # junit_class_path = (
     #     f"{BASE_DIR}/lib/hamcrest-core-1.3.jar"
     #     f":{BASE_DIR}/lib/junit-4.12.jar"

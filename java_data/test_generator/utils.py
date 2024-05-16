@@ -11,7 +11,9 @@ parser = ArgumentParser()
 parser.add_argument("--input", dest="input")
 parser.add_argument("--base-dir", dest="base_dir")
 parser.add_argument(
-    "--task", dest="task", choices=["config-maven", "extract-method-qualified-name"]
+    "--task",
+    dest="task",
+    choices=["config-maven", "extract-method-qualified-name"],
 )
 parser.add_argument("--parser", dest="parser")
 parser.add_argument("--num-batch", dest="num_batch", type=int)
@@ -21,7 +23,9 @@ BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 def extract_maven_dir_urls(dataset: pd.DataFrame, base_dir: str) -> List[str]:
     paths = []
     for _, row in dataset.iterrows():
-        relative_path_to_classes = row["relative_path"].split("/src/main/java/")[0]
+        relative_path_to_classes = row["relative_path"].split(
+            "/src/main/java/"
+        )[0]
         path_to_mvn_dir = (
             f"""{base_dir}/{row["proj_name"]}/{relative_path_to_classes}"""
         )
@@ -48,7 +52,9 @@ def extract_method_qualified_name(
     print(f"Sharded dataset into {num_batch} batches")
 
     class_path = (
-        "." f":'{parser}/target/dependency/*'" f":{parser}/src/main/resources/Flute.jar"
+        "."
+        f":'{parser}/target/dependency/*'"
+        f":{parser}/src/main/resources/Flute.jar"
     )
     # Run parser
     # for i in range(num_batch):
@@ -74,7 +80,9 @@ def modified_extract_method_qualified_name(
 ):
     dataset.to_csv(f"{BASE_DIR}/data/dataset.csv", index=False)
     class_path = (
-        "." f":'{parser}/target/dependency/*'" f":{parser}/src/main/resources/Flute.jar"
+        "."
+        f":'{parser}/target/dependency/*'"
+        f":{parser}/src/main/resources/Flute.jar"
     )
     cmd = (
         f"cd {parser}/target/classes "
