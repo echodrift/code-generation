@@ -3,10 +3,8 @@ import codecs
 import multiprocessing as mp
 import random
 import re
-from dataclasses import dataclass
-from itertools import repeat
 from subprocess import run
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, NamedTuple
 
 import pandas as pd
 from antlr4 import *
@@ -16,24 +14,28 @@ from java.java8.JavaParserListener import JavaParserListener
 from tqdm import tqdm
 
 
-@dataclass
-class ASample:
+parser = argparse.ArgumentParser()
+parser.add_argument("--input", dest="input")
+parser.add_argument("--dir", dest="dir")
+parser.add_argument("--output", dest="output")
+parser.add_argument("--workers", dest="workers")
+
+
+class ASample(NamedTuple):
     class_name: str
     func_name: str
     masked_class: str
     func_body: str
 
 
-@dataclass
-class Location:
+class Location(NamedTuple):
     start_line: int
     start_col: int
     end_line: int
     end_col: int
 
 
-@dataclass
-class Function:
+class Function(NamedTuple):
     class_name: str
     class_loc: Location
     func_name: str
@@ -285,12 +287,6 @@ def collect_java_file_urls(repos_directory: str) -> List[str]:
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--input", dest="input")
-    parser.add_argument("--dir", dest="dir")
-    parser.add_argument("--output", dest="output")
-    parser.add_argument("--workers", dest="workers")
-    args = parser.parse_args()
     java_files = pd.read_parquet(args.input)
     java_files.reset_index(drop=True, inplace=True)
     df = make_dataset(
@@ -300,9 +296,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
-    # with open("/var/data/lvdthieu/code-generation/java_data/AJavaFile.java", "r") as f:
-    #     java_code = f.read()
-    # print(java_code)
-    # print("-" * 100)
-    # print(get_functions(java_code))
+    args = parser.parse_args()
+    main(args)

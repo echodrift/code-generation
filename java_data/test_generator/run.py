@@ -47,12 +47,12 @@ def generate_test_case_a_file(args: Tuple[str, str, str]) -> bool:
         .replace(".java", "")
         .replace("/", ".")
     )
+    result_path = relative_path.split("src/main/java/")[1].replace(".java", "")
     all_local_jars = search_jar_in_project(f"{base_dir}/{proj_name}")
     # print(*all_local_jars, sep='\n')
     class_path = (
         "."
         f":{path_to_pom}/target/classes"
-        # f":{path_to_pom}/target/dependency/*"
         f":{':'.join(all_local_jars)}"
         f":{randoop_class_path}"
     )
@@ -62,7 +62,8 @@ def generate_test_case_a_file(args: Tuple[str, str, str]) -> bool:
         f"--testclass {qualified_name} "
         # f"--methodlist={path_to_pom}/methodlist.txt "
         f"--time-limit {time_limit} "
-        f"--output-limit {output_limit}"
+        f"--output-limit {output_limit} "
+        f"--junit-output-dir {result_path}"
     )
     # print(cmd)
     try:
@@ -78,7 +79,6 @@ def generate_test_case_a_file(args: Tuple[str, str, str]) -> bool:
 def generate_test_cases(
     dataset: pd.DataFrame, base_dir: str, time_limit: int, output_limit: int
 ) -> pd.Series:
-
     randoop_class_path = f"{BASE_DIR}/lib/randoop-4.3.3/randoop-all-4.3.3.jar"
     # iteration = len(dataset)
     # arguments = zip(
@@ -104,19 +104,17 @@ def generate_test_cases(
         try:
             generate_status.append(
                 generate_test_case_a_file(
-                    (
-                        base_dir,
-                        row["proj_name"],
-                        row["relative_path"],
-                        randoop_class_path,
-                        time_limit,
-                        output_limit,
-                    )
+                    base_dir,
+                    row["proj_name"],
+                    row["relative_path"],
+                    randoop_class_path,
+                    time_limit,
+                    output_limit,
                 )
             )
         except:
             generate_status.append(False)
-    
+
     dataset["generated_test"] = generate_status
 
     return dataset
