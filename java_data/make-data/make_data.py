@@ -4,7 +4,7 @@ import multiprocessing as mp
 import random
 import re
 from subprocess import run
-from typing import List, Optional, Tuple, NamedTuple
+from typing import List, NamedTuple, Optional, Tuple
 
 import pandas as pd
 from antlr4 import *
@@ -12,7 +12,6 @@ from java.java8.JavaLexer import JavaLexer
 from java.java8.JavaParser import JavaParser
 from java.java8.JavaParserListener import JavaParserListener
 from tqdm import tqdm
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--input", dest="input")
@@ -172,17 +171,19 @@ def modified_mask_function(java_code: str) -> Optional[ASample]:
     # functions = list(functions)
     # for i in range(1, len(weights)):
     #     weights[i] = weights[i - 1] + weights[i]
-    raw_weights = [get_len(java_code, func.func_body_loc) for func in functions]
+    raw_weights = [
+        get_len(java_code, func["func_body_loc"]) for func in functions
+    ]
     total = sum(raw_weights)
     weights = [weight / total for weight in raw_weights]
     random_function = random.choices(functions, weights=weights, k=1)[0]
 
     # Extract function body
     class_start_idx, class_end_idx = get_location(
-        java_code, random_function.class_loc
+        java_code, random_function["class_loc"]
     )
     func_body_start_idx, func_body_end_idx = get_location(
-        java_code, random_function.func_body_loc
+        java_code, random_function["func_body_loc"]
     )
     masked_class = (
         java_code[class_start_idx : func_body_start_idx + 1]
@@ -192,8 +193,8 @@ def modified_mask_function(java_code: str) -> Optional[ASample]:
     func_body = java_code[func_body_start_idx + 1 : func_body_end_idx - 1]
 
     return ASample(
-        class_name=random_function.class_name,
-        func_name=random_function.func_name,
+        class_name=random_function["class_name"],
+        func_name=random_function["func_name"],
         masked_class=masked_class,
         func_body=func_body,
     )
@@ -201,7 +202,9 @@ def modified_mask_function(java_code: str) -> Optional[ASample]:
 
 def make_a_sample(argument: Tuple[str, str, str]):
     java_file_url, project_name, relative_path = argument
-    with codecs.open(java_file_url, "r", encoding="utf-8", errors="ignore") as f:
+    with codecs.open(
+        java_file_url, "r", encoding="utf-8", errors="ignore"
+    ) as f:
         try:
             java_code = f.read()
             # sample = mask_function(java_code)
@@ -261,10 +264,19 @@ def make_dataset(
             java_files["relative_path"],
         )
     )
+    # rows = []
+    # for args in arguments:
+    #     tmp = make_a_sample(args)
+    #     print(tmp)
+    #     # rows.append(tmp)
+    #     # rows.append(make_a_sample(args))
+    #     break
     with mp.Pool(processes=num_process) as pool:
         rows = list(
             tqdm(
-                pool.imap(make_a_sample, arguments), total=iteration, desc="Making data"
+                pool.imap(make_a_sample, arguments),
+                total=iteration,
+                desc="Making data",
             )
         )
     return pd.DataFrame(rows)
@@ -279,12 +291,14 @@ def post_processing(dataset: pd.DataFrame) -> pd.DataFrame:
     return dataset
 
 
-
 def main(args):
     java_files = pd.read_parquet(args.input)
     java_files.reset_index(drop=True, inplace=True)
+    # java_files = java_files.loc[:100]
     df = make_dataset(
-        java_files=java_files, repos_directory=args.dir, num_process=int(args.workers)
+        java_files=java_files,
+        repos_directory=args.dir,
+        num_process=int(args.workers),
     )
     df.to_parquet(args.output, "fastparquet")
 
