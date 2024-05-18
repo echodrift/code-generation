@@ -1,4 +1,6 @@
-# Crawl data
-python java_data/src/crawl.py --repo-info "$FILE_STORE_REPO_INFO" --dir "$DIR_STORE_ALL_REPO"
-# Make data
-python java_data/src/make_data.py --input "$DIR_STORE_ALL_REPO" --output "$FILE_STORE_RESULT_DATASET"
+
+python /home/hieuvd/lvdthieu/CodeGen/java_data/make-data/make_data.py \
+        --input /home/hieuvd/lvdthieu/java-files.parquet \
+        --dir /home/hieuvd/lvdthieu/repos/processed-projects \
+        --workers 35 \
+        --output /home/hieuvd/lvdthieu/java-dataset.parquet

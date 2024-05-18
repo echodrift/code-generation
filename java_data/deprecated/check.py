@@ -17,7 +17,6 @@ def count_java_tokens_antlr4(code):
 
 
 def cr_and_num_token(dataset_url: str, compile_info_col: str):
-    
     df = pd.read_parquet(dataset_url, "fastparquet")
     df["len_func_body"] = df["func_body"].apply(lambda func: count_java_tokens_antlr4(func))
     print(df["len_func_body"].describe())

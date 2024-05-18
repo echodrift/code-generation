@@ -100,6 +100,11 @@ def get_location(java_code: str, loc: Location) -> Tuple[int, int]:
     return start_idx, end_idx
 
 
+def count_java_tokens_antlr4(code):
+    lexer = JavaLexer(InputStream(code))
+    return len(lexer.getAllTokens())
+
+
 def get_functions(java_code: str) -> Optional[List[Function]]:
     try:
         input_stream = InputStream(java_code)
@@ -127,10 +132,10 @@ def mask_function(java_code: str) -> Optional[ASample]:
 
     # Extract function body
     class_start_idx, class_end_idx = get_location(
-        java_code, random_function["class_loc"]
+        java_code, random_function.class_loc
     )
     func_body_start_idx, func_body_end_idx = get_location(
-        java_code, random_function["func_body_loc"]
+        java_code, random_function.func_body_loc
     )
     masked_class = (
         java_code[class_start_idx : func_body_start_idx + 1]
@@ -140,8 +145,8 @@ def mask_function(java_code: str) -> Optional[ASample]:
     func_body = java_code[func_body_start_idx + 1 : func_body_end_idx - 1]
 
     return ASample(
-        class_name=random_function["class_name"],
-        func_name=random_function["func_name"],
+        class_name=random_function.class_name,
+        func_name=random_function.func_name,
         masked_class=masked_class,
         func_body=func_body,
     )
@@ -156,28 +161,28 @@ def modified_mask_function(java_code: str) -> Optional[ASample]:
     # the more function long, the more probability it would be chose
     def get_len(java_code: str, loc: Location) -> int:
         start_idx, end_idx = get_location(java_code, loc)
-        return end_idx - start_idx
+        return count_java_tokens_antlr4(java_code[start_idx:end_idx])
 
-    functions_with_len_body = [
-        [get_len(java_code, func["func_body_loc"]), func] for func in functions
-    ]
-    functions_with_len_body.sort(key=lambda x: x[0])
-    weights, functions = zip(*functions_with_len_body)
-    weights = list(weights)
-    functions = list(functions)
-    for i in range(1, len(weights)):
-        weights[i] = weights[i - 1] + weights[i]
-
-    total = sum(weights)
-    cumulative_weights = [weight / total for weight in weights]
-    random_function = random.choices(functions, weights=cumulative_weights, k=1)[0]
+    # functions_with_len_body = [
+    #     [get_len(java_code, func.func_body_loc), func] for func in functions
+    # ]
+    # functions_with_len_body.sort(key=lambda x: x[0])
+    # weights, functions = zip(*functions_with_len_body)
+    # weights = list(weights)
+    # functions = list(functions)
+    # for i in range(1, len(weights)):
+    #     weights[i] = weights[i - 1] + weights[i]
+    raw_weights = [get_len(java_code, func.func_body_loc) for func in functions]
+    total = sum(raw_weights)
+    weights = [weight / total for weight in raw_weights]
+    random_function = random.choices(functions, weights=weights, k=1)[0]
 
     # Extract function body
     class_start_idx, class_end_idx = get_location(
-        java_code, random_function["class_loc"]
+        java_code, random_function.class_loc
     )
     func_body_start_idx, func_body_end_idx = get_location(
-        java_code, random_function["func_body_loc"]
+        java_code, random_function.func_body_loc
     )
     masked_class = (
         java_code[class_start_idx : func_body_start_idx + 1]
@@ -187,8 +192,8 @@ def modified_mask_function(java_code: str) -> Optional[ASample]:
     func_body = java_code[func_body_start_idx + 1 : func_body_end_idx - 1]
 
     return ASample(
-        class_name=random_function["class_name"],
-        func_name=random_function["func_name"],
+        class_name=random_function.class_name,
+        func_name=random_function.func_name,
         masked_class=masked_class,
         func_body=func_body,
     )
@@ -245,7 +250,7 @@ def make_dataset(
     """
     iteration = len(java_files)
     tqdm.pandas(desc="Making absolute url")
-    java_files["absolute_url"] = java_files["java_files"].progress_apply(
+    java_files["absolute_url"] = java_files["java_file_urls"].progress_apply(
         lambda file: f"{repos_directory}/{file}"
     )
 
@@ -274,19 +279,8 @@ def post_processing(dataset: pd.DataFrame) -> pd.DataFrame:
     return dataset
 
 
-def collect_java_file_urls(repos_directory: str) -> List[str]:
-    cmd = f"""
-    cd {repos_directory}
-    find ~+ -type f -name *.java 
-    """
-    output = run(cmd, shell=True, capture_output=True, text=True).stdout
-    java_file_urls = output.split("\n")[
-        :-1
-    ]  # Remove the last element because it is the empty line for spacing in terminal
-    return java_file_urls
 
-
-def main():
+def main(args):
     java_files = pd.read_parquet(args.input)
     java_files.reset_index(drop=True, inplace=True)
     df = make_dataset(
