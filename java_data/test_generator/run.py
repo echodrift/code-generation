@@ -1,12 +1,13 @@
 import logging
-import multiprocessing as mp
 import os
+import re
 from argparse import ArgumentParser
 from subprocess import run
-from typing import List, Tuple
+from typing import List
 
 import pandas as pd
 from tqdm import tqdm
+from utils.parallel import map_with_multiprocessing_pool
 
 parser = ArgumentParser()
 parser.add_argument("--input", dest="input")
@@ -30,16 +31,18 @@ def search_jar_in_project(project_url: str) -> List[str]:
     return all_jars
 
 
-def generate_test_case_a_file(args: Tuple[str, str, str]) -> bool:
+def _generate_test(args) -> bool:
+    # generate_status = []
     (
         base_dir,
         proj_name,
         relative_path,
+        # method_qualified_name,
         randoop_class_path,
         time_limit,
         output_limit,
     ) = args
-    # if row["proj_name"] == "soot-oss_soot":  # Temporary add
+
     relative_path_to_pom = relative_path.split("/src/main/java/")[0]
     path_to_pom = f"{base_dir}/{proj_name}/{relative_path_to_pom}"
     qualified_name = (
@@ -58,14 +61,23 @@ def generate_test_case_a_file(args: Tuple[str, str, str]) -> bool:
     )
     cmd = (
         f"cd {path_to_pom} "
-        f"&& timeout 20 java -classpath {class_path} randoop.main.Main gentests "
-        f"--testclass {qualified_name} "
-        # f"--methodlist={path_to_pom}/methodlist.txt "
-        f"--time-limit {time_limit} "
-        f"--output-limit {output_limit} "
-        f"--junit-output-dir {result_path}"
+        # f"&& echo \"{qualified_name + '.' + method_qualified_name}\" > methodlist.txt "
+        f"&& timeout {time_limit} java -classpath {class_path} randoop.main.Main gentests "
+        f"--testclass={qualified_name} "
+        # f"--methodlist=methodlist.txt "
+        f"--time-limit={time_limit} "
+        f"--output-limit={output_limit} "
+        f"--junit-output-dir=randoop/{result_path} "
+        f"--no-error-revealing-tests=true"
+        # f"--progressdisplay=false "
+        # f"|| timeout {time_limit} java -classpath {class_path} randoop.main.Main gentests "
+        # f"--testclass={qualified_name} "
+        # f"--time-limit={time_limit} "
+        # f"--output-limit={output_limit} "
+        # f"--junit-output-dir={result_path} "
+        # f"--testsperfile=1 "
+        # f"--progressdisplay=false "
     )
-    # print(cmd)
     try:
         run(cmd, shell=True)
     except Exception:
@@ -76,21 +88,53 @@ def generate_test_case_a_file(args: Tuple[str, str, str]) -> bool:
     return True
 
 
-def generate_test_cases(
+def generate_test(
     dataset: pd.DataFrame, base_dir: str, time_limit: int, output_limit: int
 ) -> pd.Series:
+    # def method_signature(method_qualified_name):
+    #     method_signature_pattern = re.compile(
+    #         r"(\w+\s+)*(\w+\.)*(\w+)\(([^)]*)\)"
+    #     )
+    #     match = method_signature_pattern.search(method_qualified_name)
+    #     if match:
+    #         method_name = match.group(3)
+    #         parameters = match.group(4)
+    #         method_signature = f"{method_name}({parameters})"
+    #         return method_signature
+    #     else:
+    #         return "<can_not_resolved>"
+
+    # method_qualified_name = list(
+    #     map(
+    #         lambda tmp: method_signature(tmp),
+    #         dataset["method_qualified_name"].tolist(),
+    #     )
+    # )
     randoop_class_path = f"{BASE_DIR}/lib/randoop-4.3.3/randoop-all-4.3.3.jar"
     # iteration = len(dataset)
-    # arguments = zip(
-    #     [base_dir] * iteration,
-    #     dataset["proj_name"],
-    #     dataset["relative_path"],
-    #     [randoop_class_path] * iteration,
-    #     [time_limit] * iteration,
-    #     [output_limit] * iteration,
+    # arguments = list(
+    #     zip(
+    #         [base_dir] * iteration,
+    #         dataset["proj_name"],
+    #         dataset["relative_path"],
+    #         # method_qualified_name,
+    #         [randoop_class_path] * iteration,
+    #         [time_limit] * iteration,
+    #         [output_limit] * iteration,
+    #     )
+    # )
+    # generate_status = map_with_multiprocessing_pool(
+    #     function=_generate_test,
+    #     iterable=arguments,
+    #     num_proc=10,
+    #     batched=False,
+    #     disable_tqdm=False,
+    #     desc="Generating test",
+    #     batch_size=-1,
+    #     types=tuple,
     # )
     # with mp.Pool(processes=10) as pool:
-    #     rows = list(
+    #     generate_status = list(
     #         tqdm(
     #             pool.imap(generate_test_case_a_file, arguments),
     #             total=iteration,
@@ -103,34 +147,34 @@ def generate_test_cases(
     ):
         try:
             generate_status.append(
-                generate_test_case_a_file(
-                    base_dir,
-                    row["proj_name"],
-                    row["relative_path"],
-                    randoop_class_path,
-                    time_limit,
-                    output_limit,
+                _generate_test(
+                    (
+                        base_dir,
+                        row["proj_name"],
+                        row["relative_path"],
+                        # method_qualified_name[idx],
+                        randoop_class_path,
+                        time_limit,
+                        output_limit,
+                    )
                 )
             )
-        except:
+        except Exception:
             generate_status.append(False)
 
-    dataset["generated_test"] = generate_status
+    # dataset["generate_status"] = generate_status
 
     return dataset
 
 
 def main(args):
     df = pd.read_parquet(args.input)
-    df = df.loc[20000:]
-    generate_status = generate_test_cases(
+    df = df.iloc[0:10]
+    df.to_csv("/var/data/lvdthieu/check.csv")
+    generate_status = generate_test(
         df, args.base_dir, args.time_limit, args.output_limit
     )
-    generate_status.to_parquet("/var/data/lvdthieu/generate_status_5.parquet")
-    # junit_class_path = (
-    #     f"{BASE_DIR}/lib/hamcrest-core-1.3.jar"
-    #     f":{BASE_DIR}/lib/junit-4.12.jar"
-    # )
+    generate_status.to_parquet("/var/data/lvdthieu/check1.csv")
 
 
 if __name__ == "__main__":
