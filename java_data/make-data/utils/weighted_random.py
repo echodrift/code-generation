@@ -7,7 +7,8 @@ np.random.seed(11)
 
 # Function to select a random row based on weights
 def weighted_random_row(group):
-    return group.sample(n=1, weights=group["len_func_body"])
+    # return group.sample(n=1, weights=group["len_func_body"])
+    return group.loc[group["len_func_body"].idxmax()]
 
 
 if __name__ == "__main__":
@@ -18,7 +19,7 @@ if __name__ == "__main__":
     )
     random_rows_weighted.reset_index(drop=True, inplace=True)
     random_rows_weighted.to_parquet(
-        "/home/hieuvd/lvdthieu/java-data-v4.parquet"
+        "/home/hieuvd/lvdthieu/java-data-v5.parquet"
     )
     print("\nRandom row from each group (with weights):")
     print(random_rows_weighted)
