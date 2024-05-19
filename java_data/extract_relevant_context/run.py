@@ -36,7 +36,7 @@ def main(args):
             f"{BASE_DIR}/data/batch{i}.csv "
             f"{args.base_dir} "
             f"{BASE_DIR}/out/batch{i}.csv "
-            '<inherit_elements> "'
+            '\<inherit_elements\>"'
         )
         subprocess.run(cmd, shell=True)
         print(f"Created screen batch{i}")
