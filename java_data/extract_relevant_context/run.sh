@@ -6,7 +6,7 @@ then
 fi
 
 python /var/data/lvdthieu/code-generation/java_data/extract_relevant_context/run.py \
-    --input /var/data/lvdthieu/java_filtered.parquet \
-    --num-batch 30 \
+    --input /var/data/lvdthieu/retry.parquet \
+    --num-batch 10 \
     --parser /var/data/lvdthieu/code-generation/java_data/java-parser \
     --base-dir /var/data/lvdthieu/repos/processed-projects

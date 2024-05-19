@@ -7,8 +7,8 @@ np.random.seed(11)
 
 # Function to select a random row based on weights
 def weighted_random_row(group):
-    # return group.sample(n=1, weights=group["len_func_body"])
-    return group.loc[group["len_func_body"].idxmax()]
+    return group.sample(n=1, weights=group["len_func_body"])
+    # return group.loc[group["len_func_body"].idxmax()]
 
 
 if __name__ == "__main__":

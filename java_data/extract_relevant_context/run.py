@@ -27,7 +27,8 @@ def main(args):
         f":{args.parser}/src/main/resources/Flute.jar"
     )
     # Run parser
-    for i in range(args.num_batch):
+    # for i in range(args.num_batch):
+    for i in [0, 1, 3, 4, 5, 6, 9]:
         cmd = (
             f'screen -dmS batch{i} bash -c "'
             f"cd {args.parser}/target/classes "
@@ -38,6 +39,8 @@ def main(args):
             f"{BASE_DIR}/out/batch{i}.csv "
             '\<inherit_elements\>"'
         )
+        print(cmd)
+        break
         subprocess.run(cmd, shell=True)
         print(f"Created screen batch{i}")
 
