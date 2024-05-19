@@ -255,3 +255,5 @@ if __name__ == "__main__":
     # restruct()
     # normalize()
     split_projects("/var/data/lvdthieu/projects-v1.json", "/var/data/lvdthieu/code-generation/java_data/data/parsed")
+
+df1 = newdf[newdf["len_func_body"] > 1]

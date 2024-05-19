@@ -151,7 +151,7 @@ def mask_function(java_code: str) -> Optional[ASample]:
     )
 
 
-def modified_mask_function(java_code: str) -> Optional[ASample]:
+def modified_mask_function(java_code: str) -> Optional[List[ASample]]:
     functions = get_functions(java_code)
     if not functions:
         return None
@@ -171,36 +171,40 @@ def modified_mask_function(java_code: str) -> Optional[ASample]:
     # functions = list(functions)
     # for i in range(1, len(weights)):
     #     weights[i] = weights[i - 1] + weights[i]
-    raw_weights = [
-        get_len(java_code, func["func_body_loc"]) for func in functions
-    ]
-    total = sum(raw_weights)
-    weights = [weight / total for weight in raw_weights]
-    random_function = random.choices(functions, weights=weights, k=1)[0]
+    # raw_weights = [
+    #     get_len(java_code, func["func_body_loc"]) for func in functions
+    # ]
+    # total = sum(raw_weights)
+    # weights = [weight / total for weight in raw_weights]
+    # random_function = random.choices(functions, weights=weights, k=1)[0]
+    result = []
+    for function in functions:
+        # Extract function body
+        class_start_idx, class_end_idx = get_location(
+            java_code, function["class_loc"]
+        )
+        func_body_start_idx, func_body_end_idx = get_location(
+            java_code, function["func_body_loc"]
+        )
+        masked_class = (
+            java_code[class_start_idx : func_body_start_idx + 1]
+            + "<FILL_FUNCTION_BODY>"
+            + java_code[func_body_end_idx - 1 : class_end_idx]
+        )
+        func_body = java_code[func_body_start_idx + 1 : func_body_end_idx - 1]
 
-    # Extract function body
-    class_start_idx, class_end_idx = get_location(
-        java_code, random_function["class_loc"]
-    )
-    func_body_start_idx, func_body_end_idx = get_location(
-        java_code, random_function["func_body_loc"]
-    )
-    masked_class = (
-        java_code[class_start_idx : func_body_start_idx + 1]
-        + "<FILL_FUNCTION_BODY>"
-        + java_code[func_body_end_idx - 1 : class_end_idx]
-    )
-    func_body = java_code[func_body_start_idx + 1 : func_body_end_idx - 1]
-
-    return ASample(
-        class_name=random_function["class_name"],
-        func_name=random_function["func_name"],
-        masked_class=masked_class,
-        func_body=func_body,
-    )
+        result.append(
+            ASample(
+                class_name=function["class_name"],
+                func_name=function["func_name"],
+                masked_class=masked_class,
+                func_body=func_body,
+            )
+        )
+    return result
 
 
-def make_a_sample(argument: Tuple[str, str, str]):
+def make_samples(argument: Tuple[str, str, str]):
     java_file_url, project_name, relative_path = argument
     with codecs.open(
         java_file_url, "r", encoding="utf-8", errors="ignore"
@@ -208,34 +212,41 @@ def make_a_sample(argument: Tuple[str, str, str]):
         try:
             java_code = f.read()
             # sample = mask_function(java_code)
-            sample = modified_mask_function(java_code)
-            if sample:
-                return {
-                    "proj_name": project_name,
-                    "relative_path": relative_path,
-                    "class_name": sample.class_name,
-                    "func_name": sample.func_name,
-                    "masked_class": sample.masked_class,
-                    "func_body": sample.func_body,
-                }
+            samples = modified_mask_function(java_code)
+            if samples:
+                return [
+                    {
+                        "proj_name": project_name,
+                        "relative_path": relative_path,
+                        "class_name": sample.class_name,
+                        "func_name": sample.func_name,
+                        "masked_class": sample.masked_class,
+                        "func_body": sample.func_body,
+                    }
+                    for sample in samples
+                ]
             else:
-                return {
-                    "proj_name": project_name,
-                    "relative_path": relative_path,
+                return [
+                    {
+                        "proj_name": project_name,
+                        "relative_path": relative_path,
+                        "class_name": None,
+                        "func_name": None,
+                        "masked_class": None,
+                        "func_body": None,
+                    }
+                ]
+        except:
+            return [
+                {
+                    "proj_name": None,
+                    "relative_path": None,
                     "class_name": None,
                     "func_name": None,
                     "masked_class": None,
                     "func_body": None,
                 }
-        except:
-            return {
-                "proj_name": None,
-                "relative_path": None,
-                "class_name": None,
-                "func_name": None,
-                "masked_class": None,
-                "func_body": None,
-            }
+            ]
 
 
 def make_dataset(
@@ -266,20 +277,23 @@ def make_dataset(
     )
     # rows = []
     # for args in arguments:
-    #     tmp = make_a_sample(args)
+    #     tmp = make_samples(args)
     #     print(tmp)
     #     # rows.append(tmp)
-    #     # rows.append(make_a_sample(args))
+    #     # rows.append(make_samples(args))
     #     break
     with mp.Pool(processes=num_process) as pool:
         rows = list(
             tqdm(
-                pool.imap(make_a_sample, arguments),
+                pool.imap(make_samples, arguments),
                 total=iteration,
                 desc="Making data",
             )
         )
-    return pd.DataFrame(rows)
+    flatten_rows = []
+    for item in rows:
+        flatten_rows.extend(item)
+    return pd.DataFrame(flatten_rows)
 
 
 def post_processing(dataset: pd.DataFrame) -> pd.DataFrame:
@@ -294,7 +308,7 @@ def post_processing(dataset: pd.DataFrame) -> pd.DataFrame:
 def main(args):
     java_files = pd.read_parquet(args.input)
     java_files.reset_index(drop=True, inplace=True)
-    # java_files = java_files.loc[:100]
+    # java_files = java_files.loc[:20]
     df = make_dataset(
         java_files=java_files,
         repos_directory=args.dir,
