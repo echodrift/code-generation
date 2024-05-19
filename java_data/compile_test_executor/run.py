@@ -4,7 +4,9 @@ import pandas as pd
 import logging
 
 parser = argparse.ArgumentParser()
-parser.add_argument("")
+parser.add_argument("--input", dest="input")
+parser.add_argument("--output", des="output")
+
 
 
 def main(args):

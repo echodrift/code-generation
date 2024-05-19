@@ -33,6 +33,7 @@ def search_jar_in_project(project_url: str) -> List[str]:
 def _generate_test(args) -> bool:
     # generate_status = []
     # for item in args:
+    # print(args)
     (
         base_dir,
         proj_name,
@@ -49,6 +50,7 @@ def _generate_test(args) -> bool:
     if os.path.exists(
         f"{path_to_pom}/randoop/{result_path}/RegressionTest.java"
     ):
+        print("File existed")
         return True
 
     qualified_name = (
@@ -67,12 +69,12 @@ def _generate_test(args) -> bool:
     cmd = (
         f"cd {path_to_pom} "
         # f"&& echo \"{qualified_name + '.' + method_qualified_name}\" > methodlist.txt "
-        f"&& timeout {time_limit} java -classpath {class_path} randoop.main.Main gentests "
+        f"&& java -classpath {class_path} randoop.main.Main gentests "
         f"--testclass={qualified_name} "
         # f"--methodlist=methodlist.txt "
         f"--time-limit={time_limit} "
         f"--output-limit={output_limit} "
-        f"--junit-output-dir=randoop/{result_path} "
+        f"--junit-output-dir={path_to_pom}/randoop/{result_path} "
         f"--no-error-revealing-tests=true"
         # f"--progressdisplay=false "
         # f"|| timeout {time_limit} java -classpath {class_path} randoop.main.Main gentests "
@@ -83,6 +85,7 @@ def _generate_test(args) -> bool:
         # f"--testsperfile=1 "
         # f"--progressdisplay=false "
     )
+    # print(cmd)
     try:
         run(cmd, shell=True)
     except Exception:
@@ -92,14 +95,9 @@ def _generate_test(args) -> bool:
         #     f"Can not gentest for {row['proj_name']}/{row['relative_path']}"
         # )
     # else:
-    #     if os.path.exists(
-    #         f"{path_to_pom}/randoop/{result_path}/RegressionTest.java"
-    #     ):
-    #         generate_status.append(True)
-    #     else:
-    #         generate_status.append(False)
-    # return generate_status
-    return True
+    return os.path.exists(
+        f"{path_to_pom}/randoop/{result_path}/RegressionTest.java"
+    )
 
 
 def generate_test(
@@ -153,22 +151,22 @@ def generate_test(
     for _, row in tqdm(
         dataset.iterrows(), desc="Generating test", total=len(dataset)
     ):
-        try:
-            generate_status.append(
-                _generate_test(
-                    (
-                        base_dir,
-                        row["proj_name"],
-                        row["relative_path"],
-                        # method_qualified_name[idx],
-                        randoop_class_path,
-                        time_limit,
-                        output_limit,
-                    )
+        # try:
+        generate_status.append(
+            _generate_test(
+                (
+                    base_dir,
+                    row["proj_name"],
+                    row["relative_path"],
+                    # method_qualified_name[idx],
+                    randoop_class_path,
+                    time_limit,
+                    output_limit,
                 )
             )
-        except Exception:
-            generate_status.append(False)
+        )
+        # except Exception:
+        #     generate_status.append(False)
 
     dataset["generate_status"] = generate_status
     return dataset
@@ -176,7 +174,7 @@ def generate_test(
 
 def main(args):
     df = pd.read_parquet(args.input)
-    df = df.loc[15001:20000]
+    df = df.loc[:2000]
     generate_status = generate_test(
         df, args.base_dir, args.time_limit, args.output_limit
     )
