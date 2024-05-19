@@ -13,7 +13,7 @@ parser.add_argument("--input", dest="input")
 parser.add_argument("--base-dir", dest="base_dir")
 parser.add_argument("--time-limit", dest="time_limit", type=int)
 parser.add_argument("--output-limit", dest="output_limit", type=int)
-
+parser.add_argument("--output", dest="output")
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -31,72 +31,75 @@ def search_jar_in_project(project_url: str) -> List[str]:
 
 
 def _generate_test(args) -> bool:
-    generate_status = []
-    for item in args:
-        (
-            base_dir,
-            proj_name,
-            relative_path,
-            # method_qualified_name,
-            randoop_class_path,
-            time_limit,
-            output_limit,
-        ) = item
+    # generate_status = []
+    # for item in args:
+    (
+        base_dir,
+        proj_name,
+        relative_path,
+        # method_qualified_name,
+        randoop_class_path,
+        time_limit,
+        output_limit,
+    ) = args
 
-        relative_path_to_pom = relative_path.split("/src/main/java/")[0]
-        path_to_pom = f"{base_dir}/{proj_name}/{relative_path_to_pom}"
-        qualified_name = (
-            relative_path.split("src/main/java/")[1]
-            .replace(".java", "")
-            .replace("/", ".")
-        )
-        result_path = relative_path.split("src/main/java/")[1].replace(
-            ".java", ""
-        )
-        all_local_jars = search_jar_in_project(f"{base_dir}/{proj_name}")
-        # print(*all_local_jars, sep='\n')
-        class_path = (
-            "."
-            f":{path_to_pom}/target/classes"
-            f":{':'.join(all_local_jars)}"
-            f":{randoop_class_path}"
-        )
-        cmd = (
-            f"cd {path_to_pom} "
-            # f"&& echo \"{qualified_name + '.' + method_qualified_name}\" > methodlist.txt "
-            f"&& timeout {time_limit} java -classpath {class_path} randoop.main.Main gentests "
-            f"--testclass={qualified_name} "
-            # f"--methodlist=methodlist.txt "
-            f"--time-limit={time_limit} "
-            f"--output-limit={output_limit} "
-            f"--junit-output-dir=randoop/{result_path} "
-            f"--no-error-revealing-tests=true"
-            # f"--progressdisplay=false "
-            # f"|| timeout {time_limit} java -classpath {class_path} randoop.main.Main gentests "
-            # f"--testclass={qualified_name} "
-            # f"--time-limit={time_limit} "
-            # f"--output-limit={output_limit} "
-            # f"--junit-output-dir={result_path} "
-            # f"--testsperfile=1 "
-            # f"--progressdisplay=false "
-        )
-        try:
-            run(cmd, shell=True)
-        except Exception:
-            generate_status.append(False)
-            return False
-            # logging.info(
-            #     f"Can not gentest for {row['proj_name']}/{row['relative_path']}"
-            # )
-        else:
-            if os.path.exists(
-                f"{path_to_pom}/randoop/{result_path}/RegressionTest.java"
-            ):
-                generate_status.append(True)
-            else:
-                generate_status.append(False)
-    return generate_status
-    # return True
+    relative_path_to_pom = relative_path.split("/src/main/java/")[0]
+    path_to_pom = f"{base_dir}/{proj_name}/{relative_path_to_pom}"
+    result_path = relative_path.split("src/main/java/")[1].replace(".java", "")
+    if os.path.exists(
+        f"{path_to_pom}/randoop/{result_path}/RegressionTest.java"
+    ):
+        return True
+
+    qualified_name = (
+        relative_path.split("src/main/java/")[1]
+        .replace(".java", "")
+        .replace("/", ".")
+    )
+    all_local_jars = search_jar_in_project(f"{base_dir}/{proj_name}")
+    # print(*all_local_jars, sep='\n')
+    class_path = (
+        "."
+        f":{path_to_pom}/target/classes"
+        f":{':'.join(all_local_jars)}"
+        f":{randoop_class_path}"
+    )
+    cmd = (
+        f"cd {path_to_pom} "
+        # f"&& echo \"{qualified_name + '.' + method_qualified_name}\" > methodlist.txt "
+        f"&& timeout {time_limit} java -classpath {class_path} randoop.main.Main gentests "
+        f"--testclass={qualified_name} "
+        # f"--methodlist=methodlist.txt "
+        f"--time-limit={time_limit} "
+        f"--output-limit={output_limit} "
+        f"--junit-output-dir=randoop/{result_path} "
+        f"--no-error-revealing-tests=true"
+        # f"--progressdisplay=false "
+        # f"|| timeout {time_limit} java -classpath {class_path} randoop.main.Main gentests "
+        # f"--testclass={qualified_name} "
+        # f"--time-limit={time_limit} "
+        # f"--output-limit={output_limit} "
+        # f"--junit-output-dir={result_path} "
+        # f"--testsperfile=1 "
+        # f"--progressdisplay=false "
+    )
+    try:
+        run(cmd, shell=True)
+    except Exception:
+        # generate_status.append(False)
+        return False
+        # logging.info(
+        #     f"Can not gentest for {row['proj_name']}/{row['relative_path']}"
+        # )
+    # else:
+    #     if os.path.exists(
+    #         f"{path_to_pom}/randoop/{result_path}/RegressionTest.java"
+    #     ):
+    #         generate_status.append(True)
+    #     else:
+    #         generate_status.append(False)
+    # return generate_status
+    return True
 
 
 def generate_test(
@@ -122,62 +125,62 @@ def generate_test(
     #     )
     # )
     randoop_class_path = f"{BASE_DIR}/lib/randoop-4.3.3/randoop-all-4.3.3.jar"
-    iteration = len(dataset)
-    arguments = list(
-        zip(
-            [base_dir] * iteration,
-            dataset["proj_name"],
-            dataset["relative_path"],
-            # method_qualified_name,
-            [randoop_class_path] * iteration,
-            [time_limit] * iteration,
-            [output_limit] * iteration,
-        )
-    )
-    generate_status = map_with_multiprocessing_pool(
-        function=_generate_test,
-        iterable=arguments,
-        num_proc=10,
-        batched=False,
-        disable_tqdm=False,
-        desc="Generating test",
-        batch_size=-1,
-        types=tuple,
-    )
+    # iteration = len(dataset)
+    # arguments = list(
+    #     zip(
+    #         [base_dir] * iteration,
+    #         dataset["proj_name"],
+    #         dataset["relative_path"],
+    #         # method_qualified_name,
+    #         [randoop_class_path] * iteration,
+    #         [time_limit] * iteration,
+    #         [output_limit] * iteration,
+    #     )
+    # )
+    # generate_status = map_with_multiprocessing_pool(
+    #     function=_generate_test,
+    #     iterable=arguments,
+    #     num_proc=10,
+    #     batched=False,
+    #     disable_tqdm=False,
+    #     desc="Generating test",
+    #     batch_size=-1,
+    #     types=tuple,
+    # )
 
-        # generate_status = []
-        # for _, row in tqdm(
-        #     dataset.iterrows(), desc="Generating test", total=len(dataset)
-        # ):
-        #     try:
-        #         generate_status.append(
-        #             _generate_test(
-        #                 (
-        #                     base_dir,
-        #                     row["proj_name"],
-        #                     row["relative_path"],
-        #                     # method_qualified_name[idx],
-        #                     randoop_class_path,
-        #                     time_limit,
-        #                     output_limit,
-        #                 )
-        #             )
-        #         )
-        #     except Exception:
-        #         generate_status.append(False)
+    generate_status = []
+
+    for _, row in tqdm(
+        dataset.iterrows(), desc="Generating test", total=len(dataset)
+    ):
+        try:
+            generate_status.append(
+                _generate_test(
+                    (
+                        base_dir,
+                        row["proj_name"],
+                        row["relative_path"],
+                        # method_qualified_name[idx],
+                        randoop_class_path,
+                        time_limit,
+                        output_limit,
+                    )
+                )
+            )
+        except Exception:
+            generate_status.append(False)
 
     dataset["generate_status"] = generate_status
-
     return dataset
 
 
 def main(args):
     df = pd.read_parquet(args.input)
-    # df = df.iloc[0:100]
+    df = df.loc[15001:20000]
     generate_status = generate_test(
         df, args.base_dir, args.time_limit, args.output_limit
     )
-    generate_status.to_csv("/var/data/lvdthieu/generate_status_raw.parquet")
+    generate_status.to_parquet(args.output)
 
 
 if __name__ == "__main__":
