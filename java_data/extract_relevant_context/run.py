@@ -39,8 +39,6 @@ def main(args):
             f"{BASE_DIR}/out/batch{i}.csv "
             '\<inherit_elements\>"'
         )
-        print(cmd)
-        break
         subprocess.run(cmd, shell=True)
         print(f"Created screen batch{i}")
 

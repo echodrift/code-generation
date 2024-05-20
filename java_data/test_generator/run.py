@@ -69,7 +69,7 @@ def _generate_test(args) -> bool:
     cmd = (
         f"cd {path_to_pom} "
         # f"&& echo \"{qualified_name + '.' + method_qualified_name}\" > methodlist.txt "
-        f"&& java -classpath {class_path} randoop.main.Main gentests "
+        f"&& timeout {time_limit} java -classpath {class_path} randoop.main.Main gentests "
         f"--testclass={qualified_name} "
         # f"--methodlist=methodlist.txt "
         f"--time-limit={time_limit} "
