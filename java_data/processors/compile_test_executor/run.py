@@ -2,6 +2,7 @@ import argparse
 import codecs
 import logging
 import re
+from multiprocessing import Process, Queue
 from pathlib import Path
 from subprocess import run
 from typing import Optional, Tuple
@@ -19,7 +20,7 @@ parser.add_argument("--tmp-dir", dest="tmp_dir")
 parser.add_argument("--mvn", dest="mvn")
 
 
-class Excecutor:
+class Executor:
     def __init__(
         self,
         df: pd.DataFrame,
@@ -103,17 +104,22 @@ class Excecutor:
                 )
             else:
                 filled_file, original_file = res
-                with codecs.open(
-                    path_to_file, "w", encoding="utf-8", errors="ignore"
-                ) as f:
-                    f.write(filled_file)
-
                 new_file = Path(path_to_tmp_file)
                 new_file.parent.mkdir(parents=True, exist_ok=True)
-                with codecs.open(
-                    path_to_tmp_file, "w", encoding="utf-8", errors="ignore"
-                ) as f:
-                    f.write(original_file)
+                try:
+                    with codecs.open(
+                        path_to_tmp_file, "w", encoding="utf-8", errors="ignore"
+                    ) as f:
+                        f.write(original_file)
+                except:
+                    raise Exception("Can't write original file to tmp")
+                try:
+                    with codecs.open(
+                        path_to_file, "w", encoding="utf-8", errors="ignore"
+                    ) as f:
+                        f.write(filled_file)
+                except:
+                    raise Exception("Can't write fill file to origin file")
         except LookupError as e:
             logging.error(e)
             return False
@@ -149,10 +155,8 @@ class Excecutor:
             self.proj_storage_dir, row["proj_name"], row["relative_path"]
         )
         try:
-            with open(path_to_tmp_file, "r") as f:
-                original_file = f.read()
-            with open(path_to_file, "w") as f:
-                f.write(original_file)
+            cmd = f"cp {path_to_tmp_file} {path_to_file}"
+            run(cmd, shell=True)
         except:
             logging.error(
                 "Error while return original file {}".format(path_to_file)
@@ -162,11 +166,12 @@ class Excecutor:
         path_to_project = "{}/{}".format(
             self.proj_storage_dir, row["proj_name"]
         )
-        cmd = f"""
-        cd {path_to_project}
-        cd $(ls -d */|head -n 1)
-        {self.mvn} clean compile
-        """
+        cmd = (
+            f"cd {path_to_project} "
+            "&& cd $(ls -d */|head -n 1) "
+            "&& echo $(pwd)"
+            f"&& {self.mvn} clean compile"
+        )
         data = run(cmd, shell=True, capture_output=True, text=True)
         return data.stdout
 
@@ -180,10 +185,18 @@ class Excecutor:
         ):
             modified = self.modified_file(row)
             if modified:
-                compile_info = self.get_compiler_feedback(row)
-                errors = self.extract_error(compile_info)
-                compiler_feedback.append(errors)
-                self.return_original_file(row)
+                try:
+                    compile_info = self.get_compiler_feedback(row)
+                    errors = self.extract_error(compile_info)
+                    compiler_feedback.append(errors)
+                except:
+                    logging.info(
+                        "Can not get compiler feedback",
+                        row["proj_name"] + "/" + row["relative_path"],
+                    )
+                    compiler_feedback.append("<execute_error>")
+                finally:
+                    self.return_original_file(row)
             else:
                 logging.info(
                     "Can not modify file",
@@ -193,13 +206,105 @@ class Excecutor:
         return compiler_feedback
 
 
+def group_dataframes(df_list, num_groups):
+    """Group a list of DataFrames into a specified number of groups with roughly equal total rows.
+
+    Args:
+        df_list (List[pd.DataFrame]): List of DataFrames to be grouped.
+        num_groups (int): Number of resulting groups.
+
+    Returns:
+        List[pd.DataFrame]: A list of grouped DataFrames.
+    """
+    # Calculate the total number of rows
+    total_rows = sum(len(df) for df in df_list)
+
+    # Calculate the approximate number of rows each group should have
+    rows_per_group = total_rows // num_groups
+    remainder = total_rows % num_groups
+
+    # Initialize the groups
+    groups = [[] for _ in range(num_groups)]
+    group_sizes = [0] * num_groups
+
+    # Sort DataFrames by size (optional, for better distribution)
+    sorted_dfs = sorted(df_list, key=len, reverse=True)
+
+    # Distribute DataFrames to groups
+    for df in sorted_dfs:
+        # Find the group with the smallest size
+        min_group_index = group_sizes.index(min(group_sizes))
+
+        # Add the DataFrame to this group
+        groups[min_group_index].append(df)
+        group_sizes[min_group_index] += len(df)
+
+    # Concatenate the DataFrames within each group
+    result_groups = [pd.concat(group, ignore_index=True) for group in groups]
+
+    return result_groups
+
+
+def process_dataframes_in_parallel(df_list, additional_args, process_dataframe):
+    """
+    Process multiple DataFrames in parallel.
+
+    Args:
+        df_list (list of pd.DataFrame): List of DataFrames to process.
+
+    Returns:
+        List of results from processing each DataFrame.
+    """
+    processes = []
+    output_queue = Queue()
+
+    # Create a process for each DataFrame
+    for df in df_list:
+        p = Process(
+            target=process_dataframe, args=(df, additional_args, output_queue)
+        )
+        processes.append(p)
+        p.start()
+
+    # Collect the results
+    results = []
+    for _ in df_list:
+        results.append(output_queue.get())
+
+    # Ensure all processes have finished
+    for p in processes:
+        p.join()
+
+    return results
+
+
+def process_dataframe(df, additional_args, output_queue):
+    """
+    Process a DataFrame and put the result in the output queue.
+
+    Args:
+        df (pd.DataFrame): The DataFrame to process.
+        output_queue (Queue): The queue to store the results.
+    """
+    print("A process is executing")
+    (col, base_dir, tmp_dir, mvn) = additional_args
+    # Example processing: here we just return the DataFrame size
+    executor = Executor(df, col, base_dir, tmp_dir, mvn)
+    df["compiler_feedback"] = executor.execute()
+    output_queue.put(df)
+
+
 def main(args):
     df = pd.read_parquet(args.input)
-    df = df.iloc[:5]
-    print(df.info())
-    executor = Excecutor(df, args.col, args.base_dir, args.tmp_dir, args.mvn)
-    df["compiler_feedback"] = executor.execute()
-    df.to_csv(args.output, index=False)
+    proj_group = df.groupby(by="proj_name")
+    dfs = [proj_group.get_group(x) for x in proj_group.groups]
+    dfs = group_dataframes(dfs, 10)
+    additional_args = (args.col, args.base_dir, args.tmp_dir, args.mvn)
+    results = process_dataframes_in_parallel(
+        dfs, additional_args, process_dataframe
+    )
+    final_result = pd.concat(results, axis=0)
+    final_result.to_parquet(args.output)
 
 
 if __name__ == "__main__":

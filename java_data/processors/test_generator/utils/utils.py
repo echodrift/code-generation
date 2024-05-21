@@ -15,6 +15,7 @@ parser.add_argument(
     dest="task",
     choices=["config-maven", "extract-method-qualified-name"],
 )
+parser.add_argument("--mvn", dest="mvn")
 parser.add_argument("--parser", dest="parser")
 parser.add_argument("--num-batch", dest="num_batch", type=int)
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -22,20 +23,24 @@ BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 def extract_maven_dir_urls(dataset: pd.DataFrame, base_dir: str) -> List[str]:
     paths = []
-    for _, row in dataset.iterrows():
-        relative_path_to_classes = row["relative_path"].split(
-            "/src/main/java/"
-        )[0]
-        path_to_mvn_dir = (
-            f"""{base_dir}/{row["proj_name"]}/{relative_path_to_classes}"""
-        )
-        paths.append(path_to_mvn_dir)
+    projects = list(set(dataset["proj_name"].tolist()))
+    project_names = ["_".join(project.split("_")[1:]) for project in projects]
+    # for _, row in dataset.iterrows():
+    #     relative_path_to_classes = row["relative_path"].split(
+    #         "/src/main/java/"
+    #     )[0]
+    #     path_to_mvn_dir = (
+    #         f"""{base_dir}/{row["proj_name"]}/{relative_path_to_classes}"""
+    #     )
+    #     paths.append(path_to_mvn_dir)
+    for i in range(len(projects)):
+        paths.append(f"{base_dir}/{projects[i]}/{project_names[i]}")
     return paths
 
 
-def maven_config(urls: List[str]):
+def maven_config(urls: List[str], mvn: str):
     for url in tqdm(urls, desc="Config maven"):
-        cmd = f"cd {url} " + "&& mvn dependency:copy-dependencies"
+        cmd = f"cd {url} " + f"&& {mvn} dependency:copy-dependencies"
         try:
             run(cmd, shell=True)
         except:
@@ -100,7 +105,8 @@ def main(args):
     df = pd.read_parquet(args.input)
     if args.task == "config-maven":
         path_to_mvn_dirs = extract_maven_dir_urls(df, args.base_dir)
-        maven_config(path_to_mvn_dirs)
+        # print(path_to_mvn_dirs)
+        maven_config(path_to_mvn_dirs, args.mvn)
 
     elif args.task == "extract-method-qualified-name":
         # extract_method_qualified_name(df, args.num_batch, args.parser, args.base_dir)

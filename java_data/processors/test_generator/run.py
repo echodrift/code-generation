@@ -14,6 +14,8 @@ parser.add_argument("--base-dir", dest="base_dir")
 parser.add_argument("--time-limit", dest="time_limit", type=int)
 parser.add_argument("--output-limit", dest="output_limit", type=int)
 parser.add_argument("--output", dest="output")
+parser.add_argument("--randoop", dest="randoop")
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -46,9 +48,11 @@ def _generate_test(args) -> bool:
 
     relative_path_to_pom = relative_path.split("/src/main/java/")[0]
     path_to_pom = f"{base_dir}/{proj_name}/{relative_path_to_pom}"
-    result_path = relative_path.split("src/main/java/")[1].replace(".java", "")
+    test_path = f'{base_dir}/../randoop/{proj_name}/{relative_path.replace(".java", "")}'
+    # result_path = relative_path.split("src/main/java/")[1].replace(".java", "")
     if os.path.exists(
-        f"{path_to_pom}/randoop/{result_path}/RegressionTest.java"
+        # f"{path_to_pom}/randoop/{result_path}/RegressionTest.java"
+        f"{test_path}/RegressionTest.java"
     ):
         print("File existed")
         return True
@@ -74,7 +78,7 @@ def _generate_test(args) -> bool:
         # f"--methodlist=methodlist.txt "
         f"--time-limit={time_limit} "
         f"--output-limit={output_limit} "
-        f"--junit-output-dir={path_to_pom}/randoop/{result_path} "
+        f"--junit-output-dir={test_path} "
         f"--no-error-revealing-tests=true"
         # f"--progressdisplay=false "
         # f"|| timeout {time_limit} java -classpath {class_path} randoop.main.Main gentests "
@@ -85,7 +89,8 @@ def _generate_test(args) -> bool:
         # f"--testsperfile=1 "
         # f"--progressdisplay=false "
     )
-    # print(cmd)
+    print(cmd)
+    return False
     try:
         run(cmd, shell=True)
     except Exception:
@@ -95,13 +100,15 @@ def _generate_test(args) -> bool:
         #     f"Can not gentest for {row['proj_name']}/{row['relative_path']}"
         # )
     # else:
-    return os.path.exists(
-        f"{path_to_pom}/randoop/{result_path}/RegressionTest.java"
-    )
+    return os.path.exists(f"{test_path}/RegressionTest.java")
 
 
 def generate_test(
-    dataset: pd.DataFrame, base_dir: str, time_limit: int, output_limit: int
+    dataset: pd.DataFrame,
+    base_dir: str,
+    time_limit: int,
+    output_limit: int,
+    randoop_path: str,
 ) -> pd.Series:
     # def method_signature(method_qualified_name):
     #     method_signature_pattern = re.compile(
@@ -122,7 +129,6 @@ def generate_test(
     #         dataset["method_qualified_name"].tolist(),
     #     )
     # )
-    randoop_class_path = f"{BASE_DIR}/lib/randoop-4.3.3/randoop-all-4.3.3.jar"
     # iteration = len(dataset)
     # arguments = list(
     #     zip(
@@ -159,12 +165,13 @@ def generate_test(
                     row["proj_name"],
                     row["relative_path"],
                     # method_qualified_name[idx],
-                    randoop_class_path,
+                    randoop_path,
                     time_limit,
                     output_limit,
                 )
             )
         )
+        break
         # except Exception:
         #     generate_status.append(False)
 
@@ -174,9 +181,9 @@ def generate_test(
 
 def main(args):
     df = pd.read_parquet(args.input)
-    df = df.iloc[20000:25000]
+    df = df.iloc[:100]
     generate_status = generate_test(
-        df, args.base_dir, args.time_limit, args.output_limit
+        df, args.base_dir, args.time_limit, args.output_limit, args.randoop
     )
     generate_status.to_parquet(args.output)
 

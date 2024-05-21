@@ -44,7 +44,7 @@ import os
 import warnings
 from typing import Optional
 
-from tqdm.auto import tqdm as old_tqdm
+from tqdm import tqdm as old_tqdm
 
 __HF_DATASETS_DISABLE_PROGRESS_BARS = os.environ.get(
     "HF_DATASETS_DISABLE_PROGRESS_BARS"
