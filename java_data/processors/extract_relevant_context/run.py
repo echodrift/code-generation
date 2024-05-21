@@ -24,11 +24,11 @@ def main(args):
     class_path = (
         "."
         f":'{args.parser}/target/dependency/*'"
-        f":{args.parser}/src/main/resources/Flute.jar"
+        # f":{args.parser}/src/main/resources/Flute.jar"
     )
     # Run parser
-    for i in range(args.num_batch):
-    # for i in [0, 1, 3, 4, 5, 6, 9]:
+    # for i in range(args.num_batch):
+    for i in [6, 10, 11, 14, 15, 16, 17, 18, 19, 21, 27, 28]:
         cmd = (
             f'screen -dmS batch{i} bash -c "'
             f"cd {args.parser}/target/classes "
@@ -36,11 +36,10 @@ def main(args):
             "Main "
             f"{BASE_DIR}/data/batch{i}.csv "
             f"{args.base_dir} "
-            f"{BASE_DIR}/out/batch{i}.csv "
-            '\<inherit_elements\>"'
+            f'{BASE_DIR}/out/batch{i}.csv"'
         )
-        print(cmd)
-        break
+        # print(cmd)
+        # break
         subprocess.run(cmd, shell=True)
         print(f"Created screen batch{i}")
 

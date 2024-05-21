@@ -1,0 +1,6 @@
+README.md
+setup.py
+lvdthieu.egg-info/PKG-INFO
+lvdthieu.egg-info/SOURCES.txt
+lvdthieu.egg-info/dependency_links.txt
+lvdthieu.egg-info/top_level.txt

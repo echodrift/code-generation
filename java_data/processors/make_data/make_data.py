@@ -8,9 +8,9 @@ from typing import List, NamedTuple, Optional, Tuple
 
 import pandas as pd
 from antlr4 import *
-from java.java8.JavaLexer import JavaLexer
-from java.java8.JavaParser import JavaParser
-from java.java8.JavaParserListener import JavaParserListener
+from make_data.java.java8.JavaLexer import JavaLexer
+from make_data.java.java8.JavaParser import JavaParser
+from make_data.java.java8.JavaParserListener import JavaParserListener
 from tqdm import tqdm
 
 parser = argparse.ArgumentParser()

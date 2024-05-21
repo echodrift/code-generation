@@ -174,7 +174,7 @@ def generate_test(
 
 def main(args):
     df = pd.read_parquet(args.input)
-    df = df.loc[:2000]
+    df = df.iloc[20000:25000]
     generate_status = generate_test(
         df, args.base_dir, args.time_limit, args.output_limit
     )
