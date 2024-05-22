@@ -1,31 +1,37 @@
-OPTION=$1
-if (( $OPTION == 1 ))
-then
-python /home/hieuvd/lvdthieu/code-generation/java_data/processors/test_generator/run.py \
-        --input /home/hieuvd/lvdthieu/checkpoint.parquet \
-        --base-dir /home/hieuvd/lvdthieu/repos/processed-projects \
-        --time-limit 20 \
-        --output-limit 50 \
-        --randoop /home/hieuvd/lvdthieu/code-generation/java_data/processors/test_generator/lib/randoop-4.3.3/randoop-all-4.3.3.jar \
-        --output /home/hieuvd/lvdthieu/generate_status_4.parquet \
-        --start 11530 \
-        --end 12000 
-elif (( $OPTION == 2 ))
-then
-python /home/hieuvd/lvdthieu/code-generation/java_data/processors/test_generator/utils/utils.py \
-        --task config-maven \
-        --input /home/hieuvd/lvdthieu/checkpoint.parquet \
-        --base-dir /home/hieuvd/lvdthieu/repos/processed-projects \
-        --mvn /home/hieuvd/apache-maven-3.6.3/bin/mvn
+# OPTION=$1
+# if (( $OPTION == 1 ))
+# then
+# python /home/hieuvd/lvdthieu/code-generation/java_data/processors/test_generator/run.py \
+#         --input /home/hieuvd/lvdthieu/checkpoint.parquet \
+#         --base-dir /home/hieuvd/lvdthieu/repos/processed-projects \
+#         --time-limit 20 \
+#         --output-limit 50 \
+#         --randoop /home/hieuvd/lvdthieu/code-generation/java_data/processors/test_generator/lib/randoop-4.3.3/randoop-all-4.3.3.jar \
+#         --output /home/hieuvd/lvdthieu/generate_status_4.parquet \
+#         --start 11550 \
+#         --end 12000 
+# elif (( $OPTION == 2 ))
+# then
+# python /home/hieuvd/lvdthieu/code-generation/java_data/processors/test_generator/utils/utils.py \
+#         --task config-maven \
+#         --input /home/hieuvd/lvdthieu/checkpoint.parquet \
+#         --base-dir /home/hieuvd/lvdthieu/repos/processed-projects \
+#         --mvn /home/hieuvd/apache-maven-3.6.3/bin/mvn
+proj_name="OpenHFT_Chronicle-Map"
+path_to_src="Chronicle-Map"
+qualified_name="net.openhft.chronicle.hash.impl.ChronicleHashCloseOnExitHook"
 
-elif (( $OPTION == 3 ))
-then
-python /home/hieuvd/lvdthieu/code-generation/java_data/test_generator/utils.py \
-        --task extract-method-qualified-name \
-        --input /var/data/lvdthieu/temp/almost-final-java.parquet \
-        --num-batch 30 \
-        --base-dir /var/data/lvdthieu/repos/processed-projects \
-        --parser /var/data/lvdthieu/code-generation/java_data/java-parser
-else 
-echo "No command"
-fi
+REPOS="/home/hieuvd/lvdthieu/repos/processed-projects"
+RANDOOP="/home/hieuvd/lvdthieu/code-generation/java_data/processors/test_generator/lib/randoop-4.3.3/randoop-all-4.3.3.jar"
+CHECK_DIR="/home/hieuvd/lvdthieu/repos/check_randoop"
+
+path_to_pom="${REPOS}/${proj_name}/${path_to_src}"
+class_path=".:${path_to_pom}/target/classes:'${path_to_pom}/target/dependency/*':${RANDOOP}"    
+
+cd ${path_to_pom} 
+timeout 20 java -cp $class_path randoop.main.Main gentests \
+        --testclass="${qualified_name}" \
+        --time-limit=20 \
+        --output-limit=50 \
+        --junit-output-dir="${CHECK_DIR}" \
+        --no-error-revealing-tests=true

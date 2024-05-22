@@ -22,4 +22,4 @@ java -cp $CLOVER com.atlassian.clover.reporters.json.JSONReporter -i clover.db -
 java -cp $CLOVER com.atlassian.clover.reporters.html.HtmlReporter -i clover.db -o clover_html% 
 
 # Run
-python /home/hieuvd/lvdthieu/code-generation/java_data/processors/compile_test_executor/run.py --input /home/hieuvd/lvdthieu/new_test.parquet --output /home/hieuvd/lvdthieu/test_executor.parquet --col generated_code --base-dir /home/hieuvd/lvdthieu/repos/tmp-projects --tmp-dir /home/hieuvd/lvdthieu/repos/tmp --mvn /home/hieuvd/apache-maven-3.6.3/bin/mvn
+python /home/hieuvd/lvdthieu/code-generation/java_data/processors/compile_test_executor/run.py --input /home/hieuvd/lvdthieu/test_baseline_v1.parquet --output /home/hieuvd/lvdthieu/test_baseline.parquet --col generated_code --base-dir /home/hieuvd/lvdthieu/repos/tmp-projects --tmp-dir /home/hieuvd/lvdthieu/repos/tmp-projects --mvn /home/hieuvd/apache-maven-3.6.3/bin/mvn

@@ -7,7 +7,6 @@ from typing import List
 
 import pandas as pd
 from tqdm import tqdm
-from utils.parallel import map_with_multiprocessing_pool
 
 random.seed(42)
 parser = ArgumentParser()

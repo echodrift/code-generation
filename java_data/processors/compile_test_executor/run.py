@@ -28,6 +28,7 @@ class Executor:
         proj_storage_dir: str,
         tmp_dir: str,
         mvn: str,
+        index: int,
     ):
         """Constructor
         Args:
@@ -43,6 +44,7 @@ class Executor:
         self.tmp_dir = tmp_dir
         self.projects = set(df["proj_name"].to_list())
         self.mvn = mvn
+        self.index = index
 
     def fill_file(self, row) -> Optional[str]:
         """Fill generated code to file
@@ -176,12 +178,17 @@ class Executor:
         return data.stdout
 
     def execute_test(self, row):
-        pass
+        path_to_src_folder = "{}/{}".format(
+            self.proj_storage_dir, row["proj_name"]
+        )
 
     def execute(self):
         compiler_feedback = []
         for _, row in tqdm(
-            self.df.iterrows(), desc="Executing", total=len(self.df)
+            self.df.iterrows(),
+            desc=f"proc {self.index}",
+            total=len(self.df),
+            position=self.index,
         ):
             modified = self.modified_file(row)
             if modified:
@@ -259,9 +266,10 @@ def process_dataframes_in_parallel(df_list, additional_args, process_dataframe):
     output_queue = Queue()
 
     # Create a process for each DataFrame
-    for df in df_list:
+    for idx, df in enumerate(df_list):
         p = Process(
-            target=process_dataframe, args=(df, additional_args, output_queue)
+            target=process_dataframe,
+            args=(df, additional_args + (idx,), output_queue),
         )
         processes.append(p)
         p.start()
@@ -286,10 +294,9 @@ def process_dataframe(df, additional_args, output_queue):
         df (pd.DataFrame): The DataFrame to process.
         output_queue (Queue): The queue to store the results.
     """
-    print("A process is executing")
-    (col, base_dir, tmp_dir, mvn) = additional_args
+    (col, base_dir, tmp_dir, mvn, index) = additional_args
     # Example processing: here we just return the DataFrame size
-    executor = Executor(df, col, base_dir, tmp_dir, mvn)
+    executor = Executor(df, col, base_dir, tmp_dir, mvn, index)
     df["compiler_feedback"] = executor.execute()
     output_queue.put(df)
 
