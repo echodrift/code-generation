@@ -28,7 +28,7 @@ def main(args):
     )
     # Run parser
     # for i in range(args.num_batch):
-    for i in [6, 10, 11, 14, 15, 16, 17, 18, 19, 21, 27, 28]:
+    for i in [6, 10, 11, 14, 15, 16, 17, 18, 27]:
         cmd = (
             f'screen -dmS batch{i} bash -c "'
             f"cd {args.parser}/target/classes "
@@ -38,8 +38,8 @@ def main(args):
             f"{args.base_dir} "
             f'{BASE_DIR}/out/batch{i}.csv"'
         )
-        # print(cmd)
-        # break
+        print(cmd)
+        break
         subprocess.run(cmd, shell=True)
         print(f"Created screen batch{i}")
 

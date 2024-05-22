@@ -299,11 +299,8 @@ class CompilableChecker:
 
     def get_compilable_feedback(self):
         """Get compilable feedback"""
-        # self.copy_project_to_tmp_dir()
-        # print("Copy projects to temp directory done")
-
-        # self.df = self.df.iloc[:2]
-        # self.projects = set(self.df["proj_name"].to_list())
+        self.copy_project_to_tmp_dir()
+        print("Copy projects to temp directory done")
         self.modified_files()
         print("Modify files done")
         new_df = self.add_compile_info()
