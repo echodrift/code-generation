@@ -8,6 +8,6 @@ fi
 
 python /var/data/lvdthieu/code-generation/java_data/processors/extract_relevant_context/run.py \
     --input /var/data/lvdthieu/checkpoint.parquet \
-    --num-batch 30 \
     --parser /var/data/lvdthieu/code-generation/java_data/processors/java_parser \
-    --base-dir /var/data/lvdthieu/repos/processed-projects
+    --base-dir /var/data/lvdthieu/repos/processed-projects \
+    --output /var/data/lvdthieu/checkpoint_test1.csv
