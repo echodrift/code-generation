@@ -1,5 +1,6 @@
 import logging
 import os
+import random
 from argparse import ArgumentParser
 from subprocess import run
 from typing import List
@@ -8,6 +9,7 @@ import pandas as pd
 from tqdm import tqdm
 from utils.parallel import map_with_multiprocessing_pool
 
+random.seed(42)
 parser = ArgumentParser()
 parser.add_argument("--input", dest="input")
 parser.add_argument("--base-dir", dest="base_dir")
@@ -15,6 +17,8 @@ parser.add_argument("--time-limit", dest="time_limit", type=int)
 parser.add_argument("--output-limit", dest="output_limit", type=int)
 parser.add_argument("--output", dest="output")
 parser.add_argument("--randoop", dest="randoop")
+parser.add_argument("--start", dest="start", type=int)
+parser.add_argument("--end", dest="end", type=int)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -29,6 +33,8 @@ def search_jar_in_project(project_url: str) -> List[str]:
         for file in files:
             if file.endswith(".jar"):
                 all_jars.append(os.path.join(root, file))
+    if len(all_jars) > 42:
+        all_jars = random.sample(all_jars, 42)
     return all_jars
 
 
@@ -53,7 +59,7 @@ def _generate_test(args) -> bool:
     if os.path.exists(
         # f"{path_to_pom}/randoop/{result_path}/RegressionTest.java"
         f"{test_path}/RegressionTest.java"
-    ):
+    ) or os.path.exists(f"{test_path}/RegressionTest0.java"):
         print("File existed")
         return True
 
@@ -89,11 +95,11 @@ def _generate_test(args) -> bool:
         # f"--testsperfile=1 "
         # f"--progressdisplay=false "
     )
-    print(cmd)
-    return False
+    data = ""
     try:
-        run(cmd, shell=True)
+        data = run(cmd, shell=True, text=True)
     except Exception:
+        print(data.err)
         # generate_status.append(False)
         return False
         # logging.info(
@@ -171,7 +177,7 @@ def generate_test(
                 )
             )
         )
-        break
+
         # except Exception:
         #     generate_status.append(False)
 
@@ -181,7 +187,7 @@ def generate_test(
 
 def main(args):
     df = pd.read_parquet(args.input)
-    df = df.iloc[:100]
+    df = df.iloc[args.start : args.end]
     generate_status = generate_test(
         df, args.base_dir, args.time_limit, args.output_limit, args.randoop
     )

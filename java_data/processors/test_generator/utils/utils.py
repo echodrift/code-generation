@@ -40,7 +40,7 @@ def extract_maven_dir_urls(dataset: pd.DataFrame, base_dir: str) -> List[str]:
 
 def maven_config(urls: List[str], mvn: str):
     for url in tqdm(urls, desc="Config maven"):
-        cmd = f"cd {url} " + f"&& {mvn} dependency:copy-dependencies"
+        cmd = f"cd {url} " + f"&& {mvn} clean compile"
         try:
             run(cmd, shell=True)
         except:

@@ -6,8 +6,10 @@ python /home/hieuvd/lvdthieu/code-generation/java_data/processors/test_generator
         --base-dir /home/hieuvd/lvdthieu/repos/processed-projects \
         --time-limit 20 \
         --output-limit 50 \
-        --output /home/hieuvd/lvdthieu/generate_status_0.parquet \
-        --randoop /home/hieuvd/lvdthieu/code-generation/java_data/processors/test_generator/lib/randoop-4.3.3/randoop-all-4.3.3.jar
+        --randoop /home/hieuvd/lvdthieu/code-generation/java_data/processors/test_generator/lib/randoop-4.3.3/randoop-all-4.3.3.jar \
+        --output /home/hieuvd/lvdthieu/generate_status_4.parquet \
+        --start 11530 \
+        --end 12000 
 elif (( $OPTION == 2 ))
 then
 python /home/hieuvd/lvdthieu/code-generation/java_data/processors/test_generator/utils/utils.py \
