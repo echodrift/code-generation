@@ -86,23 +86,20 @@ class Executor:
                         + filled_class
                         + original_file[class_end_idx:]
                     )
-                    return filled_file
-            return None
+                    return filled_file, original_file
+            return None, None
         else:
-            return None
+            return None, None
 
     def _execute(self, row) -> bool:
         """Replace original file with file with generated code"""
         path_to_file = "{}/{}/{}".format(
             self.proj_storage_dir, row["proj_name"], row["relative_path"]
         )
-        path_to_tmp_file = "{}/{}/{}".format(
-            self.tmp_dir, row["proj_name"], row["relative_path"]
-        )
         compiler_feedback = None
         # If fail log file path into error file
         try:
-            filled_file = self._fill_file(row)
+            filled_file, original_file = self._fill_file(row)
             if not filled_file:
                 raise LookupError(
                     "There is an error while filling file {}".format(
@@ -110,7 +107,6 @@ class Executor:
                     )
                 )
             else:
-                shutil.copy2(path_to_file, path_to_tmp_file)
                 try:
                     with codecs.open(
                         path_to_file, "w", encoding="utf-8", errors="ignore"
@@ -121,12 +117,15 @@ class Executor:
                 except:
                     raise Exception("Encounter exception when executing")
                 finally:
-                    shutil.copy2(path_to_tmp_file, path_to_file)
-            if not compiler_feedback:
-                compiler_feedback = "<success>"
-        except Exception as e:
-            logging.error(e)
-            compiler_feedback = "<execute_error>"
+                    with codecs.open(
+                        path_to_file, "w", encoding="utf-8", errors="ignore"
+                    ) as f:
+                        f.write(original_file)
+        if not compiler_feedback:
+            compiler_feedback = "<success>"
+    except Exception as e:
+        logging.error(e)
+        compiler_feedback = "<execute_error>"
 
         return compiler_feedback
 
@@ -177,7 +176,7 @@ class Executor:
             counter += 1
             compiler_feedbacks.append(self._execute(row))
             if counter % 100 == 0:
-                log_df = df.iloc[:counter]
+                log_df = self.df.iloc[:counter]
                 log_df["compiler_feedback"] = compiler_feedbacks
                 log_df.to_parquet(
                     f"{self.log_dir}/executor{self.index}.parquet"
