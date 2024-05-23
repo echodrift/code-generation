@@ -2,6 +2,7 @@ import argparse
 import codecs
 import logging
 import re
+import shutil
 from multiprocessing import Process, Queue
 from pathlib import Path
 from subprocess import run
@@ -17,6 +18,7 @@ parser.add_argument("--output", dest="output")
 parser.add_argument("--col", dest="col")
 parser.add_argument("--base-dir", dest="base_dir")
 parser.add_argument("--tmp-dir", dest="tmp_dir")
+parser.add_argument("--log-dir", dest="log_dir")
 parser.add_argument("--mvn", dest="mvn")
 
 
@@ -27,6 +29,7 @@ class Executor:
         column_to_check: str,
         proj_storage_dir: str,
         tmp_dir: str,
+        log_dir: str,
         mvn: str,
         index: int,
     ):
@@ -37,16 +40,17 @@ class Executor:
             proj_storage_dir (str): Project storage directory
             tmp_dir (str): Temporary directory (to store a copy of project)
             output (str): Output
+            index (int): Order of this executor
         """
         self.df = df
         self.column_to_check = column_to_check
         self.proj_storage_dir = proj_storage_dir
         self.tmp_dir = tmp_dir
-        self.projects = set(df["proj_name"].to_list())
+        self.log_dir = log_dir
         self.mvn = mvn
         self.index = index
 
-    def fill_file(self, row) -> Optional[str]:
+    def _fill_file(self, row) -> Optional[str]:
         """Fill generated code to file
         Args:
             row (pd.core.series.Series): Row
@@ -82,12 +86,12 @@ class Executor:
                         + filled_class
                         + original_file[class_end_idx:]
                     )
-                    return filled_file, original_file
+                    return filled_file
             return None
         else:
             return None
 
-    def modified_file(self, row) -> bool:
+    def _execute(self, row) -> bool:
         """Replace original file with file with generated code"""
         path_to_file = "{}/{}/{}".format(
             self.proj_storage_dir, row["proj_name"], row["relative_path"]
@@ -95,44 +99,38 @@ class Executor:
         path_to_tmp_file = "{}/{}/{}".format(
             self.tmp_dir, row["proj_name"], row["relative_path"]
         )
-        res = self.fill_file(row)
+        compiler_feedback = None
         # If fail log file path into error file
         try:
-            if not res:
+            filled_file = self._fill_file(row)
+            if not filled_file:
                 raise LookupError(
                     "There is an error while filling file {}".format(
                         path_to_file
                     )
                 )
             else:
-                filled_file, original_file = res
-                new_file = Path(path_to_tmp_file)
-                new_file.parent.mkdir(parents=True, exist_ok=True)
-                try:
-                    with codecs.open(
-                        path_to_tmp_file, "w", encoding="utf-8", errors="ignore"
-                    ) as f:
-                        f.write(original_file)
-                except:
-                    raise Exception("Can't write original file to tmp")
+                shutil.copy2(path_to_file, path_to_tmp_file)
                 try:
                     with codecs.open(
                         path_to_file, "w", encoding="utf-8", errors="ignore"
                     ) as f:
                         f.write(filled_file)
+                    compile_info = self._get_compiler_feedback(row)
+                    compiler_feedback = self._extract_error(compile_info)
                 except:
-                    raise Exception("Can't write fill file to origin file")
-        except LookupError as e:
-            logging.error(e)
-            return False
+                    raise Exception("Encounter exception when executing")
+                finally:
+                    shutil.copy2(path_to_tmp_file, path_to_file)
+            if not compiler_feedback:
+                compiler_feedback = "<success>"
         except Exception as e:
             logging.error(e)
-            logging.error("---------------------------------------------------")
-            logging.error("Error while modifying file {}".format(path_to_file))
-            return False
-        return True
+            compiler_feedback = "<execute_error>"
 
-    def extract_error(self, compile_info):
+        return compiler_feedback
+
+    def _extract_error(self, compile_info):
         """Extract error from feedback
         Args:
             compile_info (List[CompilerFeedback]): Compiler feedback
@@ -141,30 +139,15 @@ class Executor:
         """
         err_pattern = r"^\[ERROR\] (?P<file>.+?):\[(?P<line>\d+),(?P<col>\d+)\] (?P<err>.+)$"
         file_errors = []
-        errors = re.findall(err_pattern, compile_info, re.MULTILINE)
+        errors = set(re.findall(err_pattern, compile_info, re.MULTILINE))
         for error in errors:
             file, line, col, err = error
             file_errors.append(
-                f"""Line: {line}, Column: {col}, Error: {err})"""
+                f"""<file>{file}<line>{line}<col>{col}<err>{err}"""
             )
         return "\n".join(file_errors)
 
-    def return_original_file(self, row):
-        path_to_tmp_file = "{}/{}/{}".format(
-            self.tmp_dir, row["proj_name"], row["relative_path"]
-        )
-        path_to_file = "{}/{}/{}".format(
-            self.proj_storage_dir, row["proj_name"], row["relative_path"]
-        )
-        try:
-            cmd = f"cp {path_to_tmp_file} {path_to_file}"
-            run(cmd, shell=True)
-        except:
-            logging.error(
-                "Error while return original file {}".format(path_to_file)
-            )
-
-    def get_compiler_feedback(self, row):
+    def _get_compiler_feedback(self, row):
         path_to_project = "{}/{}".format(
             self.proj_storage_dir, row["proj_name"]
         )
@@ -183,34 +166,23 @@ class Executor:
         )
 
     def execute(self):
-        compiler_feedback = []
+        compiler_feedbacks = []
+        counter = 0
         for _, row in tqdm(
             self.df.iterrows(),
             desc=f"proc {self.index}",
             total=len(self.df),
             position=self.index,
         ):
-            modified = self.modified_file(row)
-            if modified:
-                try:
-                    compile_info = self.get_compiler_feedback(row)
-                    errors = self.extract_error(compile_info)
-                    compiler_feedback.append(errors)
-                except:
-                    logging.info(
-                        "Can not get compiler feedback",
-                        row["proj_name"] + "/" + row["relative_path"],
-                    )
-                    compiler_feedback.append("<execute_error>")
-                finally:
-                    self.return_original_file(row)
-            else:
-                logging.info(
-                    "Can not modify file",
-                    row["proj_name"] + "/" + row["relative_path"],
+            counter += 1
+            compiler_feedbacks.append(self._execute(row))
+            if counter % 100 == 0:
+                log_df = df.iloc[:counter]
+                log_df["compiler_feedback"] = compiler_feedbacks
+                log_df.to_parquet(
+                    f"{self.log_dir}/executor{self.index}.parquet"
                 )
-                compiler_feedback.append("<execute_error>")
-        return compiler_feedback
+        return compiler_feedbacks
 
 
 def group_dataframes(df_list, num_groups):
@@ -294,9 +266,9 @@ def process_dataframe(df, additional_args, output_queue):
         df (pd.DataFrame): The DataFrame to process.
         output_queue (Queue): The queue to store the results.
     """
-    (col, base_dir, tmp_dir, mvn, index) = additional_args
+    (col, base_dir, tmp_dir, log_dir, mvn, index) = additional_args
     # Example processing: here we just return the DataFrame size
-    executor = Executor(df, col, base_dir, tmp_dir, mvn, index)
+    executor = Executor(df, col, base_dir, tmp_dir, log_dir, mvn, index)
     df["compiler_feedback"] = executor.execute()
     output_queue.put(df)
 
@@ -306,7 +278,13 @@ def main(args):
     proj_group = df.groupby(by="proj_name")
     dfs = [proj_group.get_group(x) for x in proj_group.groups]
     dfs = group_dataframes(dfs, 10)
-    additional_args = (args.col, args.base_dir, args.tmp_dir, args.mvn)
+    additional_args = (
+        args.col,
+        args.base_dir,
+        args.tmp_dir,
+        args.log_dir,
+        args.mvn,
+    )
     results = process_dataframes_in_parallel(
         dfs, additional_args, process_dataframe
     )
