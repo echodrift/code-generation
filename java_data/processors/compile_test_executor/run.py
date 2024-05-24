@@ -17,9 +17,10 @@ parser.add_argument("--input", dest="input")
 parser.add_argument("--output", dest="output")
 parser.add_argument("--col", dest="col")
 parser.add_argument("--base-dir", dest="base_dir")
-parser.add_argument("--tmp-dir", dest="tmp_dir")
 parser.add_argument("--log-dir", dest="log_dir")
 parser.add_argument("--mvn", dest="mvn")
+parser.add_argument("--proc", dest="proc", type=int)
+parser.add_argument("--start-end", dest="start_end")
 
 
 class Executor:
@@ -28,7 +29,6 @@ class Executor:
         df: pd.DataFrame,
         column_to_check: str,
         proj_storage_dir: str,
-        tmp_dir: str,
         log_dir: str,
         mvn: str,
         index: int,
@@ -38,14 +38,12 @@ class Executor:
             df (pd.DataFrame): Dataframe of java code
             column_to_check (str): Column to check
             proj_storage_dir (str): Project storage directory
-            tmp_dir (str): Temporary directory (to store a copy of project)
             output (str): Output
             index (int): Order of this executor
         """
         self.df = df
         self.column_to_check = column_to_check
         self.proj_storage_dir = proj_storage_dir
-        self.tmp_dir = tmp_dir
         self.log_dir = log_dir
         self.mvn = mvn
         self.index = index
@@ -121,11 +119,11 @@ class Executor:
                         path_to_file, "w", encoding="utf-8", errors="ignore"
                     ) as f:
                         f.write(original_file)
-        if not compiler_feedback:
-            compiler_feedback = "<success>"
-    except Exception as e:
-        logging.error(e)
-        compiler_feedback = "<execute_error>"
+            if not compiler_feedback:
+                compiler_feedback = "<success>"
+        except Exception as e:
+            logging.error(e)
+            compiler_feedback = "<execute_error>"
 
         return compiler_feedback
 
@@ -175,7 +173,7 @@ class Executor:
         ):
             counter += 1
             compiler_feedbacks.append(self._execute(row))
-            if counter % 100 == 0:
+            if counter % 50 == 0:
                 log_df = self.df.iloc[:counter]
                 log_df["compiler_feedback"] = compiler_feedbacks
                 log_df.to_parquet(
@@ -265,9 +263,9 @@ def process_dataframe(df, additional_args, output_queue):
         df (pd.DataFrame): The DataFrame to process.
         output_queue (Queue): The queue to store the results.
     """
-    (col, base_dir, tmp_dir, log_dir, mvn, index) = additional_args
+    (col, base_dir, log_dir, mvn, index) = additional_args
     # Example processing: here we just return the DataFrame size
-    executor = Executor(df, col, base_dir, tmp_dir, log_dir, mvn, index)
+    executor = Executor(df, col, base_dir, log_dir, mvn, index)
     df["compiler_feedback"] = executor.execute()
     output_queue.put(df)
 
@@ -276,16 +274,16 @@ def main(args):
     df = pd.read_parquet(args.input)
     proj_group = df.groupby(by="proj_name")
     dfs = [proj_group.get_group(x) for x in proj_group.groups]
-    dfs = group_dataframes(dfs, 10)
+    dfs = group_dataframes(dfs, args.proc)
     additional_args = (
         args.col,
         args.base_dir,
-        args.tmp_dir,
         args.log_dir,
         args.mvn,
     )
+    start, end = map(int, args.start_end.split(":"))
     results = process_dataframes_in_parallel(
-        dfs, additional_args, process_dataframe
+        dfs[start:end], additional_args, process_dataframe
     )
     final_result = pd.concat(results, axis=0)
     final_result.to_parquet(args.output)

@@ -23,10 +23,11 @@
 
 # Run
 python /home/hieuvd/lvdthieu/code-generation/java_data/processors/compile_test_executor/run.py \
-    --input /home/hieuvd/lvdthieu/test_baseline_v1.parquet \
-    --output /home/hieuvd/lvdthieu/test_baseline_compiled.parquet \
+    --input /home/hieuvd/lvdthieu/valid_finetune.parquet \
+    --output /home/hieuvd/lvdthieu/valid_finetune_compiled_3.parquet \
     --col generated_code \
     --base-dir /home/hieuvd/lvdthieu/repos/tmp-projects \
-    --tmp-dir /home/hieuvd/lvdthieu/repos/tmp \
-    --log-dir /home/hieuvd/lvdthieu/repos/log \
-    --mvn /home/hieuvd/apache-maven-3.6.3/bin/mvn
+    --log-dir /home/hieuvd/lvdthieu/repos/log2 \
+    --mvn /home/hieuvd/apache-maven-3.6.3/bin/mvn \
+    --proc 30 \
+    --start-end 20:30

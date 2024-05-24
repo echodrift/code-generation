@@ -17,9 +17,9 @@
 #         --input /home/hieuvd/lvdthieu/checkpoint.parquet \
 #         --base-dir /home/hieuvd/lvdthieu/repos/processed-projects \
 #         --mvn /home/hieuvd/apache-maven-3.6.3/bin/mvn
-proj_name="OpenHFT_Chronicle-Map"
-path_to_src="Chronicle-Map"
-qualified_name="net.openhft.chronicle.hash.impl.ChronicleHashCloseOnExitHook"
+proj_name="qiujiayu_AutoLoadCache"
+path_to_src="AutoLoadCache/autoload-cache-serializer/autoload-cache-serializer-protobuf"
+qualified_name="com.jarvis.cache.serializer.protobuf.HeapByteBufUtil"
 
 REPOS="/home/hieuvd/lvdthieu/repos/processed-projects"
 RANDOOP="/home/hieuvd/lvdthieu/code-generation/java_data/processors/test_generator/lib/randoop-4.3.3/randoop-all-4.3.3.jar"
