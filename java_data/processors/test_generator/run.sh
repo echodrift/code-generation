@@ -18,8 +18,8 @@
 #         --base-dir /home/hieuvd/lvdthieu/repos/processed-projects \
 #         --mvn /home/hieuvd/apache-maven-3.6.3/bin/mvn
 proj_name="qiujiayu_AutoLoadCache"
-path_to_src="AutoLoadCache/autoload-cache-serializer/autoload-cache-serializer-protobuf"
-qualified_name="com.jarvis.cache.serializer.protobuf.HeapByteBufUtil"
+path_to_src="AutoLoadCache/autoload-cache-aop/autoload-cache-aop-aspectj"
+qualified_name="com.jarvis.cache.aop.aspectj.AspectjAopInterceptor"
 
 REPOS="/home/hieuvd/lvdthieu/repos/processed-projects"
 RANDOOP="/home/hieuvd/lvdthieu/code-generation/java_data/processors/test_generator/lib/randoop-4.3.3/randoop-all-4.3.3.jar"
