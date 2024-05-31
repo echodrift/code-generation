@@ -140,7 +140,7 @@ class Executor:
         for error in errors:
             file, line, col, err = error
             file_errors.append(
-                f"""<file>{file.split(proj_storage_dir)[1][1:]}<line>{line}<col>{col}<err>{err}"""
+                f"""<file>{file}<line>{line}<col>{col}<err>{err}"""
             )
         return "\n".join(file_errors)
 
