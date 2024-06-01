@@ -43,6 +43,8 @@
 #     --proc 4 \
 #     --start-end 0:4
 
+
+# Retry valid left
 python /home/hieuvd/lvdthieu/code-generation/java_data/processors/compile_test_executor/run.py \
     --input /home/hieuvd/lvdthieu/valid_left.parquet \
     --output /home/hieuvd/lvdthieu/valid_left_compiled.parquet \

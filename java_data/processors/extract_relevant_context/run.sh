@@ -10,4 +10,5 @@ python /var/data/lvdthieu/code-generation/java_data/processors/extract_relevant_
     --input /var/data/lvdthieu/checkpoint.parquet \
     --parser /var/data/lvdthieu/code-generation/java_data/processors/java_parser \
     --base-dir /var/data/lvdthieu/repos/processed-projects \
-    --output /var/data/lvdthieu/checkpoint_test1.csv
+    --output /var/data/lvdthieu/checkpoint_relevent_context.csv \
+    --log-dir /var/data/lvdthieu/repos/log
