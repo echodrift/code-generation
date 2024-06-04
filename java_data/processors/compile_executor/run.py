@@ -23,7 +23,7 @@ parser.add_argument("--proc", dest="proc", type=int)
 parser.add_argument("--start-end", dest="start_end")
 
 
-class Executor:
+class CompilerExecutor:
     def __init__(
         self,
         df: pd.DataFrame,
@@ -157,10 +157,6 @@ class Executor:
         data = run(cmd, shell=True, capture_output=True, text=True)
         return data.stdout
 
-    def _execute_test(self, row):
-        path_to_src_folder = "{}/{}".format(
-            self.proj_storage_dir, row["proj_name"]
-        )
 
     def execute(self):
         compiler_feedbacks = []
@@ -265,8 +261,8 @@ def process_dataframe(df, additional_args, output_queue):
     """
     (col, base_dir, log_dir, mvn, index) = additional_args
     # Example processing: here we just return the DataFrame size
-    executor = Executor(df, col, base_dir, log_dir, mvn, index)
-    df["compiler_feedback"] = executor.execute()
+    executor = CompilerExecutor:(df, col, base_dir, log_dir, mvn, index)
+    df["compiler_feedback"] = CompilerExecutor:.execute()
     output_queue.put(df)
 
 
