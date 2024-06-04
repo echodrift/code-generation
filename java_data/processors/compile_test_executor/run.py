@@ -157,7 +157,7 @@ class Executor:
         data = run(cmd, shell=True, capture_output=True, text=True)
         return data.stdout
 
-    def execute_test(self, row):
+    def _execute_test(self, row):
         path_to_src_folder = "{}/{}".format(
             self.proj_storage_dir, row["proj_name"]
         )
