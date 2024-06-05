@@ -2,13 +2,16 @@
 """
 
 import argparse
+import pprint
+import subprocess
 from multiprocessing import Pool
-from subprocess import run
 from typing import List, Optional, Tuple
 
 import pandas as pd
 from make_data.make_data import get_functions, get_location
 from tqdm import tqdm
+
+pp = pprint.PrettyPrinter(depth=4, indent=4)
 
 
 class TestExecutor:
@@ -130,7 +133,7 @@ class TestExecutor:
         source = f"{test_dir}/sources.txt"
         test_result = f"{test_dir}/test_result.txt"
         pass_result = f"{test_dir}/clover_html_pass"
-        fail_result = f"{test_dir}/clover_html_failt"
+        fail_result = f"{test_dir}/clover_html_fail"
 
         cmd = f"""
             # Instrument
@@ -152,7 +155,7 @@ class TestExecutor:
             fi
 
             # Compile test file
-            javac -cp {bin}:{self.junit_jar} {test_java} -d {bin}
+            javac -cp {bin}:{self.junit_jar}:{self.hamcrest_jar} {test_java} -d {bin}
             if [ "$?" -eq 0 ]; then
                 echo "3) Compile test done"
             else
@@ -160,7 +163,7 @@ class TestExecutor:
             fi
 
             # Run test
-            cd {bin} && java -cp .:{self.clover_jar}:{self.junit_jar} org.junit.runner.JUnitCore RegressionTest0 > {test_result}
+            cd {bin} && java -cp .:{self.clover_jar}:{self.junit_jar}:{self.hamcrest_jar} org.junit.runner.JUnitCore RegressionTest0 > {test_result}
             if [ "$?" -eq 0 ]; then
                 echo "4) Run test done"
             else
@@ -186,18 +189,18 @@ class TestExecutor:
             fi
 
             # Compile pass and fail test
-            javac -cp {bin}:{self.junit_jar} {test_java_pass} {test_java_fail} -d {bin}
+            javac -cp {bin}:{self.junit_jar}:{self.hamcrest_jar} {test_java_pass} {test_java_fail} -d {bin}
             if [ "$?" -eq 0 ]; then
                 echo "7) Compile pass and fail test done"
             else
                 exit 7
-
+            fi
             # Run pass test
-            java -cp {bin}:{self.clover_jar}:{self.junit_jar} org.junit.runner.JUnitCore RegressionPassTest0 
+            java -cp {bin}:{self.clover_jar}:{self.junit_jar}:{self.hamcrest_jar} org.junit.runner.JUnitCore RegressionPassTest0 
             if [ "$?" -eq 0 ]; then
                 echo "8) Run pass test done"
             else
-                exit 8
+                echo exit 8;
             fi
 
             # Generate clover_html for pass test
@@ -205,7 +208,7 @@ class TestExecutor:
             if [ "$?" -eq 0 ]; then
                 echo "9) Store result for pass test done"
             else
-                exit 9
+                exit 9;
             fi
 
             # Remove clover.db...
@@ -213,15 +216,15 @@ class TestExecutor:
             if [ "$?" -eq 0 ]; then
                 echo "10) Remove tmp clover.db done"
             else
-                exit 10
+                exit 10;
             fi
 
             # Run fail test
-            java -cp {bin}:{self.clover_jar}:{self.junit_jar} org.junit.runner.JUnitCore RegressionFailTest0
+            java -cp {bin}:{self.clover_jar}:{self.junit_jar}:{self.hamcrest_jar} org.junit.runner.JUnitCore RegressionFailTest0
             if [ "$?" -eq 0 ]; then
                 echo "11) Run fail test done"
             else 
-                echo exit 11
+                echo exit 11;
             fi
 
             # Generate clover_html for fail test
@@ -229,7 +232,7 @@ class TestExecutor:
             if [ "$?" -eq 0 ]; then
                 echo "12) Store result for fail test done"
             else 
-                exit 12
+                exit 12;
             fi
 
             # Remove clover.db...
@@ -237,10 +240,20 @@ class TestExecutor:
             if [ "$?" -eq 0 ]; then
                 echo "13) Remove tmp clover.db done"
             else
-                exit 13
+                exit 13;
             fi
         """
-        return "tmp", "tmp"
+        with open("/home/hieuvd/lvdthieu/check.sh", "w") as f:
+            f.write(cmd)
+        result = subprocess.run(
+            cmd, shell=True, capture_output=True, text=True, check=True
+        )
+        print(result)
+        print("Command return code:", result.returncode)
+        if result.returncode != 0:
+            return None, None
+        else:
+            return pass_result, fail_result
 
     def execute_row(self, row):
         """
@@ -379,51 +392,54 @@ def process_dataframes(executor: TestExecutor) -> list:
 
 def main(args):
     dataframe = pd.read_parquet(args.input)
-    project_groups = dataframe.groupby(by="proj_name")
-    dataframes = [project_groups.get_group(x) for x in project_groups.groups]
-    num_proc = min(args.proc, len(dataframes))
-    dataframes = group_dataframes(dataframes, num_proc)
-    if not args.start_end:
-        start, end = 0, len(dataframes)
-    else:
-        start, end = map(int, args.start_end.split(":"))
-    dataframes = dataframes[start:end]
-    executors = [
-        TestExecutor(
-            df=dataframes[index],
-            column_to_check=args.column_to_check,
-            project_storage_dir=args.project_storage_dir,
-            test_dir=args.test_dir,
-            log_dir=args.log_dir,
-            index=index,
-            mvn=args.mvn,
-            clover_jar=args.clover_jar,
-            junit_jar=args.junit_jar,
-            hamcrest_jar=args.hamcrest_jar,
-            separator_code=args.separator_code,
-        )
-        for index in range(len(dataframes))
-    ]
 
-    with Pool(args.proc) as pool:
-        results = pool.map(process_dataframes, executors)
+    # project_groups = dataframe.groupby(by="proj_name")
+    # dataframes = [project_groups.get_group(x) for x in project_groups.groups]
+    # num_proc = min(args.proc, len(dataframes))
+    # dataframes = group_dataframes(dataframes, num_proc)
+    # if not args.start_end:
+    #     start, end = 0, len(dataframes)
+    # else:
+    #     start, end = map(int, args.start_end.split(":"))
+    # dataframes = dataframes[start:end]
+    # executors = [
+    #     TestExecutor(
+    #         df=dataframes[index],
+    #         column_to_check=args.column_to_check,
+    #         project_storage_dir=args.project_storage_dir,
+    #         test_dir=args.test_dir,
+    #         log_dir=args.log_dir,
+    #         index=index,
+    #         mvn=args.mvn,
+    #         clover_jar=args.clover_jar,
+    #         junit_jar=args.junit_jar,
+    #         hamcrest_jar=args.hamcrest_jar,
+    #         separator_code=args.separator_code,
+    #     )
+    #     for index in range(len(dataframes))
+    # ]
 
-    final_result = pd.concat(results, axis=0)
-    final_result.to_parquet(args.output)
-    # executor = TestExecutor(
-    #     df=dataframe,
-    #     column_to_check=args.column_to_check,
-    #     project_storage_dir=args.project_storage_dir,
-    #     test_dir=args.test_dir,
-    #     log_dir=args.log_dir,
-    #     index=0,
-    #     mvn=args.mvn,
-    #     clover_jar=args.clover_jar,
-    #     junit_jar=args.junit_jar,
-    #     hamcrest_jar=args.hamcrest_jar,
-    #     separator_code=args.separator_code,
-    # )
-    # executor.execute_row(dataframe.iloc[0])
+    # with Pool(args.proc) as pool:
+    #     results = pool.map(process_dataframes, executors)
+
+    # final_result = pd.concat(results, axis=0)
+    # final_result.to_parquet(args.output)
+
+    executor = TestExecutor(
+        df=dataframe,
+        column_to_check=args.column_to_check,
+        project_storage_dir=args.project_storage_dir,
+        test_dir=args.test_dir,
+        log_dir=args.log_dir,
+        index=0,
+        mvn=args.mvn,
+        clover_jar=args.clover_jar,
+        junit_jar=args.junit_jar,
+        hamcrest_jar=args.hamcrest_jar,
+        separator_code=args.separator_code,
+    )
+    pp.pprint(dict(dataframe.iloc[500]))
+    executor.execute_row(dataframe.iloc[500])
 
 
 if __name__ == "__main__":
