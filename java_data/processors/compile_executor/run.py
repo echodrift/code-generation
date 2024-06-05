@@ -157,7 +157,6 @@ class CompilerExecutor:
         data = run(cmd, shell=True, capture_output=True, text=True)
         return data.stdout
 
-
     def execute(self):
         compiler_feedbacks = []
         counter = 0
@@ -261,8 +260,8 @@ def process_dataframe(df, additional_args, output_queue):
     """
     (col, base_dir, log_dir, mvn, index) = additional_args
     # Example processing: here we just return the DataFrame size
-    executor = CompilerExecutor:(df, col, base_dir, log_dir, mvn, index)
-    df["compiler_feedback"] = CompilerExecutor:.execute()
+    executor = CompilerExecutor(df, col, base_dir, log_dir, mvn, index)
+    df["compiler_feedback"] = CompilerExecutor.execute()
     output_queue.put(df)
 
 
