@@ -136,6 +136,9 @@ class TestExecutor:
         fail_result = f"{test_dir}/clover_html_fail"
 
         cmd = f"""
+            # Clear clover.db
+            cd {test_dir} && rm -rf clover.db*
+
             # Instrument
             java -cp {self.clover_jar} com.atlassian.clover.CloverInstr -i {db} -s {src} -d {instr}
             if [ "$?" -eq 0 ]; then
@@ -243,13 +246,16 @@ class TestExecutor:
                 exit 13;
             fi
         """
-        with open("/home/hieuvd/lvdthieu/check.sh", "w") as f:
-            f.write(cmd)
+        # debug
+        # with open("/home/hieuvd/lvdthieu/check.sh", "w") as f:
+        #     f.write(cmd)
+
         result = subprocess.run(
             cmd, shell=True, capture_output=True, text=True, check=True
         )
-        print(result)
-        print("Command return code:", result.returncode)
+        # debug
+        # print(result)
+        # print("Command return code:", result.returncode)
         if result.returncode != 0:
             return None, None
         else:
@@ -285,8 +291,11 @@ class TestExecutor:
             # print(f"Wrote filled file: {path_to_file}")
             pass_test_info_url, fail_test_info_url = self.get_test_info(row)
         except Exception:
+            with open(f"/home/hieuvd/lvdthieu/logging{self.index}.txt", 'a', encoding='utf-8') as log:
+                log.write(dict(row))
+                log.write("-" * 100)
             # print(f"Error executing test for row: {row}")
-            return "<execute_error>"
+            return None, None
         finally:
             # print("Wrote original file back to project storage")
             with open(
@@ -424,7 +433,7 @@ def main(args):
 
     # final_result = pd.concat(results, axis=0)
     # final_result.to_parquet(args.output)
-
+    dataframe = dataframe.iloc[:100]
     executor = TestExecutor(
         df=dataframe,
         column_to_check=args.column_to_check,
@@ -438,8 +447,8 @@ def main(args):
         hamcrest_jar=args.hamcrest_jar,
         separator_code=args.separator_code,
     )
-    pp.pprint(dict(dataframe.iloc[500]))
-    executor.execute_row(dataframe.iloc[500])
+    result = executor.execute()
+
 
 
 if __name__ == "__main__":

@@ -308,7 +308,6 @@ def post_processing(dataset: pd.DataFrame) -> pd.DataFrame:
 def main(args):
     java_files = pd.read_parquet(args.input)
     java_files.reset_index(drop=True, inplace=True)
-    # java_files = java_files.loc[:20]
     df = make_dataset(
         java_files=java_files,
         repos_directory=args.dir,
