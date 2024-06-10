@@ -75,6 +75,7 @@ def generate_test(args):
         df.iterrows(), total=len(df), desc=f"proc {index}", position=index
     ):
         counter += 1
+        target_dir = f"{base_dir}/{row['proj_name']}/{'_'.join(row['proj_name'].split('_')[1:])}/target"
         target_classes = f"{base_dir}/{row['proj_name']}/{row['relative_path'].split('/src/main/java/')[0]}/target/classes"
         test_class = (
             row["relative_path"]
@@ -82,7 +83,8 @@ def generate_test(args):
             .replace(".java", "")
             .replace("/", ".")
         )
-        target_dir = f"{base_dir}/{row['proj_name']}/{'_'.join(row['proj_name'].split('_')[1:])}/target"
+        test_package = ".".join(test_class.split(".")[:-1])
+
         if not os.path.exists(target_dir):
             jar = ""
         else:
@@ -100,6 +102,7 @@ def generate_test(args):
             f"--time-limit={time_limit} "
             # f"--output-limit={output_limit} "
             f"--junit-output-dir={junit_output_dir} "
+            f"--junit-package-name={test_package} "
             f"--no-error-revealing-tests=true"
         )
         try:
@@ -162,7 +165,6 @@ def main(args):
         os.makedirs(args.log_dir, exist_ok=True)
     for i in range(len(dfs)):
         list_args.append((dfs[i],) + additional_args + (i,))
-    print(list_args)
     with Pool(args.proc) as p:
         results = p.map(generate_test, list_args)
 

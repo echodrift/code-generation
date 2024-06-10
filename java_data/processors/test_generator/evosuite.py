@@ -64,14 +64,14 @@ def generate_test(args):
         df.iterrows(), total=len(df), desc=f"proc {index}", position=index
     ):
         counter += 1
-        target_classes = f"{base_dir}/{row['proj_name']}/{row['relative_path'].split('/src/main/java/')[0]}/target/classes"
+        target_dir = f"{base_dir}/{row['proj_name']}/{'_'.join(row['proj_name'].split('_')[1:])}/target"
+        target_classes = f"{target_dir}/classes"
         test_class = (
             row["relative_path"]
             .split("src/main/java/")[1]
             .replace(".java", "")
             .replace("/", ".")
         )
-        target_dir = f"{base_dir}/{row['proj_name']}/{'_'.join(row['proj_name'].split('_')[1:])}/target"
         if not os.path.exists(target_dir):
             jar = ""
         else:

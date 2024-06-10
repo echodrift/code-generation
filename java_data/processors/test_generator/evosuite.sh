@@ -1,5 +1,5 @@
 python /home/hieuvd/lvdthieu/code-generation/java_data/processors/test_generator/evosuite.py \
-    --input /home/hieuvd/lvdthieu/check1.parquet \
+    --input /home/hieuvd/lvdthieu/exp1.parquet \
     --output /home/hieuvd/lvdthieu/generate_status1.parquet \
     --base-dir /data/hieuvd/lvdthieu/repos/tmp-projects \
     --time-limit 60 \

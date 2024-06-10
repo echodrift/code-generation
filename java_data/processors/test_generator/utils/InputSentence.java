@@ -1,125 +1,220 @@
-/* LanguageTool, a natural language style checker
- * Copyright (C) 2017 Daniel Naber (http://www.danielnaber.de)
+/*
+ * This file is part of ClassGraph.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Author: Luke Hutchison
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * Hosted at: https://github.com/classgraph/classgraph
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301
- * USA
+ * --
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2019 Luke Hutchison
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without
+ * limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so, subject to the following
+ * conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial
+ * portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+ * LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+ * EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
+ * OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.languagetool;
+package io.github.classgraph;
 
-import org.languagetool.rules.CategoryId;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import nonapi.io.github.classgraph.types.ParseException;
 
 /**
- * For internal use only. Used as a key for caching check results.
- * @since 3.7
+ * Stores the type descriptor of a {@code Class<?>}, as found in an annotation parameter value.
  */
-class InputSentence {
+public class AnnotationClassRef extends ScanResultObject {
+    /** The type descriptor str. */
+    private String typeDescriptorStr;
 
-  private final String text;
-  private final Language lang;
-  private final Language motherTongue;
-  private final Set<String> disabledRules;
-  private final Set<CategoryId> disabledRuleCategories;
-  private final Set<String> enabledRules;
-  private final Set<CategoryId> enabledRuleCategories;
-  private final UserConfig userConfig;
-  private final List<Language> altLanguages;
-  private final JLanguageTool.Mode mode;
-  private final JLanguageTool.Level level;
-  private final Long textSessionID;
-  private final Set<ToneTag> toneTags;
+    /** The type signature. */
+    private transient TypeSignature typeSignature;
 
-  InputSentence(String text, Language lang, Language motherTongue,
-                Set<String> disabledRules, Set<CategoryId> disabledRuleCategories,
-                Set<String> enabledRules, Set<CategoryId> enabledRuleCategories, UserConfig userConfig,
-                List<Language> altLanguages, JLanguageTool.Mode mode, JLanguageTool.Level level, Long textSessionID, Set<ToneTag> toneTags) {
-    this.text = Objects.requireNonNull(text);
-    this.lang = Objects.requireNonNull(lang);
-    this.motherTongue = motherTongue;
-    this.disabledRules = disabledRules;
-    this.disabledRuleCategories = disabledRuleCategories;
-    this.enabledRules = enabledRules;
-    this.enabledRuleCategories = enabledRuleCategories;
-    this.userConfig = userConfig;
-    this.textSessionID = textSessionID;
-    this.altLanguages = altLanguages;
-    this.mode = Objects.requireNonNull(mode);
-    this.level = Objects.requireNonNull(level);
-    this.toneTags = toneTags != null ? toneTags : Collections.emptySet();
-  }
+    /** The class name. */
+    private transient String className;
 
-  InputSentence(String text, Language lang, Language motherTongue,
-                Set<String> disabledRules, Set<CategoryId> disabledRuleCategories,
-                Set<String> enabledRules, Set<CategoryId> enabledRuleCategories, UserConfig userConfig,
-                List<Language> altLanguages, JLanguageTool.Mode mode, JLanguageTool.Level level, Set<ToneTag> toneTags) {
-    this(text, lang, motherTongue, disabledRules, disabledRuleCategories,
-      enabledRules, enabledRuleCategories, userConfig, altLanguages,
-      mode, level, userConfig != null ? userConfig.getTextSessionId() : null, toneTags);
-  }
-  
-  InputSentence(String text, Language lang, Language motherTongue,
-                Set<String> disabledRules, Set<CategoryId> disabledRuleCategories,
-                Set<String> enabledRules, Set<CategoryId> enabledRuleCategories, UserConfig userConfig,
-                List<Language> altLanguages, JLanguageTool.Mode mode, JLanguageTool.Level level) {
-    this(text, lang, motherTongue, disabledRules, disabledRuleCategories,
-      enabledRules, enabledRuleCategories, userConfig, altLanguages,
-      mode, level, userConfig != null ? userConfig.getTextSessionId() : null, null);
-  }
+    /**
+     * Constructor.
+     */
+    AnnotationClassRef() {
+        super();
+    }
 
-  /** @since 4.1 */
-  public String getText() {
-    return text;
-  }
-  
-  @Override
-  public boolean equals(Object o) {
-    if (o == null) return false;
-    if (o == this) return true;
-    if (o.getClass() != getClass()) return false;
-    InputSentence other = (InputSentence) o;
-    return Objects.equals(text, other.text) && 
-           Objects.equals(lang, other.lang) &&
-           Objects.equals(motherTongue, other.motherTongue) &&
-           Objects.equals(disabledRules, other.disabledRules) &&
-           Objects.equals(disabledRuleCategories, other.disabledRuleCategories) &&
-           Objects.equals(enabledRules, other.enabledRules) &&
-           Objects.equals(enabledRuleCategories, other.enabledRuleCategories) &&
-           Objects.equals(userConfig, other.userConfig) &&
-           Objects.equals(textSessionID, other.textSessionID) &&
-           Objects.equals(altLanguages, other.altLanguages) &&
-           mode == other.mode &&
-           level == other.level &&
-           Objects.equals(toneTags, other.toneTags);
-  }
+    /**
+     * Constructor.
+     *
+     * @param typeDescriptorStr
+     *            the type descriptor str
+     */
+    AnnotationClassRef(final String typeDescriptorStr) {
+        super();
+        this.typeDescriptorStr = typeDescriptorStr;
+    }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(text, lang, motherTongue, disabledRules, disabledRuleCategories,
-            enabledRules, enabledRuleCategories, userConfig, textSessionID, altLanguages, mode, level, toneTags);
-  }
+    // -------------------------------------------------------------------------------------------------------------
 
-  @Override
-  public String toString() {
-    return text;
-  }
+    /**
+     * Get the name of the referenced class.
+     *
+     * @return The name of the referenced class.
+     */
+    public String getName() {
+        return getClassName();
+    }
 
-  private List<?> doSomething(){
-    return null;
-  }
+    /**
+     * Get the type signature.
+     *
+     * @return The type signature of the {@code Class<?>} reference. This will be a {@link ClassRefTypeSignature}, a
+     *         {@link BaseTypeSignature}, or an {@link ArrayTypeSignature}.
+     */
+    private TypeSignature getTypeSignature() {
+        if (typeSignature == null) {
+            try {
+                // There can't be any type variables to resolve in ClassRefTypeSignature,
+                // BaseTypeSignature or ArrayTypeSignature, so just set definingClassName to null
+                typeSignature = TypeSignature.parse(typeDescriptorStr, /* definingClassName = */ null);
+                typeSignature.setScanResult(scanResult);
+            } catch (final ParseException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+        return typeSignature;
+    }
+
+    /**
+     * Loads the referenced class, returning a {@code Class<?>} reference for the referenced class.
+     * 
+     * @param ignoreExceptions
+     *            if true, ignore exceptions and instead return null if the class could not be loaded.
+     * @return The {@code Class<?>} reference for the referenced class.
+     * @throws IllegalArgumentException
+     *             if the class could not be loaded and ignoreExceptions was false.
+     */
+    @Override
+    public Class<?> loadClass(final boolean ignoreExceptions) {
+        getTypeSignature();
+        if (typeSignature instanceof BaseTypeSignature) {
+            return ((BaseTypeSignature) typeSignature).getType();
+        } else if (typeSignature instanceof ClassRefTypeSignature) {
+            return typeSignature.loadClass(ignoreExceptions);
+        } else if (typeSignature instanceof ArrayTypeSignature) {
+            return typeSignature.loadClass(ignoreExceptions);
+        } else {
+            throw new IllegalArgumentException("Got unexpected type " + typeSignature.getClass().getName()
+                    + " for ref type signature: " + typeDescriptorStr);
+        }
+    }
+
+    /**
+     * Loads the referenced class, returning a {@code Class<?>} reference for the referenced class.
+     * 
+     * @return The {@code Class<?>} reference for the referenced class.
+     * @throws IllegalArgumentException
+     *             if the class could not be loaded.
+     */
+    @Override
+    public Class<?> loadClass() {
+        return loadClass(/* ignoreExceptions = */ false);
+    }
+
+    // -------------------------------------------------------------------------------------------------------------
+
+    /* (non-Javadoc)
+     * @see io.github.classgraph.ScanResultObject#getClassName()
+     */
+    @Override
+    protected String getClassName() {
+        if (className == null) {
+            getTypeSignature();
+            if (typeSignature instanceof BaseTypeSignature) {
+                className = ((BaseTypeSignature) typeSignature).getTypeStr();
+            } else if (typeSignature instanceof ClassRefTypeSignature) {
+                className = ((ClassRefTypeSignature) typeSignature).getFullyQualifiedClassName();
+            } else if (typeSignature instanceof ArrayTypeSignature) {
+                className = typeSignature.getClassName();
+            } else {
+                throw new IllegalArgumentException("Got unexpected type " + typeSignature.getClass().getName()
+                        + " for ref type signature: " + typeDescriptorStr);
+            }
+        }
+        return className;
+    }
+
+    /**
+     * Get the class info.
+     *
+     * @return The {@link ClassInfo} object for the referenced class, or null if the referenced class was not
+     *         encountered during scanning (i.e. if no ClassInfo object was created for the class during scanning).
+     *         N.B. even if this method returns null, {@link #loadClass()} may be able to load the referenced class
+     *         by name.
+     */
+    @Override
+    public ClassInfo getClassInfo() {
+        getTypeSignature();
+        return typeSignature.getClassInfo();
+    }
+
+    /* (non-Javadoc)
+     * @see io.github.classgraph.ScanResultObject#setScanResult(io.github.classgraph.ScanResult)
+     */
+    @Override
+    void setScanResult(final ScanResult scanResult) {
+        super.setScanResult(scanResult);
+        if (typeSignature != null) {
+            typeSignature.setScanResult(scanResult);
+        }
+    }
+
+    // -------------------------------------------------------------------------------------------------------------
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        return getTypeSignature().hashCode();
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == this) {
+            return true;
+        } else if (!(obj instanceof AnnotationClassRef)) {
+            return false;
+        }
+        return getTypeSignature().equals(((AnnotationClassRef) obj).getTypeSignature());
+    }
+
+    @Override
+    protected void toString(final boolean useSimpleNames, final StringBuilder buf) {
+        // More recent versions of Annotation::toString() have dropped the "class"/"interface" prefix,
+        // and added ".class" to the end of the class reference (which does not actually match the
+        // annotation source syntax...)
+
+        //        String prefix = "class ";
+        //        if (scanResult != null) {
+        //            final ClassInfo ci = getClassInfo();
+        //            // The JDK uses "interface" for both interfaces and annotations in Annotation::toString
+        //            if (ci != null && ci.isInterfaceOrAnnotation()) {
+        //                prefix = "interface ";
+        //            }
+        //        }
+
+        /* prefix + */
+        buf.append(getTypeSignature().toString(useSimpleNames)).append(".class");
+    }
 }

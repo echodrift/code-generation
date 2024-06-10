@@ -8,57 +8,58 @@ from antlr4 import *
 from tqdm import tqdm
 
 
-def modify_modifiers(code, class_name, method_name):
-    message = ""
+def modify_modifiers(code, func_name):
+    # message = []
+    # lines_of_code = code.splitlines()
+    # for idx, line in enumerate(lines_of_code):
+    #     if line.strip().startswith("private "):
+    #         lines_of_code[idx] = line.replace("private ", "")
+    #         message.append(idx + 1)
+    #     if line.strip().startswith("protected "):
+    #         lines_of_code[idx] = line.replace("protected ", "")
+    #         message.append(idx + 1)
+
+    # code = "\n".join(lines_of_code)
+    # if len(message) > 0:
+    #     message = "Lines: " + ", ".join(map(str, message))
+    # else:
+    #     message = ""
+
+    # New
+    message = []
     lines_of_code = code.splitlines()
+    class_pattern = r"(private|protected)\s+.*(class).*{"
+    method_pattern = r"(private|protected)\s+.*\(.*\)\s*{"
     for idx, line in enumerate(lines_of_code):
-        if (
-            line.strip().startswith("private")
-            and "class" in line
-            and class_name in line
-        ):
-            message += "<class_private> | "
-            lines_of_code[idx] = line.replace("private", "public")
-            message += (
-                f"<modified_to \"{line.replace('private', 'public')}\"> | "
+        if re.search(class_pattern, line):
+            lines_of_code[idx] = line.replace("private ", "").replace(
+                "protected ", ""
             )
-        if (
-            line.strip().startswith("protected")
-            and "class" in line
-            and class_name in line
-        ):
-            message += "<class_protected> | "
-            lines_of_code[idx] = line.replace("protected", "public")
-            message += (
-                f"<modified_to \"{line.replace('protected', 'public')}\"> | "
+            message.append(idx + 1)
+        if re.search(method_pattern, line) and func_name in line:
+            lines_of_code[idx] = line.replace("private ", "public ").replace(
+                "protected ", "public "
             )
-        if line.strip().startswith("class") and class_name in line:
-            message += "<class_default> | "
-            lines_of_code[idx] = "public " + line
-            message += f'<modified_to "public {line}"> | '
-        if line.strip().startswith("private") and method_name in line:
-            message += "<func_private> | "
-            lines_of_code[idx] = line.replace("private", "public")
-            message += (
-                f"<modified_to \"{line.replace('private', 'public')}\"> | "
-            )
-        if line.strip().startswith("protected") and method_name in line:
-            message += "<func_protected> | "
-            lines_of_code[idx] = line.replace("protected", "public")
-            message += (
-                f"<modified_to \"{line.replace('protected', 'public')}\"> | "
-            )
+            message.append(idx + 1)
 
     code = "\n".join(lines_of_code)
+    if len(message) > 0:
+        message = "Lines: " + ", ".join(map(str, message))
+    else:
+        message = ""
     return code, message
 
 
 # # Read the Java source file
-# with open('/data/hieuvd/lvdthieu/repos/tmp-projects/wkeyuan_DWSurvey/DWSurvey/src/main/java/net/diaowen/common/service/BaseServiceImpl.java', 'r') as file:
-#     java_code = file.read()
+# # with open('/data/hieuvd/lvdthieu/repos/tmp-projects/wkeyuan_DWSurvey/DWSurvey/src/main/java/net/diaowen/common/service/BaseServiceImpl.java', 'r') as file:
+# with open(
+#     # "/data/hieuvd/lvdthieu/repos/tmp-projects/classgraph_classgraph/classgraph/src/main/java/nonapi/io/github/classgraph/utils/Assert.java"
+#     "/home/hieuvd/lvdthieu/code-generation/java_data/processors/test_generator/utils/InputSentence.java"
+# ) as f:
+#     java_code = f.read()
 
 # # Extract class and method modifiers
-# code, message = modify_modifiers(java_code, "InputSentence", "doSomething")
+# code, message = modify_modifiers(java_code)
 # print(message)
 
 
@@ -67,6 +68,8 @@ def modify_modifiers(code, class_name, method_name):
 #     "w",
 # ) as f:
 #     f.write(code)
+
+
 def main(args):
     df = pd.read_parquet(args.input)
     logger = logging.getLogger("change_modifier")
@@ -87,13 +90,22 @@ def main(args):
                 path_to_file, "r", encoding="utf-8", errors="ignore"
             ) as f:
                 code = f.read()
-            code, message = modify_modifiers(
-                code, row["class_name"], row["func_name"]
-            )
+            new_code, message = modify_modifiers(code, row["func_name"])
+            if (
+                path_to_file
+                == "/data/hieuvd/lvdthieu/repos/tmp-projects/classgraph_classgraph/classgraph/src/main/java/nonapi/io/github/classgraph/utils/StringUtils.java"
+            ):
+                with open(
+                    "/home/hieuvd/lvdthieu/code-generation/java_data/processors/test_generator/utils/ModifiedInputSentence.java",
+                    "w",
+                    encoding="utf-8",
+                    errors="ignore",
+                ) as f:
+                    f.write(new_code)
             with open(
                 path_to_file, "w", encoding="utf-8", errors="ignore"
             ) as f:
-                f.write(code)
+                f.write(new_code)
         except:
             logger.info(f"Failed {path_to_file}")
         else:

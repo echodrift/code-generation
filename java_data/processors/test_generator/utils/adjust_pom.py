@@ -193,7 +193,9 @@ def main(args):
 
     logger = logging.getLogger("adjust_pom")
     logger.setLevel(logging.INFO)
-    logger.addHandler(logging.FileHandler(f"{args.log_dir}/adjust_pom1.log"))
+    if not os.path.exists(args.log_dir):
+        os.makedirs(args.log_dir)
+    logger.addHandler(logging.FileHandler(f"{args.log_dir}/adjust_pom.log"))
 
     for _, row in tqdm(df.iterrows(), total=len(df), desc="Adjusting pom.xml"):
 
