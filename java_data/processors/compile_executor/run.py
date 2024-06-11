@@ -2,11 +2,9 @@ import argparse
 import codecs
 import logging
 import re
-import shutil
 from multiprocessing import Process, Queue
-from pathlib import Path
 from subprocess import run
-from typing import Optional, Tuple
+from typing import Optional
 
 import pandas as pd
 from make_data.make_data import get_functions, get_location
@@ -190,10 +188,6 @@ def group_dataframes(df_list, num_groups):
     # Calculate the total number of rows
     total_rows = sum(len(df) for df in df_list)
 
-    # Calculate the approximate number of rows each group should have
-    rows_per_group = total_rows // num_groups
-    remainder = total_rows % num_groups
-
     # Initialize the groups
     groups = [[] for _ in range(num_groups)]
     group_sizes = [0] * num_groups
@@ -237,12 +231,10 @@ def process_dataframes_in_parallel(df_list, additional_args, process_dataframe):
         )
         processes.append(p)
         p.start()
-
     # Collect the results
     results = []
     for _ in df_list:
         results.append(output_queue.get())
-
     # Ensure all processes have finished
     for p in processes:
         p.join()

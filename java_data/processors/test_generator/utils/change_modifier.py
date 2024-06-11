@@ -86,31 +86,16 @@ def main(args):
             f"{args.base_dir}/{row['proj_name']}/{row['relative_path']}"
         )
         try:
-            with open(
-                path_to_file, "r", encoding="utf-8", errors="ignore"
-            ) as f:
+            with open(path_to_file, "r") as f:
                 code = f.read()
             new_code, message = modify_modifiers(code, row["func_name"])
-            if (
-                path_to_file
-                == "/data/hieuvd/lvdthieu/repos/tmp-projects/classgraph_classgraph/classgraph/src/main/java/nonapi/io/github/classgraph/utils/StringUtils.java"
-            ):
-                with open(
-                    "/home/hieuvd/lvdthieu/code-generation/java_data/processors/test_generator/utils/ModifiedInputSentence.java",
-                    "w",
-                    encoding="utf-8",
-                    errors="ignore",
-                ) as f:
-                    f.write(new_code)
-            with open(
-                path_to_file, "w", encoding="utf-8", errors="ignore"
-            ) as f:
+            with open(path_to_file, "w") as f:
                 f.write(new_code)
         except:
             logger.info(f"Failed {path_to_file}")
         else:
             if not message:
-                message = "<no_change> |"
+                message = "<no_change>"
             logger.info(
                 "{:<100}{:<20}{:<20}{}".format(
                     message, row["class_name"], row["func_name"], path_to_file

@@ -14,17 +14,6 @@ random.seed(42)
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
-def search_jar_in_project(project_url: str) -> List[str]:
-    all_jars = []
-    for root, dirs, files in os.walk(project_url):
-        for file in files:
-            if file.endswith(".jar"):
-                all_jars.append(os.path.join(root, file))
-    if len(all_jars) > 42:
-        all_jars = random.sample(all_jars, 42)
-    return all_jars
-
-
 def group_dataframes(dfs: List[pd.DataFrame], proc: int) -> List[pd.DataFrame]:
     """Group a list of DataFrames into a specified number of groups with roughly equal total rows.
 
@@ -75,8 +64,11 @@ def generate_test(args):
         df.iterrows(), total=len(df), desc=f"proc {index}", position=index
     ):
         counter += 1
-        target_dir = f"{base_dir}/{row['proj_name']}/{'_'.join(row['proj_name'].split('_')[1:])}/target"
-        target_classes = f"{base_dir}/{row['proj_name']}/{row['relative_path'].split('/src/main/java/')[0]}/target/classes"
+
+        target_classes = (
+            f"{base_dir}/{row['proj_name']}"
+            f"/{row['relative_path'].split('/src/main/java/')[0]}/target/classes"
+        )
         test_class = (
             row["relative_path"]
             .split("src/main/java/")[1]
@@ -84,7 +76,10 @@ def generate_test(args):
             .replace("/", ".")
         )
         test_package = ".".join(test_class.split(".")[:-1])
-
+        target_dir = (
+            f"{base_dir}/{row['proj_name']}"
+            f"/{'_'.join(row['proj_name'].split('_')[1:])}/target"
+        )
         if not os.path.exists(target_dir):
             jar = ""
         else:
@@ -94,8 +89,14 @@ def generate_test(args):
                     break
             else:
                 jar = ""
-        junit_output_dir = f"{output_dir}/{row['proj_name']}/{row['relative_path'].replace('.java', '')}"
-        os.makedirs(junit_output_dir, exist_ok=True)
+        junit_output_dir = (
+            f"{output_dir}/{row['proj_name']}"
+            f"/{row['relative_path'].replace('.java', '')}"
+        )
+        rev_path = "/".join(
+            row["relative_path"].split("src/main/java/")[1].split("/")[:-1]
+        )
+        where_test = f"{junit_output_dir}/{rev_path}"
         cmd = (
             f"java -cp {target_classes}:{jar}:{randoop} randoop.main.Main gentests "
             f"--testclass={test_class} "
@@ -106,33 +107,29 @@ def generate_test(args):
             f"--no-error-revealing-tests=true"
         )
         try:
-            result = run(cmd, shell=True, text=True, capture_output=True)
-            if result.returncode != 0:
+            result = run(
+                cmd, shell=True, text=True, capture_output=True, timeout=60
+            )
+            if result.returncode != 0 or not os.path.exists(where_test):
                 logger.error(
-                    f"Can not gentest for {row['proj_name']}/{row['relative_path']}\n"
+                    f"Can not gen test for {row['proj_name']}/{row['relative_path']}"
                 )
                 generate_status.append(False)
             else:
-                if os.path.exists(junit_output_dir):
-                    test_files = glob(f"{junit_output_dir}/*.java")
-                    for test_file in test_files:
-                        with open(test_file, "r") as f:
-                            if f".{row['func_name']}" in f.read():
-                                generate_status.append(True)
-                                logger.info(
-                                    f"Generated for {row['proj_name']}/{row['relative_path']}"
-                                )
-                                break
-                    else:
-                        generate_status.append(False)
-                        logger.info(
-                            f"Can not find test for {row['proj_name']}/{row['relative_path']}"
-                        )
+                test_files = glob(f"{where_test}/*.java")
+                for test_file in test_files:
+                    with open(test_file, "r") as f:
+                        if f".{row['func_name']}" in f.read():
+                            generate_status.append(True)
+                            logger.info(
+                                f"Generated for {row['proj_name']}/{row['relative_path']}"
+                            )
+                            break
                 else:
                     generate_status.append(False)
-                logger.info(
-                    f"Generated for {row['proj_name']}/{row['relative_path']}"
-                )
+                    logger.error(
+                        f"Can not find test for {row['proj_name']}/{row['relative_path']}"
+                    )
         except Exception:
             generate_status.append(False)
             logger.error(
