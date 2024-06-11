@@ -44,97 +44,101 @@ def group_dataframes(dfs: List[pd.DataFrame], proc: int) -> List[pd.DataFrame]:
     return result_groups
 
 
+def randoop_gen_test(
+    jar, class_to_test, randoop, time_limit, junit_output_dir, test_package
+):
+    if os.path.exists(junit_output_dir):
+        os.system(f"rm -rf {junit_output_dir}")
+    os.makedirs(junit_output_dir, exist_ok=True)
+    cmd = (
+        f"java -cp {jar}:{randoop} randoop.main.Main gentests "
+        f"--testclass={class_to_test} "
+        f"--time-limit={time_limit} "
+        f"--junit-output-dir={junit_output_dir} "
+        f"--junit-package-name={test_package} "
+        f"--no-error-revealing-tests=true "
+        "--usethreads=true "
+        "--randomseed=42"
+    )
+    try:
+        result = run(
+            cmd, shell=True, text=True, capture_output=True, timeout=60
+        )
+    except:
+        return False
+    if result.returncode != 0:
+        return False
+    return True
+
+
+def check_test_include_func(folder_test, func_name):
+    test_files = glob(f"{folder_test}/*.java")
+    for test_file in test_files:
+        if func_name in open(test_file).read():
+            return True
+    return False
+
+
 def generate_test(args):
-    (
-        df,
-        base_dir,
-        time_limit,
-        # output_limit,
-        randoop,
-        output_dir,
-        log_dir,
-        index,
-    ) = args
+    df, base_dir, time_limit, randoop, output_dir, log_dir, index = args
     logger = logging.getLogger(f"logger{index}")
     logger.addHandler(logging.FileHandler(f"{log_dir}/logger{index}.log"))
-    logger.setLevel(logging.ERROR)
+    logger.setLevel(logging.INFO)
     generate_status = []
     counter = 0
     for _, row in tqdm(
         df.iterrows(), total=len(df), desc=f"proc {index}", position=index
     ):
         counter += 1
-
-        target_classes = (
-            f"{base_dir}/{row['proj_name']}"
-            f"/{row['relative_path'].split('/src/main/java/')[0]}/target/classes"
-        )
-        test_class = (
-            row["relative_path"]
-            .split("src/main/java/")[1]
-            .replace(".java", "")
-            .replace("/", ".")
-        )
-        test_package = ".".join(test_class.split(".")[:-1])
-        target_dir = (
-            f"{base_dir}/{row['proj_name']}"
-            f"/{'_'.join(row['proj_name'].split('_')[1:])}/target"
-        )
-        if not os.path.exists(target_dir):
-            jar = ""
-        else:
-            for item in os.listdir(target_dir):
-                if item.endswith("jar-with-dependencies.jar"):
-                    jar = f"{target_dir}/{item}"
-                    break
-            else:
-                jar = ""
-        junit_output_dir = (
-            f"{output_dir}/{row['proj_name']}"
-            f"/{row['relative_path'].replace('.java', '')}"
-        )
-        rev_path = "/".join(
-            row["relative_path"].split("src/main/java/")[1].split("/")[:-1]
-        )
-        where_test = f"{junit_output_dir}/{rev_path}"
-        cmd = (
-            f"java -cp {target_classes}:{jar}:{randoop} randoop.main.Main gentests "
-            f"--testclass={test_class} "
-            f"--time-limit={time_limit} "
-            # f"--output-limit={output_limit} "
-            f"--junit-output-dir={junit_output_dir} "
-            f"--junit-package-name={test_package} "
-            f"--no-error-revealing-tests=true"
-        )
+        file_path = f"{base_dir}/{row['proj_name']}/{row['relative_path']}"
         try:
-            result = run(
-                cmd, shell=True, text=True, capture_output=True, timeout=60
+            # Generate test
+            class_to_test = (
+                row["relative_path"]
+                .split("src/main/java/")[1]
+                .replace(".java", "")
+                .replace("/", ".")
             )
-            if result.returncode != 0 or not os.path.exists(where_test):
-                logger.error(
-                    f"Can not gen test for {row['proj_name']}/{row['relative_path']}"
-                )
-                generate_status.append(False)
+            target_dir = (
+                f"{base_dir}/{row['proj_name']}/"
+                f"{row['relative_path'].split('src/main/java/')[0]}/target"
+            )
+            if not os.path.exists(target_dir):
+                jar = ""
             else:
-                test_files = glob(f"{where_test}/*.java")
-                for test_file in test_files:
-                    with open(test_file, "r") as f:
-                        if f".{row['func_name']}" in f.read():
-                            generate_status.append(True)
-                            logger.info(
-                                f"Generated for {row['proj_name']}/{row['relative_path']}"
-                            )
-                            break
+                for item in os.listdir(target_dir):
+                    if item.endswith("jar-with-dependencies.jar"):
+                        jar = f"{target_dir}/{item}"
+                        break
                 else:
-                    generate_status.append(False)
-                    logger.error(
-                        f"Can not find test for {row['proj_name']}/{row['relative_path']}"
-                    )
-        except Exception:
-            generate_status.append(False)
-            logger.error(
-                f"Encounter exception for {row['proj_name']}/{row['relative_path']}"
+                    jar = ""
+            junit_output_dir = (
+                f"{output_dir}/{row['proj_name']}/"
+                f"{row['relative_path'].replace('.java', '')}"
             )
+            test_package = ".".join(class_to_test.split(".")[:-1])
+            if not randoop_gen_test(
+                jar,
+                class_to_test,
+                randoop,
+                time_limit,
+                junit_output_dir,
+                test_package,
+            ):
+                raise Exception("Failed to generate tests")
+
+            # Check if the test file contains the function
+            folder_test = f"{junit_output_dir}/{test_package.replace('.', '/')}"
+            if not check_test_include_func(folder_test, row["func_name"]):
+                raise Exception("Failed to generate tests")
+
+            # Log the success
+            generate_status.append(True)
+            logger.info("{:<50} {}".format("Success", file_path))
+        except Exception as e:
+            # Log the failure
+            generate_status.append(False)
+            logger.error("{:<50} {}".format(repr(e), file_path))
 
         if counter % 20 == 0:
             log_df = df.iloc[:counter]
@@ -152,7 +156,6 @@ def main(args):
     additional_args = (
         args.base_dir,
         args.time_limit,
-        # args.output_limit,
         args.randoop,
         args.output_dir,
         args.log_dir,
@@ -175,7 +178,6 @@ if __name__ == "__main__":
     parser.add_argument("--output", dest="output")
     parser.add_argument("--base-dir", dest="base_dir")
     parser.add_argument("--time-limit", dest="time_limit", type=int)
-    # parser.add_argument("--output-limit", dest="output_limit", type=int)
     parser.add_argument("--randoop", dest="randoop")
     parser.add_argument("--output-dir", dest="output_dir")
     parser.add_argument("--log-dir", dest="log_dir")

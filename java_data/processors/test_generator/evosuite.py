@@ -122,20 +122,20 @@ def generate_test(args):
     ):
         counter += 1
         file_path = f"{base_dir}/{row['proj_name']}/{row['relative_path']}"
-        original_file_content = open(file_path, "r").read()
+        # original_file_content = open(file_path, "r").read()
         try:
-            # Generate modified modifier
-            modified_modifier = modify_modifier(original_file_content)
+            # # Generate modified modifier
+            # modified_modifier = modify_modifier(original_file_content)
 
-            # Apply modified modifier
-            if not apply_modify(modified_modifier, file_path):
-                raise Exception("Failed to modify modifier")
+            # # Apply modified modifier
+            # if not apply_modify(modified_modifier, file_path):
+            #     raise Exception("Failed to modify modifier")
 
-            # Compile modified project
-            project_dir = (
-                f"{base_dir}/{row['proj_name']}"
-                f"/{'_'.join(row['proj_name'].split('_')[1:])}"
-            )
+            # # Compile modified project
+            # project_dir = (
+            #     f"{base_dir}/{row['proj_name']}"
+            #     f"/{'_'.join(row['proj_name'].split('_')[1:])}"
+            # )
             # if not mvn_install(project_dir):
             #     raise Exception("Failed to compile modified project")
 
@@ -181,15 +181,15 @@ def generate_test(args):
             # Log the failure
             generate_status.append(False)
             logger.error("{:<50} {}".format(repr(e), file_path))
-        finally:
+        # finally:
             # Restore the original file content
-            with open(file_path, "w") as f:
-                f.write(original_file_content)
+            # with open(file_path, "w") as f:
+            #     f.write(original_file_content)
         if counter % 20 == 0:
             log_df = df.iloc[:counter]
             log_df["generate_status"] = generate_status
             log_df.to_parquet(f"{log_dir}/generate{index}.parquet")
-    # df["generate_status"] = generate_status
+    df["generate_status"] = generate_status
     return df
 
 
