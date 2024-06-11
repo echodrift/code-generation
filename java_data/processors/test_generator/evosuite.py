@@ -18,13 +18,17 @@ BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 def evosuite_gen_test(
     jar, class_to_test, evosuite, time_limit, junit_output_dir
 ):
+    if os.path.exists(junit_output_dir):
+        os.system(f"rm -rf {junit_output_dir}")
+    os.makedirs(junit_output_dir, exist_ok=True)
     cmd = (
         f"java -jar {evosuite} "
         f"-class {class_to_test} "
         f"-projectCP {jar} "
+        "-seed 42 "
         f"-Dsearch_budget {time_limit} "
         f"-base_dir {junit_output_dir} "
-        "-Dcoverage=false"
+        "-Dcoverage=false "
     )
     try:
         result = run(cmd, shell=True, text=True, capture_output=True)
@@ -64,12 +68,12 @@ def apply_modify(code, file):
 
 
 def mvn_install(project_dir):
-    mvn_command = (
-        f"cd {project_dir}"
+    command = (
+        f"cd {project_dir} "
         "&& /home/hieuvd/apache-maven-3.6.3/bin/mvn clean install "
         "-DskipTests -Dcheckstyle.skip"
     )
-    result = run(mvn_command, shell=True, text=True, capture_output=True)
+    result = run(command, shell=True, text=True, capture_output=True)
     if result.returncode != 0:
         return False
     else:
@@ -118,7 +122,7 @@ def generate_test(args):
     ):
         counter += 1
         file_path = f"{base_dir}/{row['proj_name']}/{row['relative_path']}"
-        original_file_content = open(file_path).read()
+        original_file_content = open(file_path, "r").read()
         try:
             # Generate modified modifier
             modified_modifier = modify_modifier(original_file_content)
@@ -132,8 +136,8 @@ def generate_test(args):
                 f"{base_dir}/{row['proj_name']}"
                 f"/{'_'.join(row['proj_name'].split('_')[1:])}"
             )
-            if not mvn_install(project_dir):
-                raise Exception("Failed to compile modified project")
+            # if not mvn_install(project_dir):
+            #     raise Exception("Failed to compile modified project")
 
             # Generate test
             class_to_test = (
@@ -166,27 +170,26 @@ def generate_test(args):
 
             # Check if the test includes the function
             test_package = "/".join(class_to_test.split(".")[:-1])
-            folder_test = f"{junit_output_dir}/{test_package}"
+            folder_test = f"{junit_output_dir}/evosuite-tests/{test_package}"
             if not check_test_include_func(folder_test, row["func_name"]):
                 raise Exception("Test does not include function")
 
             # Log the success
             generate_status.append(True)
-            logger.info(f"{file_path}: Success")
+            logger.info("{:<50} {}".format("Success", file_path))
         except Exception as e:
             # Log the failure
             generate_status.append(False)
-            logger.error(f"{file_path}: {e}")
+            logger.error("{:<50} {}".format(repr(e), file_path))
         finally:
             # Restore the original file content
             with open(file_path, "w") as f:
                 f.write(original_file_content)
-
         if counter % 20 == 0:
             log_df = df.iloc[:counter]
             log_df["generate_status"] = generate_status
             log_df.to_parquet(f"{log_dir}/generate{index}.parquet")
-    df["generate_status"] = generate_status
+    # df["generate_status"] = generate_status
     return df
 
 
