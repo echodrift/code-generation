@@ -8,11 +8,11 @@ import pandas as pd
 from tqdm import tqdm
 
 logger = logging.getLogger()
-logger.addHandler(logging.FileHandler("/home/hieuvd/lvdthieu/maven.log"))
+logger.addHandler(logging.FileHandler("/home/hieuvd/lvdthieu/maven56.log"))
 logger.setLevel(logging.INFO)
 
-test = pd.read_parquet("/home/hieuvd/lvdthieu/58projects.parquet")
-test_projects = test["proj_name"].unique()
+# test = pd.read_parquet("/home/hieuvd/lvdthieu/gentest_retry_56.parquet")
+# test_projects = test["proj_name"].unique()
 # test_projects = [
 #     'bastillion-io_Bastillion',
 #     'PlayEdu_PlayEdu',
@@ -47,6 +47,12 @@ test_projects = test["proj_name"].unique()
 #     '88250_symphony',
 #     'bonigarcia_webdrivermanager'
 # ]
+test_projects = [
+    "qiujiayu_AutoLoadCache",
+    "speedment_speedment",
+    "lukas-krecan_ShedLock",
+    "ulisesbocchio_jasypt-spring-boot"
+]
 
 for project in tqdm(
     test_projects, total=len(test_projects), desc="Compiling projects"
@@ -55,10 +61,12 @@ for project in tqdm(
 
     cmd = (
         f"cd /data/hieuvd/lvdthieu/repos/tmp-projects/{project}/{REPO} "
-        + "&& /home/hieuvd/apache-maven-3.6.3/bin/mvn clean install -DskipTests -Dcheckstyle.skip"
+        + "&& /home/hieuvd/apache-maven-3.6.3/bin/mvn clean install -DskipTests -Dcheckstyle.skip -Dgpg.skip=true -Dlicense.skip=true"
     )
+    
     result = run(cmd, shell=True, text=True, capture_output=True)
     if result.returncode != 0:
         logger.error(f"Failed to compile {project}")
     else:
         logger.info(f"Compiled {project}")
+    

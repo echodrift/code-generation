@@ -122,22 +122,37 @@ new_dependencies = [
 """
 ]
 base_dir = "/data/hieuvd/lvdthieu/repos/tmp-projects"
-projects = pd.read_csv("/home/hieuvd/lvdthieu/addjustpom.csv")[
-    "left_projects"
-].tolist()
+# projects = pd.read_csv("/home/hieuvd/lvdthieu/addjustpom.csv")[
+#     "left_projects"
+# ].tolist()
+projects = [
+    # "iluwatar_java-design-patterns", 
+    "spring-projects_spring-retry",
+    "xerial_sqlite-jdbc",
+    "spring-io_initializr",
+    "spring-cloud_spring-cloud-netflix",
+    "RaiMan_SikuliX1",
+    "apache_incubator-hugegraph",
+    "spring-cloud_spring-cloud-gateway",
+    "networknt_light-4j",
+    "orientechnologies_orientdb",
+    "pmd_pmd"
+]
 logger = logging.getLogger()
-logger.addHandler(logging.FileHandler("add_dependency.log"))
+logger.addHandler(logging.FileHandler("add_plugin.log"))
 logger.setLevel(logging.INFO)
-# projects = projects[0:1]
+projects = projects[8:11]
 for project in tqdm(projects, total=len(projects), desc="Changing pom"):
     repo = "_".join(project.split("_")[1:])
     path_to_pom = f"{base_dir}/{project}/{repo}/pom.xml"
+    add_plugin_to_build(path_to_pom, new_plugins)
     add_dependencies(path_to_pom, new_dependencies)
     cmd = (
         f"cd {base_dir}/{project}/{repo} "
         f"&& /home/hieuvd/apache-maven-3.6.3/bin/mvn clean install -DskipTests -Dcheckstyle.skip -Dgpg.skip -Dlicense.skip"
     )
-    result = run(cmd, shell=True, capture_output=True)
+    # result = run(cmd, shell=True, capture_output=True)
+    result = run(cmd, shell=True)
     if result.returncode != 0:
         logger.error(f"Still can not install {path_to_pom}")
     else:

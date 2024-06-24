@@ -16,13 +16,13 @@ from tqdm import tqdm
 
 logger = logging.getLogger()
 logger.addHandler(
-    logging.FileHandler("/home/hieuvd/lvdthieu/run_test_evosuite.log")
+    logging.FileHandler("/home/hieuvd/lvdthieu/run_test_evosuite_52.log")
 )
 logger.setLevel(logging.INFO)
 
 
-input_url = "/home/hieuvd/lvdthieu/valid_evosuite.parquet"
-output_url = "/home/hieuvd/lvdthieu/valid_evosuite.parquet"
+input_url = "/home/hieuvd/lvdthieu/valid_evosuite_52.parquet"
+output_url = "/home/hieuvd/lvdthieu/valid_evosuite_52.parquet"
 
 df = pd.read_parquet(input_url, "fastparquet")
 base_dir = "/data/hieuvd/lvdthieu/repos/tmp-projects"

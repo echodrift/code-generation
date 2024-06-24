@@ -16,12 +16,12 @@ from tqdm import tqdm
 
 logger = logging.getLogger()
 logger.addHandler(
-    logging.FileHandler("/home/hieuvd/lvdthieu/run_test_randoop.log")
+    logging.FileHandler("/home/hieuvd/lvdthieu/run_test_randoop_52.log")
 )
 logger.setLevel(logging.INFO)
 
-input_url = "/home/hieuvd/lvdthieu/valid_randoop.parquet"
-output_url = "/home/hieuvd/lvdthieu/valid_randoop.parquet"
+input_url = "/home/hieuvd/lvdthieu/valid_randoop_52.parquet"
+output_url = "/home/hieuvd/lvdthieu/valid_randoop_52.parquet"
 
 
 base_dir = "/data/hieuvd/lvdthieu/repos/tmp-projects"
@@ -66,7 +66,7 @@ for _, row in tqdm(df.iterrows(), total=len(df), desc="Randoop"):
             return_codes.append(True)
             logger.warning(
                 "{:<30} {}".format("Some test fail", row["relative_path"])
-            )    
+            )
         else:
             return_codes.append(False)
             logger.error(

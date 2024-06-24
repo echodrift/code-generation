@@ -25,7 +25,7 @@ def process_chunk(args):
     counter = 0
     for _, row in tqdm(
         df_chunk.iterrows(),
-        total=len(df_chunk),
+        total=len(df_chunk),                
         position=index,
         desc=f"proc {index}",
     ):

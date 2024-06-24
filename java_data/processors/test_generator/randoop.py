@@ -130,7 +130,7 @@ def generate_test(args):
             # Check if the test file contains the function
             folder_test = f"{junit_output_dir}/{test_package.replace('.', '/')}"
             if not check_test_include_func(folder_test, row["func_name"]):
-                raise Exception("Failed to generate tests")
+                raise Exception("Test does not include function")
 
             # Log the success
             generate_status.append(True)
