@@ -8,19 +8,11 @@ import pandas as pd
 from tqdm import tqdm
 
 logger = logging.getLogger()
-<<<<<<< HEAD
-logger.addHandler(logging.FileHandler("/home/hieuvd/lvdthieu/maven.log"))
-logger.setLevel(logging.INFO)
-
-test = pd.read_parquet("/home/hieuvd/lvdthieu/58projects.parquet")
-test_projects = test["proj_name"].unique()
-=======
 logger.addHandler(logging.FileHandler("/home/hieuvd/lvdthieu/maven56.log"))
 logger.setLevel(logging.INFO)
 
 # test = pd.read_parquet("/home/hieuvd/lvdthieu/gentest_retry_56.parquet")
 # test_projects = test["proj_name"].unique()
->>>>>>> master
 # test_projects = [
 #     'bastillion-io_Bastillion',
 #     'PlayEdu_PlayEdu',
