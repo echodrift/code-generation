@@ -158,7 +158,7 @@ def generate_test(args):
                         jar = f"{target_dir}/{item}"
                         break
                 else:
-                    jar = ""
+                    jar = f"{target_dir}/classes"
             junit_output_dir = (
                 f"{output_dir}/{row['proj_name']}/"
                 f"{row['relative_path'].replace('.java', '')}"

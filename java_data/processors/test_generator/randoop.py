@@ -57,7 +57,7 @@ def randoop_gen_test(
         f"--junit-output-dir={junit_output_dir} "
         f"--junit-package-name={test_package} "
         f"--no-error-revealing-tests=true "
-        "--usethreads=true "
+        # "--usethreads=true "
         "--randomseed=42"
     )
     try:
@@ -111,7 +111,7 @@ def generate_test(args):
                         jar = f"{target_dir}/{item}"
                         break
                 else:
-                    jar = ""
+                    jar = f"{target_dir}/classes"
             junit_output_dir = (
                 f"{output_dir}/{row['proj_name']}/"
                 f"{row['relative_path'].replace('.java', '')}"
@@ -130,7 +130,7 @@ def generate_test(args):
             # Check if the test file contains the function
             folder_test = f"{junit_output_dir}/{test_package.replace('.', '/')}"
             if not check_test_include_func(folder_test, row["func_name"]):
-                raise Exception("Failed to generate tests")
+                raise Exception("Test does not include function")
 
             # Log the success
             generate_status.append(True)
