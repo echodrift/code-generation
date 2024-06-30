@@ -23,7 +23,8 @@ def fill_file(
     with open(path_to_file, "r", encoding="utf-8", errors="ignore") as f:
         original_file = f.read().replace("\r\n", "\n")
 
-    candidates = row[generated_code_col].split("<candidate>")[:-1]
+    # candidates = row[generated_code_col].split("<candidate>")[:-1]
+    candidates = [row[generated_code_col]]
     candidate_classes = []
     for candidate in candidates:
         candidate_classes.append(
@@ -106,7 +107,7 @@ def processor(args):
     return df
 
 df = pd.read_parquet(
-    "/home/hieuvd/lvdthieu/test_finetune_context_instruct.parquet"
+    "/home/hieuvd/lvdthieu/deepseek_test_initial_context_output.parquet"
 )
-new_df = processor((df, base_dir, "finetune_output", 0))
-new_df.to_parquet("/home/hieuvd/lvdthieu/retrieval_element_check.parquet")
+new_df = processor((df, base_dir, "initial_output", 0))
+new_df.to_parquet("/home/hieuvd/lvdthieu/retrieval_element_test.parquet")

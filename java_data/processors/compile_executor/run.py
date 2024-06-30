@@ -108,8 +108,13 @@ class CompilerExecutor:
                         path_to_file, "w", encoding="utf-8", errors="ignore"
                     ) as f:
                         f.write(filled_file)
+
                     compile_info = self._get_compiler_feedback(row)
-                    compiler_feedback = self._extract_error(compile_info)
+
+                    compiler_feedback = self._extract_error(
+                        compile_info, filled_file
+                    )
+
                 except:
                     raise Exception("Encounter exception when executing")
                 finally:
@@ -125,20 +130,22 @@ class CompilerExecutor:
 
         return compiler_feedback
 
-    def _extract_error(self, compile_info):
+    def _extract_error(self, compile_info, filled_file):
         """Extract error from feedback
         Args:
             compile_info (List[CompilerFeedback]): Compiler feedback
         Returns:
             Dict[FileInfo, ErrorInfo]: Error info
         """
+        lines = filled_file.splitlines()
         err_pattern = r"^\[ERROR\] (?P<file>.+?):\[(?P<line>\d+),(?P<col>\d+)\] (?P<err>.+)$"
         file_errors = []
         errors = set(re.findall(err_pattern, compile_info, re.MULTILINE))
         for error in errors:
             file, line, col, err = error
+
             file_errors.append(
-                f"""<file>{file}<line>{line}<col>{col}<err>{err}"""
+                f"""<file>{file}<line>{line}<col>{col}<code>{lines[int(line) - 1]}<err>{err}"""
             )
         return "\n".join(file_errors)
 
@@ -150,7 +157,7 @@ class CompilerExecutor:
             f"cd {path_to_project} "
             "&& cd $(ls -d */|head -n 1) "
             "&& echo $(pwd)"
-            f"&& {self.mvn} clean compile"
+            f"&& {self.mvn} clean compile -DskipTests -Dcheckstyle.skip -Dgpg.skip=true -Dlicense.skip=true"
         )
         data = run(cmd, shell=True, capture_output=True, text=True)
         return data.stdout
@@ -253,12 +260,13 @@ def process_dataframe(df, additional_args, output_queue):
     (col, base_dir, log_dir, mvn, index) = additional_args
     # Example processing: here we just return the DataFrame size
     executor = CompilerExecutor(df, col, base_dir, log_dir, mvn, index)
-    df["compiler_feedback"] = CompilerExecutor.execute()
+    df["compiler_feedback"] = executor.execute()
     output_queue.put(df)
 
 
 def main(args):
     df = pd.read_parquet(args.input)
+
     proj_group = df.groupby(by="proj_name")
     dfs = [proj_group.get_group(x) for x in proj_group.groups]
     dfs = group_dataframes(dfs, args.proc)

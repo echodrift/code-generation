@@ -1,12 +1,12 @@
-python /home/hieuvd/lvdthieu/code-generation/java_data/processors/compile_test_executor/run.py \
-    --input /home/hieuvd/lvdthieu/retry.parquet \
-    --output /home/hieuvd/lvdthieu/retry_compiled.parquet \
-    --col refine_compiler_code \
-    --base-dir /home/hieuvd/lvdthieu/repos/tmp-projects \
-    --log-dir /home/hieuvd/lvdthieu/repos/log \
+python /home/hieuvd/lvdthieu/code-generation/java_data/processors/compile_executor/run.py \
+    --input /home/hieuvd/lvdthieu/deepseek_test_initial_context_output.parquet \
+    --output /home/hieuvd/lvdthieu/deepseek_test_initial_context_output_compiled.parquet \
+    --col initial_output \
+    --base-dir /data/hieuvd/lvdthieu/repos/tmp-projects \
+    --log-dir /home/hieuvd/lvdthieu/log_compile \
     --mvn /home/hieuvd/apache-maven-3.6.3/bin/mvn \
-    --proc 1 \
-    --start-end 0:1
+    --proc 10 \
+    --start-end 0:10
 
 # Check
 # python /home/hieuvd/lvdthieu/code-generation/java_data/processors/compile_test_executor/run.py \
