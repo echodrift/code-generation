@@ -111,9 +111,7 @@ class CompilerExecutor:
 
                     compile_info = self._get_compiler_feedback(row)
 
-                    compiler_feedback = self._extract_error(
-                        compile_info, filled_file
-                    )
+                    compiler_feedback = self._extract_error(compile_info)
 
                 except:
                     raise Exception("Encounter exception when executing")
@@ -130,14 +128,14 @@ class CompilerExecutor:
 
         return compiler_feedback
 
-    def _extract_error(self, compile_info, filled_file):
+    def _extract_error(self, compile_info):
         """Extract error from feedback
         Args:
             compile_info (List[CompilerFeedback]): Compiler feedback
         Returns:
             Dict[FileInfo, ErrorInfo]: Error info
         """
-        lines = filled_file.splitlines()
+        # lines = filled_file.splitlines()
         err_pattern = r"^\[ERROR\] (?P<file>.+?):\[(?P<line>\d+),(?P<col>\d+)\] (?P<err>.+)$"
         file_errors = []
         errors = set(re.findall(err_pattern, compile_info, re.MULTILINE))
@@ -145,7 +143,7 @@ class CompilerExecutor:
             file, line, col, err = error
 
             file_errors.append(
-                f"""<file>{file}<line>{line}<col>{col}<code>{lines[int(line) - 1]}<err>{err}"""
+                f"""<file>{file}<line>{line}<col>{col}<err>{err}"""
             )
         return "\n".join(file_errors)
 

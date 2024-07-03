@@ -1,4 +1,7 @@
 import logging
+import os
+import re
+from argparse import ArgumentParser
 from multiprocessing import Pool
 from subprocess import run
 from typing import List, Optional
@@ -6,11 +9,6 @@ from typing import List, Optional
 import pandas as pd
 from make_data.make_data import get_functions, get_location
 from tqdm import tqdm
-import re
-
-base_dir = "/data/hieuvd/lvdthieu/repos/processed-projects"
-parse_function = "/home/hieuvd/lvdthieu/parse_function"
-class_path = "." f":'{parse_function}/target/dependency/*'"
 
 
 def fill_file(
@@ -55,24 +53,38 @@ def fill_file(
     else:
         return None
 
+
 def extract_list(input_string, category):
     pattern = rf"{category}: \[(.*?)\]"
     match = re.search(pattern, input_string)
     if match:
         list_content = match.group(1)
-        return [item.strip() for item in list_content.split(',')]
+        return [item.strip() for item in list_content.split(",")]
     return []
 
+
 def processor(args):
-    df, project_storage_dir, generated_code_col, index = args
+    (
+        df,
+        project_storage_dir,
+        generated_code_col,
+        parse_function,
+        class_path,
+        index,
+        log_dir,
+    ) = args
     logger = logging.Logger(f"parse-function_{index}", logging.INFO)
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir, exist_ok=True)
+    else:
+        os.system(f"rm -rf {log_dir}/*")
     logger.addHandler(
-        logging.FileHandler(f"/home/hieuvd/lvdthieu/parse-function_{index}.log")
+        logging.FileHandler(f"{log_dir}/parse-function_{index}.log")
     )
     retrieval_elements = []
     for _, row in tqdm(
         df.iterrows(), total=len(df), desc=f"Proc {index}", position=index
-    ): 
+    ):
         filled_files = fill_file(row, project_storage_dir, generated_code_col)
         types = set()
         methods = set()
@@ -91,23 +103,54 @@ def processor(args):
             )
             try:
                 result = run(cmd, shell=True, text=True, capture_output=True)
-                types.update(extract_list(result.stdout, "Types"))
-                methods.update(extract_list(result.stdout, "Methods"))
-                fields.update(extract_list(result.stdout, "Fields")) 
+                if result.returncode != 0:
+                    logger.error(
+                        f"<encounter_error> {row['proj_name']}/{row['relative_path']}"
+                    )
+                else:
+                    types.update(extract_list(result.stdout, "Types"))
+                    methods.update(extract_list(result.stdout, "Methods"))
+                    fields.update(extract_list(result.stdout, "Fields"))
             except:
-                logger.error(f"<encounter_error> {row['relative_path']}")
+                logger.error(
+                    f"<encounter_error> {row['proj_name']}/{row['relative_path']}"
+                )
         retrieval_element = {
             "types": types,
             "methods": methods,
-            "fields": fields
+            "fields": fields,
         }
 
         retrieval_elements.append(retrieval_element)
     df["retrieval_element"] = retrieval_elements
     return df
 
-df = pd.read_parquet(
-    "/home/hieuvd/lvdthieu/deepseek_test_initial_context_output.parquet"
-)
-new_df = processor((df, base_dir, "initial_output", 0))
-new_df.to_parquet("/home/hieuvd/lvdthieu/retrieval_element_test.parquet")
+
+def main(args):
+    df = pd.read_parquet(args.input)
+    class_path = "." f":'{args.parse_function}/target/dependency/*'"
+    new_df = processor(
+        (
+            df,
+            args.base_dir,
+            args.generated_col,
+            args.parse_function,
+            class_path,
+            0,
+            args.log_dir,
+        )
+    )
+    new_df.to_parquet(args.output)
+
+
+if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument("--input", dest="input")
+    parser.add_argument("--output", dest="output")
+    parser.add_argument("--base-dir", dest="base_dir")
+    parser.add_argument("--parse-function", dest="parse_function")
+    parser.add_argument("--generated-col", dest="generated_col")
+    parser.add_argument("--num-proc", dest="num_proc", type=int)
+    parser.add_argument("--log-dir", dest="log_dir")
+    args = parser.parse_args()
+    main(args)
