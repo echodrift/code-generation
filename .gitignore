@@ -2,8 +2,5 @@ __pycache__
 tools/__pycache__
 random_generator/__pycache__
 *.csv
-<<<<<<< HEAD
-=======
-hi!
->>>>>>> master
+*.sh
 
