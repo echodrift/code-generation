@@ -1,6 +1,5 @@
 import flute.config.Config;
 import flute.utils.file_processing.FileProcessor;
-import me.tongfei.progressbar.ProgressBar;
 
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.*;
@@ -122,7 +121,7 @@ public class Main {
         parser.setKind(ASTParser.K_COMPILATION_UNIT);
         return (CompilationUnit) parser.createAST(null);
     }
-    
+
     public static class MethodSignatureVisitor extends ASTVisitor {
         private final ASTRewrite rewriter;
 
@@ -134,6 +133,79 @@ public class Main {
         public boolean visit(MethodDeclaration node) {
             // Remove the method body to retain only the signature
             rewriter.set(node, MethodDeclaration.BODY_PROPERTY, null, null);
+            return super.visit(node);
+        }
+    }
+
+    public static class MethodSignatureVisitor2 extends ASTVisitor {
+        private final ASTRewrite rewriter;
+
+        public MethodSignatureVisitor2(ASTRewrite rewriter) {
+            this.rewriter = rewriter;
+        }
+
+        @Override
+        public boolean visit(MethodDeclaration node) {
+            boolean isPrivate = false;
+            for (Object modifier : node.modifiers()) {
+                if (modifier.toString().equals("private")) {
+                    isPrivate = true;
+                }
+            }
+            if (isPrivate) {
+                rewriter.remove(node, null);
+                return false;
+            }
+            // Remove the method body to retain only the signature
+            rewriter.set(node, MethodDeclaration.BODY_PROPERTY, null, null);
+            // Remove JavaDoc
+            Javadoc javaDoc = node.getJavadoc();
+            if (javaDoc != null) {
+                rewriter.remove(javaDoc, null);
+            }
+            // Remove annotations
+            List<?> modifiers = node.modifiers();
+            for (Object modifier : modifiers) {
+                if (modifier instanceof Annotation) {
+                    rewriter.remove((ASTNode) modifier, null);
+                }
+            }
+            return super.visit(node);
+        }
+
+        public boolean visit(TypeDeclaration node) {
+            // Remove JavaDoc
+            Javadoc javaDoc = node.getJavadoc();
+            if (javaDoc != null) {
+                rewriter.remove(javaDoc, null);
+            }
+            // Remove annotations
+            List<?> modifiers = node.modifiers();
+            for (Object modifier : modifiers) {
+                if (modifier instanceof Annotation) {
+                    rewriter.remove((ASTNode) modifier, null);
+                }
+            }
+            return super.visit(node);
+        }
+
+        public boolean visit(FieldDeclaration node) {
+            // Check if the field is private
+            boolean isPrivate = false;
+            for (Object modifier : node.modifiers()) {
+                if (modifier instanceof Modifier) {
+                    Modifier mod = (Modifier) modifier;
+                    if (mod.isPrivate()) {
+                        isPrivate = true;
+                        break;
+                    }
+                }
+            }
+            // Remove the field if it is private
+            if (isPrivate) {
+                rewriter.remove(node, null);
+                return false; // No need to visit further
+            }
             return super.visit(node);
         }
     }
@@ -185,8 +257,7 @@ public class Main {
                 } else {
                     typeInfo.addProperty("qualified_name", binding.getQualifiedName());
                 }
-                
-                
+
                 // Get the superclass name
                 try {
                     TypeDeclaration classType = (TypeDeclaration) type;
@@ -222,6 +293,17 @@ public class Main {
                     } catch (Exception e) {
                         typeInfo.addProperty("abstract", "error");
                     }
+                    ASTRewrite rewriter2 = ASTRewrite.create(ast);
+                    MethodSignatureVisitor2 visitor2 = new MethodSignatureVisitor2(rewriter2);
+                    classCU.accept(visitor2);
+                    Document document2 = new Document(source);
+                    TextEdit edits2 = rewriter2.rewriteAST(document2, null);
+                    try {
+                        edits2.apply(document2);
+                        typeInfo.addProperty("abstract_compact", document2.get());
+                    } catch (Exception e) {
+                        typeInfo.addProperty("abstract_compact", "error");
+                    }
                 } catch (Exception e) {
                     typeInfo.addProperty("abstract", "error");
                 }
@@ -244,6 +326,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
+
         Config.JAVAFX_DIR = "/home/hieuvd/lvdthieu/javafx-jmods-17.0.10";
         String baseDir = args[0];
         String projectName = args[1];
@@ -273,11 +356,11 @@ public class Main {
                     }
                     // JsonArray fieldInfos = parseField(cu, relativePath, logger);
                     // if (fieldInfos != null) {
-                    //     fields.addAll(fieldInfos);
+                    // fields.addAll(fieldInfos);
                     // }
                     // JsonArray methodInfos = parseMethod(cu, relativePath, logger);
                     // if (methodInfos != null) {
-                    //     methods.addAll(methodInfos);
+                    // methods.addAll(methodInfos);
                     // }
                 } catch (Exception e) {
                     logger.severe(e.getMessage());
@@ -290,17 +373,19 @@ public class Main {
         } catch (Exception e) {
             logger.severe(e.getMessage());
         }
-        // try (Writer writer = new OutputStreamWriter(new FileOutputStream(projectName + "_fields.json"), "UTF-8")) {
-        //     Gson gson = new GsonBuilder().create();
-        //     gson.toJson(fields, writer);
+        // try (Writer writer = new OutputStreamWriter(new FileOutputStream(projectName
+        // + "_fields.json"), "UTF-8")) {
+        // Gson gson = new GsonBuilder().create();
+        // gson.toJson(fields, writer);
         // } catch (Exception e) {
-        //     logger.severe(e.getMessage());
+        // logger.severe(e.getMessage());
         // }
-        // try (Writer writer = new OutputStreamWriter(new FileOutputStream(projectName + "_methods.json"), "UTF-8")) {
-        //     Gson gson = new GsonBuilder().create();
-        //     gson.toJson(methods, writer);
+        // try (Writer writer = new OutputStreamWriter(new FileOutputStream(projectName
+        // + "_methods.json"), "UTF-8")) {
+        // Gson gson = new GsonBuilder().create();
+        // gson.toJson(methods, writer);
         // } catch (Exception e) {
-        //     logger.severe(e.getMessage());
+        // logger.severe(e.getMessage());
         // }
 
     }

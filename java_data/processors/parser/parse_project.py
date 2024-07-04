@@ -1,61 +1,28 @@
+import argparse
 import logging
+import os
 from multiprocessing import Pool
-from subprocess import PIPE, Popen, run
-from typing import List
+from subprocess import run
 
 import pandas as pd
 from tqdm import tqdm
 
-base_dir = "/data/hieuvd/lvdthieu/repos/processed-projects"
-parse_project = "/home/hieuvd/lvdthieu/parse_project"
-# projects = [
-#     "PlexPt_chatgpt-java",
-#     "Pay-Group_best-pay-sdk",
-#     "eirslett_frontend-maven-plugin",
-#     "obsidiandynamics_kafdrop",
-#     "DerekYRC_mini-spring",
-#     "houbb_sensitive-word",
-#     "google_truth",
-#     "joelittlejohn_jsonschema2pojo",
-#     "Kong_unirest-java",
-#     "qiujiayu_AutoLoadCache",
-#     "ainilili_ratel",
-#     "logfellow_logstash-logback-encoder",
-#     "elunez_eladmin",
-#     "PlayEdu_PlayEdu",
-#     "javamelody_javamelody",
-#     "subhra74_snowflake",
-#     "jeecgboot_jeecg-boot",
-#     "mapstruct_mapstruct",
-#     "spring-cloud_spring-cloud-gateway",
-#     "docker-java_docker-java",
-#     "YunaiV_ruoyi-vue-pro",
-#     "zhkl0228_unidbg",
-#     "pmd_pmd",
-#     "graphhopper_graphhopper",
-#     "jitsi_jitsi",
-#     "orientechnologies_orientdb",
-# ]
-
-# projects = [
-#     "spring-cloud_spring-cloud-kubernetes"
-# ]
-finetune = pd.read_parquet("/home/hieuvd/lvdthieu/new_finetune.parquet")
-projects = finetune["proj_name"].unique().tolist()
-class_path = "." f":'{parse_project}/target/dependency/*'"
-
 
 def processor(args):
-    projects, index = args
+    projects, parser, base_dir, class_path, index, log_dir = args
     logger = logging.Logger(f"parse-project_{index}", logging.INFO)
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir, exist_ok=True)
+    else:
+        os.system(f"rm -rf {log_dir}/*")
     logger.addHandler(
-        logging.FileHandler(f"/home/hieuvd/lvdthieu/parse-project_{index}.log")
+        logging.FileHandler(f"{log_dir}/parse-project_{index}.log")
     )
     for project in tqdm(
         projects, total=len(projects), desc=f"Proc {index}", position=index
     ):
         cmd = (
-            f"cd {parse_project}/target/classes "
+            f"cd {parser}/target/classes "
             f"&& java -cp {class_path} "
             "Main "
             f"{base_dir} "
@@ -63,22 +30,42 @@ def processor(args):
         )
         try:
             result = run(cmd, shell=True, text=True, capture_output=True)
-            logger.info(result.stderr)
+            logger.error(result.stderr)
         except:
             print("<encounter_error>", project)
 
 
-batch_size = 10
-num_process = (
-    len(projects) // batch_size
-    if len(projects) % batch_size == 0
-    else len(projects) // batch_size + 1
-)
-subsets = [
-    (projects[i : i + batch_size], i // batch_size)
-    for i in range(0, len(projects), batch_size)
-]
+def main(args):
+    df = pd.read_parquet(args.input)
+    projects = df["proj_name"].unique().tolist()
+    class_path = "." f":'{args.parser}/target/dependency/*'"
+    num_process = (
+        len(projects) // args.batch_size
+        if len(projects) % args.batch_size == 0
+        else len(projects) // args.batch_size + 1
+    )
+
+    subsets = [
+        (
+            projects[i : i + args.batch_size],
+            args.parser,
+            args.base_dir,
+            class_path,
+            i // args.batch_size,
+            args.log_dir,
+        )
+        for i in range(0, len(projects), args.batch_size)
+    ]
+    with Pool(num_process) as p:
+        p.map(processor, subsets)
 
 
-with Pool(num_process) as p:
-    p.map(processor, subsets)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input", dest="input")
+    parser.add_argument("--parser", dest="parser")
+    parser.add_argument("--base-dir", dest="base_dir")
+    parser.add_argument("--batch-size", dest="batch_size", type=int)
+    parser.add_argument("--log-dir", dest="log_dir")
+    args = parser.parse_args()
+    main(args)

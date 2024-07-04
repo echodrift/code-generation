@@ -1,0 +1,90 @@
+[
+    {
+        "relative_path": "SpringMVC-Spring-MyBatis/mybatis-generator/rml/dao/MUserMapper.java",
+        "name": "MUserMapper",
+        "modifiers": "public",
+        "qualified_name": "rml.dao.MUserMapper",
+        "extend": "",
+        "implements": "",
+        "raw": "public interface MUserMapper {\n  int deleteByPrimaryKey(  String id);\n  int insert(  MUser record);\n  int insertSelective(  MUser record);\n  MUser selectByPrimaryKey(  String id);\n  int updateByPrimaryKeySelective(  MUser record);\n  int updateByPrimaryKey(  MUser record);\n}\n",
+        "abstract": "public interface MUserMapper {\n  int deleteByPrimaryKey(  String id);\n  int insert(  MUser record);\n  int insertSelective(  MUser record);\n  MUser selectByPrimaryKey(  String id);\n  int updateByPrimaryKeySelective(  MUser record);\n  int updateByPrimaryKey(  MUser record);\n}\n",
+        "abstract_compact": "public interface MUserMapper {\n  int deleteByPrimaryKey(  String id);\n  int insert(  MUser record);\n  int insertSelective(  MUser record);\n  MUser selectByPrimaryKey(  String id);\n  int updateByPrimaryKeySelective(  MUser record);\n  int updateByPrimaryKey(  MUser record);\n}\n"
+    },
+    {
+        "relative_path": "SpringMVC-Spring-MyBatis/mybatis-generator/rml/model/MUser.java",
+        "name": "MUser",
+        "modifiers": "public",
+        "qualified_name": "rml.model.MUser",
+        "extend": "",
+        "implements": "",
+        "raw": "public class MUser {\n  private String id;\n  private String name;\n  private Integer age;\n  private String address;\n  public String getId(){\n    return id;\n  }\n  public void setId(  String id){\n    this.id\u003did \u003d\u003d null ? null : id.trim();\n  }\n  public String getName(){\n    return name;\n  }\n  public void setName(  String name){\n    this.name\u003dname \u003d\u003d null ? null : name.trim();\n  }\n  public Integer getAge(){\n    return age;\n  }\n  public void setAge(  Integer age){\n    this.age\u003dage;\n  }\n  public String getAddress(){\n    return address;\n  }\n  public void setAddress(  String address){\n    this.address\u003daddress \u003d\u003d null ? null : address.trim();\n  }\n}\n",
+        "abstract": "public class MUser {\n  private String id;\n  private String name;\n  private Integer age;\n  private String address;\n  public String getId();\n  public void setId(  String id);\n  public String getName();\n  public void setName(  String name);\n  public Integer getAge();\n  public void setAge(  Integer age);\n  public String getAddress();\n  public void setAddress(  String address);\n}\n",
+        "abstract_compact": "public class MUser {\n  public String getId();\n  public void setId(  String id);\n  public String getName();\n  public void setName(  String name);\n  public Integer getAge();\n  public void setAge(  Integer age);\n  public String getAddress();\n  public void setAddress(  String address);\n}\n"
+    },
+    {
+        "relative_path": "SpringMVC-Spring-MyBatis/src/main/java/rml/dao/MUserMapper.java",
+        "name": "MUserMapper",
+        "modifiers": "public",
+        "qualified_name": "rml.dao.MUserMapper",
+        "extend": "",
+        "implements": "",
+        "raw": "public interface MUserMapper {\n  int deleteByPrimaryKey(  String id);\n  int insert(  MUser record);\n  int insertSelective(  MUser record);\n  MUser selectByPrimaryKey(  String id);\n  int updateByPrimaryKeySelective(  MUser record);\n  int updateByPrimaryKey(  MUser record);\n  List\u003cMUser\u003e getAll();\n}\n",
+        "abstract": "public interface MUserMapper {\n  int deleteByPrimaryKey(  String id);\n  int insert(  MUser record);\n  int insertSelective(  MUser record);\n  MUser selectByPrimaryKey(  String id);\n  int updateByPrimaryKeySelective(  MUser record);\n  int updateByPrimaryKey(  MUser record);\n  List\u003cMUser\u003e getAll();\n}\n",
+        "abstract_compact": "public interface MUserMapper {\n  int deleteByPrimaryKey(  String id);\n  int insert(  MUser record);\n  int insertSelective(  MUser record);\n  MUser selectByPrimaryKey(  String id);\n  int updateByPrimaryKeySelective(  MUser record);\n  int updateByPrimaryKey(  MUser record);\n  List\u003cMUser\u003e getAll();\n}\n"
+    },
+    {
+        "relative_path": "SpringMVC-Spring-MyBatis/src/main/java/rml/controller/MUserController.java",
+        "name": "MUserController",
+        "modifiers": "@Controller @RequestMapping(\"/muserController\") public",
+        "qualified_name": "rml.controller.MUserController",
+        "extend": "",
+        "implements": "",
+        "raw": "@Controller @RequestMapping(\"/muserController\") public class MUserController {\n  private MUserServiceI muserService;\n  public MUserServiceI getMuserService(){\n    return muserService;\n  }\n  /** \n * Just for test\n * @param muserService\n */\n  @Autowired public void setMuserService(  MUserServiceI muserService){\n    this.muserService\u003dmuserService;\n  }\n  @RequestMapping(value\u003d\"/listUser\") public String listUser(  HttpServletRequest request){\n    List\u003cMUser\u003e list\u003dmuserService.getAll();\n    request.setAttribute(\"userlist\",list);\n    return \"listUser\";\n  }\n  @RequestMapping(value\u003d\"/addUser\") public String addUser(  MUser muser){\n    String id\u003dUUID.randomUUID().toString();\n    muser.setId(id);\n    muserService.insert(muser);\n    return \"redirect:/muserController/listUser.do\";\n  }\n  @RequestMapping(value\u003d\"/deleteUser\") public String deleteUser(  String id){\n    muserService.delete(id);\n    return \"redirect:/muserController/listUser.do\";\n  }\n  @RequestMapping(value\u003d\"/updateUserUI\") public String updateUserUI(  String id,  HttpServletRequest request){\n    MUser muser\u003dmuserService.selectByPrimaryKey(id);\n    request.setAttribute(\"user\",muser);\n    return \"updateUser\";\n  }\n  @RequestMapping(value\u003d\"/updateUser\") public String updateUser(  MUser muser){\n    muserService.update(muser);\n    return \"redirect:/muserController/listUser.do\";\n  }\n  /** \n * god killer\n * @param muser\n */\n  private void justForTest(  MUser muser){\n    return;\n  }\n}\n",
+        "abstract": "@Controller @RequestMapping(\"/muserController\") public class MUserController {\n  private MUserServiceI muserService;\n  public MUserServiceI getMuserService();\n  /** \n * Just for test\n * @param muserService\n */\n  @Autowired public void setMuserService(  MUserServiceI muserService);\n  @RequestMapping(value\u003d\"/listUser\") public String listUser(  HttpServletRequest request);\n  @RequestMapping(value\u003d\"/addUser\") public String addUser(  MUser muser);\n  @RequestMapping(value\u003d\"/deleteUser\") public String deleteUser(  String id);\n  @RequestMapping(value\u003d\"/updateUserUI\") public String updateUserUI(  String id,  HttpServletRequest request);\n  @RequestMapping(value\u003d\"/updateUser\") public String updateUser(  MUser muser);\n  /** \n * god killer\n * @param muser\n */\n  private void justForTest(  MUser muser);\n}\n",
+        "abstract_compact": "public class MUserController {\n  public MUserServiceI getMuserService();\n  public void setMuserService(  MUserServiceI muserService);\n  public String listUser(  HttpServletRequest request);\n  public String addUser(  MUser muser);\n  public String deleteUser(  String id);\n  public String updateUserUI(  String id,  HttpServletRequest request);\n  public String updateUser(  MUser muser);\n}\n"
+    },
+    {
+        "relative_path": "SpringMVC-Spring-MyBatis/src/main/java/rml/model/MUser.java",
+        "name": "MUser",
+        "modifiers": "public",
+        "qualified_name": "rml.model.MUser",
+        "extend": "",
+        "implements": "",
+        "raw": "public class MUser {\n  private String id;\n  private String name;\n  private Integer age;\n  private String address;\n  public String getId(){\n    return id;\n  }\n  public void setId(  String id){\n    this.id\u003did \u003d\u003d null ? null : id.trim();\n  }\n  public String getName(){\n    return name;\n  }\n  public void setName(  String name){\n    this.name\u003dname \u003d\u003d null ? null : name.trim();\n  }\n  public Integer getAge(){\n    return age;\n  }\n  public void setAge(  Integer age){\n    this.age\u003dage;\n  }\n  public String getAddress(){\n    return address;\n  }\n  public void setAddress(  String address){\n    this.address\u003daddress \u003d\u003d null ? null : address.trim();\n  }\n}\n",
+        "abstract": "public class MUser {\n  private String id;\n  private String name;\n  private Integer age;\n  private String address;\n  public String getId();\n  public void setId(  String id);\n  public String getName();\n  public void setName(  String name);\n  public Integer getAge();\n  public void setAge(  Integer age);\n  public String getAddress();\n  public void setAddress(  String address);\n}\n",
+        "abstract_compact": "public class MUser {\n  public String getId();\n  public void setId(  String id);\n  public String getName();\n  public void setName(  String name);\n  public Integer getAge();\n  public void setAge(  Integer age);\n  public String getAddress();\n  public void setAddress(  String address);\n}\n"
+    },
+    {
+        "relative_path": "SpringMVC-Spring-MyBatis/src/main/java/rml/service/MUserServiceI.java",
+        "name": "MUserServiceI",
+        "modifiers": "public",
+        "qualified_name": "rml.service.MUserServiceI",
+        "extend": "",
+        "implements": "",
+        "raw": "public interface MUserServiceI {\n  List\u003cMUser\u003e getAll();\n  MUser selectByPrimaryKey(  String id);\n  int insert(  MUser muser);\n  int update(  MUser muser);\n  int delete(  String id);\n}\n",
+        "abstract": "public interface MUserServiceI {\n  List\u003cMUser\u003e getAll();\n  MUser selectByPrimaryKey(  String id);\n  int insert(  MUser muser);\n  int update(  MUser muser);\n  int delete(  String id);\n}\n",
+        "abstract_compact": "public interface MUserServiceI {\n  List\u003cMUser\u003e getAll();\n  MUser selectByPrimaryKey(  String id);\n  int insert(  MUser muser);\n  int update(  MUser muser);\n  int delete(  String id);\n}\n"
+    },
+    {
+        "relative_path": "SpringMVC-Spring-MyBatis/src/main/java/rml/service/MUserServiceImpl.java",
+        "name": "MUserServiceImpl",
+        "modifiers": "@Service(\"muserService\") public",
+        "qualified_name": "rml.service.MUserServiceImpl",
+        "extend": "",
+        "implements": "MUserServiceI",
+        "raw": "@Service(\"muserService\") public class MUserServiceImpl implements MUserServiceI {\n  private MUserMapper muserMapper;\n  public MUserMapper getMuserMapper(){\n    return muserMapper;\n  }\n  @Autowired public void setMuserMapper(  MUserMapper muserMapper){\n    this.muserMapper\u003dmuserMapper;\n  }\n  @Override public List\u003cMUser\u003e getAll(){\n    return muserMapper.getAll();\n  }\n  @Override public int insert(  MUser muser){\n    return muserMapper.insert(muser);\n  }\n  @Override public int update(  MUser muser){\n    return muserMapper.updateByPrimaryKey(muser);\n  }\n  @Override public int delete(  String id){\n    return muserMapper.deleteByPrimaryKey(id);\n  }\n  @Override public MUser selectByPrimaryKey(  String id){\n    return muserMapper.selectByPrimaryKey(id);\n  }\n}\n",
+        "abstract": "@Service(\"muserService\") public class MUserServiceImpl implements MUserServiceI {\n  private MUserMapper muserMapper;\n  public MUserMapper getMuserMapper();\n  @Autowired public void setMuserMapper(  MUserMapper muserMapper);\n  @Override public List\u003cMUser\u003e getAll();\n  @Override public int insert(  MUser muser);\n  @Override public int update(  MUser muser);\n  @Override public int delete(  String id);\n  @Override public MUser selectByPrimaryKey(  String id);\n}\n",
+        "abstract_compact": "public class MUserServiceImpl implements MUserServiceI {\n  public MUserMapper getMuserMapper();\n  public void setMuserMapper(  MUserMapper muserMapper);\n  public List\u003cMUser\u003e getAll();\n  public int insert(  MUser muser);\n  public int update(  MUser muser);\n  public int delete(  String id);\n  public MUser selectByPrimaryKey(  String id);\n}\n"
+    },
+    {
+        "relative_path": "SpringMVC-Spring-MyBatis/src/test/java/TestMybatis.java",
+        "name": "TestMybatis",
+        "modifiers": "@RunWith(SpringJUnit4ClassRunner.class) @ContextConfiguration(locations\u003d{\"classpath:spring.xml\",\"classpath:spring-mybatis.xml\"}) public",
+        "qualified_name": "TestMybatis",
+        "extend": "",
+        "implements": "",
+        "raw": "@RunWith(SpringJUnit4ClassRunner.class) @ContextConfiguration(locations\u003d{\"classpath:spring.xml\",\"classpath:spring-mybatis.xml\"}) public class TestMybatis {\n  private static final Logger logger\u003dLogger.getLogger(TestMybatis.class);\n  private MUserServiceI muserService;\n  public MUserServiceI getMuserService(){\n    return muserService;\n  }\n  @Autowired public void setMuserService(  MUserServiceI muserService){\n    this.muserService\u003dmuserService;\n  }\n  @Test public void test1(){\n    List\u003cMUser\u003e list\u003dmuserService.getAll();\n    logger.info(JSON.toJSONStringWithDateFormat(list,\"yyyy-MM-dd HH:mm:ss\"));\n  }\n  public void test2(){\n    MUser muser\u003dnew MUser();\n    muser.setId(\"0000\");\n    muser.setName(\"aaaa\");\n    muser.setAge(1234);\n    muser.setAddress(\"ABCD\");\n    int i\u003dmuserService.insert(muser);\n    logger.info(JSON.toJSONStringWithDateFormat(\"add \" + i,\"yyyy-MM-dd HH:mm:ss\"));\n  }\n  public void test3(){\n    MUser muser\u003dnew MUser();\n    muser.setId(\"0000\");\n    muser.setName(\"bbbb\");\n    muser.setAge(1234);\n    muser.setAddress(\"ABCD\");\n    int i\u003dmuserService.update(muser);\n    logger.info(JSON.toJSONStringWithDateFormat(\"update \" + i,\"yyyy-MM-dd HH:mm:ss\"));\n  }\n  public void test4(){\n    MUser muser\u003dnew MUser();\n    muser.setId(\"0000\");\n    muser.setName(\"bbbb\");\n    muser.setAge(1234);\n    muser.setAddress(\"ABCD\");\n    int i\u003dmuserService.delete(\"0000\");\n    logger.info(JSON.toJSONStringWithDateFormat(\"delete \" + i,\"yyyy-MM-dd HH:mm:ss\"));\n  }\n}\n",
+        "abstract": "@RunWith(SpringJUnit4ClassRunner.class) @ContextConfiguration(locations\u003d{\"classpath:spring.xml\",\"classpath:spring-mybatis.xml\"}) public class TestMybatis {\n  private static final Logger logger\u003dLogger.getLogger(TestMybatis.class);\n  private MUserServiceI muserService;\n  public MUserServiceI getMuserService();\n  @Autowired public void setMuserService(  MUserServiceI muserService);\n  @Test public void test1();\n  public void test2();\n  public void test3();\n  public void test4();\n}\n",
+        "abstract_compact": "public class TestMybatis {\n  public MUserServiceI getMuserService();\n  public void setMuserService(  MUserServiceI muserService);\n  public void test1();\n  public void test2();\n  public void test3();\n  public void test4();\n}\n"
+    }
+]
