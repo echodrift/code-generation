@@ -113,7 +113,7 @@ def processor(args):
                             param_type_context + "<param_class>"
                         )
                 if param_type_contexts:
-                    initial_context.append(param_type_context)
+                    initial_context.append(param_type_contexts)
                     logger.info(
                         "{:<40} {} {}".format(
                             row["proj_name"],

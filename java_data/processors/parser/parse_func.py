@@ -87,8 +87,8 @@ def processor(args):
     ):
         filled_files = fill_file(row, project_storage_dir, generated_code_col)
         types = set()
-        methods = set()
-        fields = set()
+        # methods = set()
+        # fields = set()
         for filled_file in filled_files:
             source_path = f"{parse_function}/tmp{index}.txt"
             with open(source_path, "w", encoding="utf-8", errors="ignore") as f:
@@ -109,20 +109,20 @@ def processor(args):
                     )
                 else:
                     types.update(extract_list(result.stdout, "Types"))
-                    methods.update(extract_list(result.stdout, "Methods"))
-                    fields.update(extract_list(result.stdout, "Fields"))
+                    # methods.update(extract_list(result.stdout, "Methods"))
+                    # fields.update(extract_list(result.stdout, "Fields"))
             except:
                 logger.error(
                     f"<encounter_error> {row['proj_name']}/{row['relative_path']}"
                 )
         retrieval_element = {
             "types": types,
-            "methods": methods,
-            "fields": fields,
+            # "methods": methods,
+            # "fields": fields,
         }
 
         retrieval_elements.append(retrieval_element)
-    df["retrieval_element"] = retrieval_elements
+    df["retrieval_element_gt"] = retrieval_elements
     return df
 
 
