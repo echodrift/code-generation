@@ -1,6 +1,7 @@
 import argparse
 import codecs
 import logging
+import os
 import re
 from multiprocessing import Process, Queue
 from subprocess import run
@@ -42,7 +43,14 @@ class CompilerExecutor:
         self.df = df
         self.column_to_check = column_to_check
         self.proj_storage_dir = proj_storage_dir
-        self.log_dir = log_dir
+        self.logger = logging.getLogger(f"logger{self.index}")
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir, exist_ok=True)
+        else:
+            os.system(f"rm -rf {log_dir}/*")
+        self.logger.addHandler(
+            logging.FileHandler(f"{log_dir}/compile_{self.index}.log")
+        )
         self.mvn = mvn
         self.index = index
 
@@ -92,17 +100,22 @@ class CompilerExecutor:
         path_to_file = "{}/{}/{}".format(
             self.proj_storage_dir, row["proj_name"], row["relative_path"]
         )
+        self.logger.info(
+            f"Processing {row['proj_name']}/{row['relative_path']}"
+        )
         compiler_feedback = None
         # If fail log file path into error file
         try:
             filled_file, original_file = self._fill_file(row)
             if not filled_file:
-                raise LookupError(
+                self.logger.error("\tCan not fill file")
+                raise IOError(
                     "There is an error while filling file {}".format(
                         path_to_file
                     )
                 )
             else:
+                self.logger.info("\tFill file successfully")
                 try:
                     with codecs.open(
                         path_to_file, "w", encoding="utf-8", errors="ignore"
@@ -110,20 +123,22 @@ class CompilerExecutor:
                         f.write(filled_file)
 
                     compile_info = self._get_compiler_feedback(row)
-
+                    self.logger.info("\tGet compile info successfully")
                     compiler_feedback = self._extract_error(compile_info)
-
+                    self.logger.info("\tExtract error successfully")
                 except:
+                    self.logger.error("\tEncounter error while executing")
                     raise Exception("Encounter exception when executing")
                 finally:
                     with codecs.open(
                         path_to_file, "w", encoding="utf-8", errors="ignore"
                     ) as f:
                         f.write(original_file)
+                    self.logger.info("\tWrote back")
             if not compiler_feedback:
                 compiler_feedback = "<success>"
-        except Exception as e:
-            logging.error(e)
+
+        except Exception:
             compiler_feedback = "<execute_error>"
 
         return compiler_feedback

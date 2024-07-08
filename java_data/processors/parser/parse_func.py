@@ -54,15 +54,6 @@ def fill_file(
         return None
 
 
-def extract_list(input_string, category):
-    pattern = rf"{category}: \[(.*?)\]"
-    match = re.search(pattern, input_string)
-    if match:
-        list_content = match.group(1)
-        return [item.strip() for item in list_content.split(",")]
-    return []
-
-
 def processor(args):
     (
         df,
@@ -108,7 +99,7 @@ def processor(args):
                         f"<encounter_error> {row['proj_name']}/{row['relative_path']}"
                     )
                 else:
-                    types.update(extract_list(result.stdout, "Types"))
+                    types.update(result.stdout.split("\n")[:-1])
                     # methods.update(extract_list(result.stdout, "Methods"))
                     # fields.update(extract_list(result.stdout, "Fields"))
             except:
@@ -122,7 +113,7 @@ def processor(args):
         }
 
         retrieval_elements.append(retrieval_element)
-    df["retrieval_element_gt"] = retrieval_elements
+    df["parent_param_output_re"] = retrieval_elements
     return df
 
 
