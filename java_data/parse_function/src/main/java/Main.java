@@ -69,6 +69,7 @@ public class Main {
             if (node.getParent() instanceof VariableDeclarationStatement) {
                 VariableDeclarationStatement declaration = (VariableDeclarationStatement) node
                         .getParent();
+                // System.out.println("VariableDeclarationFragment " + declaration.getType().toString());
                 variables.put(node.getName().getIdentifier(),
                         declaration.getType().toString());
             }
@@ -77,6 +78,7 @@ public class Main {
 
         @Override
         public boolean visit(SingleVariableDeclaration node) {
+            // System.out.println("SingleVariableDeclaration " + node.getType().toString());
             variables.put(node.getName().getIdentifier(),
                     node.getType().toString());
             return super.visit(node);
@@ -171,7 +173,7 @@ public class Main {
                 
             }
         } catch (Exception e) {
-
+            
         }
     }
 }

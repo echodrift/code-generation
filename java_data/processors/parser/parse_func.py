@@ -113,7 +113,7 @@ def processor(args):
         }
 
         retrieval_elements.append(retrieval_element)
-    df["parent_param_output_re"] = retrieval_elements
+    df["ground_truth_re"] = retrieval_elements
     return df
 
 

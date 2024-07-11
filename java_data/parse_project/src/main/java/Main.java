@@ -118,7 +118,10 @@ public class Main {
     public static CompilationUnit parse(String source) {
         ASTParser parser = ASTParser.newParser(AST.getJLSLatest());
         parser.setSource(source.toCharArray());
+        // parser.setResolveBindings(true);
         parser.setKind(ASTParser.K_COMPILATION_UNIT);
+        // parser.setBindingsRecovery(true);
+        // parser.setStatementsRecovery(true);
         return (CompilationUnit) parser.createAST(null);
     }
 
@@ -143,71 +146,33 @@ public class Main {
         public MethodSignatureVisitor2(ASTRewrite rewriter) {
             this.rewriter = rewriter;
         }
-
         @Override
         public boolean visit(MethodDeclaration node) {
-            boolean isPrivate = false;
-            for (Object modifier : node.modifiers()) {
-                if (modifier.toString().equals("private")) {
-                    isPrivate = true;
-                }
-            }
-            if (isPrivate) {
-                rewriter.remove(node, null);
-                return false;
-            }
             // Remove the method body to retain only the signature
             rewriter.set(node, MethodDeclaration.BODY_PROPERTY, null, null);
-            // Remove JavaDoc
-            Javadoc javaDoc = node.getJavadoc();
-            if (javaDoc != null) {
-                rewriter.remove(javaDoc, null);
-            }
-            // Remove annotations
-            List<?> modifiers = node.modifiers();
-            for (Object modifier : modifiers) {
-                if (modifier instanceof Annotation) {
-                    rewriter.remove((ASTNode) modifier, null);
-                }
-            }
             return super.visit(node);
+        }
+        @Override
+        public boolean visit(Javadoc node) {
+            rewriter.remove(node, null);
+            return false;
+        }
+        @Override
+        public boolean visit(MarkerAnnotation node) {
+            rewriter.remove(node, null);
+            return false;
+        }
+        @Override
+        public boolean visit(NormalAnnotation node) {
+            rewriter.remove(node, null);
+            return false;
+        }
+        @Override
+        public boolean visit(SingleMemberAnnotation node) {
+            rewriter.remove(node, null);
+            return false;
         }
 
-        public boolean visit(TypeDeclaration node) {
-            // Remove JavaDoc
-            Javadoc javaDoc = node.getJavadoc();
-            if (javaDoc != null) {
-                rewriter.remove(javaDoc, null);
-            }
-            // Remove annotations
-            List<?> modifiers = node.modifiers();
-            for (Object modifier : modifiers) {
-                if (modifier instanceof Annotation) {
-                    rewriter.remove((ASTNode) modifier, null);
-                }
-            }
-            return super.visit(node);
-        }
-
-        public boolean visit(FieldDeclaration node) {
-            // Check if the field is private
-            boolean isPrivate = false;
-            for (Object modifier : node.modifiers()) {
-                if (modifier instanceof Modifier) {
-                    Modifier mod = (Modifier) modifier;
-                    if (mod.isPrivate()) {
-                        isPrivate = true;
-                        break;
-                    }
-                }
-            }
-            // Remove the field if it is private
-            if (isPrivate) {
-                rewriter.remove(node, null);
-                return false; // No need to visit further
-            }
-            return super.visit(node);
-        }
     }
 
     private static CompilationUnit createCU(String projectName, String projectDir, String file) {
@@ -239,7 +204,6 @@ public class Main {
             return null;
         } else {
             JsonArray result = new JsonArray();
-
             for (int i = 0; i < numType; i++) {
                 JsonObject typeInfo = new JsonObject();
                 typeInfo.addProperty("relative_path", relativePath);
@@ -278,6 +242,8 @@ public class Main {
                     typeInfo.addProperty("implements", "");
                 }
                 typeInfo.addProperty("raw", type.toString());
+
+                // Get raw class without method body
                 try {
                     String source = type.toString();
                     CompilationUnit classCU = parse(source);
@@ -287,25 +253,33 @@ public class Main {
                     classCU.accept(visitor);
                     Document document = new Document(source);
                     TextEdit edits = rewriter.rewriteAST(document, null);
-                    try {
-                        edits.apply(document);
-                        typeInfo.addProperty("abstract", document.get());
-                    } catch (Exception e) {
-                        typeInfo.addProperty("abstract", "error");
-                    }
-                    ASTRewrite rewriter2 = ASTRewrite.create(ast);
+                    edits.apply(document);
+                    typeInfo.addProperty("abstract", document.get());
+                    // System.out.println("Abstract:");
+                    // System.out.println(document.get());
+                    // System.out.println("-----------------------------------");
+                } catch (Exception e) {
+                    typeInfo.addProperty("abstract", "error");
+                    // System.out.println("Abstract: Error");
+                }
+                // Get raw class without method body, javadoc, annotation
+                try {
+                    String source = type.toString();
+                    CompilationUnit classCU = parse(source);
+                    ASTRewrite rewriter2 = ASTRewrite.create(classCU.getAST());
+
                     MethodSignatureVisitor2 visitor2 = new MethodSignatureVisitor2(rewriter2);
                     classCU.accept(visitor2);
                     Document document2 = new Document(source);
                     TextEdit edits2 = rewriter2.rewriteAST(document2, null);
-                    try {
-                        edits2.apply(document2);
-                        typeInfo.addProperty("abstract_compact", document2.get());
-                    } catch (Exception e) {
-                        typeInfo.addProperty("abstract_compact", "error");
-                    }
+                    edits2.apply(document2);
+                    typeInfo.addProperty("abstract_compact", document2.get());
+                    // System.out.println("Abstract compact:");
+                    // System.out.println(document2.get());
+                    // System.out.println("-----------------------------------");
                 } catch (Exception e) {
-                    typeInfo.addProperty("abstract", "error");
+                    typeInfo.addProperty("abstract_compact", "error");
+                    // System.out.println("Error");
                 }
                 result.add(typeInfo);
             }
@@ -345,6 +319,9 @@ public class Main {
         JsonArray types = new JsonArray();
         // JsonArray methods = new JsonArray();
         // JsonArray fields = new JsonArray();
+        // List tmp = new ArrayList();
+        // tmp.add("/home/lvdthieu/code-gen/javamelody_javamelody/javamelody/javamelody-core/src/main/java/net/bull/javamelody/PayloadNameRequestWrapper.java");
+        // files = tmp;
         if (files.size() > 0) {
             for (String file : files) {
                 try {
@@ -363,8 +340,9 @@ public class Main {
                     // methods.addAll(methodInfos);
                     // }
                 } catch (Exception e) {
-                    logger.severe(e.getMessage());
+
                 }
+
             }
         }
         try (Writer writer = new OutputStreamWriter(new FileOutputStream(projectName + "_type.json"), "UTF-8")) {
