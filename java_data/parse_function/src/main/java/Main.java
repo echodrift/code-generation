@@ -7,8 +7,8 @@ import java.nio.file.*;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-// import java.util.ArrayList;
-// import java.util.List;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,7 +52,7 @@ public class Main {
 
     public static class Visitor extends ASTVisitor {
         private final HashMap<String, String> variables = new HashMap<>();
-        // private final List<String> methodNames = new ArrayList<>();
+        private final List<String> methodNames = new ArrayList<>();
 
         @Override
         public boolean visit(FieldDeclaration node) {
@@ -97,16 +97,16 @@ public class Main {
         // }
         
 
-        // @Override
-        // public boolean visit(MethodInvocation node) {
-        //     System.out.println("MethodInvocation " + node.getName().getIdentifier());
-        //     methodNames.add(node.getName().getIdentifier());
-        //     return super.visit(node);
-        // }
+        @Override
+        public boolean visit(MethodInvocation node) {
+            // System.out.println("MethodInvocation " + node.getName().getIdentifier());
+            methodNames.add(node.getName().getIdentifier());
+            return super.visit(node);
+        }
 
-        // public List<String> getMethodNames() {
-        //     return methodNames;
-        // }
+        public List<String> getMethodNames() {
+            return methodNames;
+        }
 
         public HashMap<String, String> getVariables() {
             return variables;
@@ -131,19 +131,19 @@ public class Main {
                 String methodRaw = visitor.getMethodRaw();
                 Visitor contentVisitor = new Visitor();
                 funcCU.accept(contentVisitor);
-                // List<String> methodNames = contentVisitor.getMethodNames();
+                List<String> methodNames = contentVisitor.getMethodNames();
                 HashMap<String, String> variables = contentVisitor
                         .getVariables();
 
-                // // Filter method name not in target method
-                // LinkedHashSet<String> methodNamesInTargetMethod = new LinkedHashSet<>();
-                // for (String name : methodNames) {
-                //     Pattern pattern = Pattern.compile("\\." + name + "\\(");
-                //     Matcher matcher = pattern.matcher(methodRaw);
-                //     if (matcher.find()) {
-                //         methodNamesInTargetMethod.add(name);
-                //     }   
-                // }
+                // Filter method name not in target method
+                LinkedHashSet<String> methodNamesInTargetMethod = new LinkedHashSet<>();
+                for (String name : methodNames) {
+                    Pattern pattern = Pattern.compile("\\." + name + "\\(");
+                    Matcher matcher = pattern.matcher(methodRaw);
+                    if (matcher.find()) {
+                        methodNamesInTargetMethod.add(name);
+                    }   
+                }
 
                 // Filter variable name not in target method
                 LinkedHashSet<String> fieldNamesInTargetMethod = new LinkedHashSet<>();
@@ -163,12 +163,14 @@ public class Main {
                         typeNamesInTargetMethod.add(mapElement.getValue());
                     }
                 }
+                System.out.println("<types>");
                 for (String type : typeNamesInTargetMethod) {
                     System.out.println(type);
                 }
-                // System.out.println("Methods: " + methodNamesInTargetMethod);
-                // System.out.println("Fields: " + fieldNamesInTargetMethod);
-
+                System.out.println("<methods>");
+                for (String method : methodNamesInTargetMethod) {
+                    System.out.println(method);
+                }
             } else {
                 
             }

@@ -43,13 +43,13 @@ class CompilerExecutor:
         self.df = df
         self.column_to_check = column_to_check
         self.proj_storage_dir = proj_storage_dir
-        self.logger = logging.getLogger(f"logger{self.index}")
+        self.logger = logging.getLogger(f"logger{index}")
         if not os.path.exists(log_dir):
             os.makedirs(log_dir, exist_ok=True)
         else:
             os.system(f"rm -rf {log_dir}/*")
         self.logger.addHandler(
-            logging.FileHandler(f"{log_dir}/compile_{self.index}.log")
+            logging.FileHandler(f"{log_dir}/compile_{index}.log")
         )
         self.mvn = mvn
         self.index = index
