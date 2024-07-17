@@ -1,7 +1,6 @@
 import logging
 import os
 from argparse import ArgumentParser
-from multiprocessing import Pool
 from subprocess import run
 from typing import List, Optional
 
@@ -11,7 +10,7 @@ from tqdm import tqdm
 
 
 def fill_file(
-    row, project_storage_dir, generated_code_col
+    row: pd.Series, project_storage_dir: str, generated_code_col: str
 ) -> Optional[List[str]]:
     path_to_file = (
         f"{project_storage_dir}/{row['proj_name']}/{row['relative_path']}"

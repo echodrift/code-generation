@@ -1,6 +1,5 @@
 import argparse
-import codecs
-import multiprocessing as mp
+import multiprocessing
 import random
 import re
 from typing import List, NamedTuple, Optional, Tuple
@@ -11,12 +10,6 @@ from make_data.java.java8.JavaLexer import JavaLexer
 from make_data.java.java8.JavaParser import JavaParser
 from make_data.java.java8.JavaParserListener import JavaParserListener
 from tqdm import tqdm
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--input", dest="input")
-parser.add_argument("--dir", dest="dir")
-parser.add_argument("--output", dest="output")
-parser.add_argument("--workers", dest="workers")
 
 
 class ASample(NamedTuple):
@@ -155,27 +148,6 @@ def modified_mask_function(java_code: str) -> Optional[List[ASample]]:
     if not functions:
         return None
 
-    # Weighted random a function based on function body length
-    # the more function long, the more probability it would be chose
-    def get_len(java_code: str, loc: Location) -> int:
-        start_idx, end_idx = get_location(java_code, loc)
-        return count_java_tokens_antlr4(java_code[start_idx:end_idx])
-
-    # functions_with_len_body = [
-    #     [get_len(java_code, func.func_body_loc), func] for func in functions
-    # ]
-    # functions_with_len_body.sort(key=lambda x: x[0])
-    # weights, functions = zip(*functions_with_len_body)
-    # weights = list(weights)
-    # functions = list(functions)
-    # for i in range(1, len(weights)):
-    #     weights[i] = weights[i - 1] + weights[i]
-    # raw_weights = [
-    #     get_len(java_code, func["func_body_loc"]) for func in functions
-    # ]
-    # total = sum(raw_weights)
-    # weights = [weight / total for weight in raw_weights]
-    # random_function = random.choices(functions, weights=weights, k=1)[0]
     result = []
     for function in functions:
         # Extract function body
@@ -205,12 +177,9 @@ def modified_mask_function(java_code: str) -> Optional[List[ASample]]:
 
 def make_samples(argument: Tuple[str, str, str]):
     java_file_url, project_name, relative_path = argument
-    with codecs.open(
-        java_file_url, "r", encoding="utf-8", errors="ignore"
-    ) as f:
+    with open(java_file_url, "r", encoding="utf-8", errors="ignore") as f:
         try:
             java_code = f.read()
-            # sample = mask_function(java_code)
             samples = modified_mask_function(java_code)
             if samples:
                 return [
@@ -274,14 +243,7 @@ def make_dataset(
             java_files["relative_path"],
         )
     )
-    # rows = []
-    # for args in arguments:
-    #     tmp = make_samples(args)
-    #     print(tmp)
-    #     # rows.append(tmp)
-    #     # rows.append(make_samples(args))
-    #     break
-    with mp.Pool(processes=num_process) as pool:
+    with multiprocessing.Pool(processes=num_process) as pool:
         rows = list(
             tqdm(
                 pool.imap(make_samples, arguments),
@@ -310,11 +272,16 @@ def main(args):
     df = make_dataset(
         java_files=java_files,
         repos_directory=args.dir,
-        num_process=int(args.workers),
+        num_process=int(args.proc),
     )
     df.to_parquet(args.output, "fastparquet")
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input", dest="input")
+    parser.add_argument("--dir", dest="dir")
+    parser.add_argument("--output", dest="output")
+    parser.add_argument("--proc", dest="proc")
     args = parser.parse_args()
     main(args)
